@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Hero component for the landing page
  * This component displays a visually appealing hero section that motivates users to start building
