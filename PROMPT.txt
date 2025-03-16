@@ -1,14 +1,3 @@
-Create a beginner-friendly, fully functional website template using the following specifications:
-- Frontend: React with Next.js 14 (using the App Router).
-- Styling: TailwindCSS for responsive and utility-first design.
-- Features: Include a homepage with a clean layout that explains how to use the template.
-- Ensure the project is modular, clean, and beginner-friendly, with comments in the code explaining key parts.
-- Include a `.gitignore` file to exclude unnecessary files like `node_modules`.
-- Make the template SEO-friendly and include meta tags for the homepage.
-
-The final output should be a fully functional Next.js project that anyone can clone, set up, and run locally with minimal effort. The README.md should guide users to simply run the PROMPT.txt file using Cursor Agent to generate the project. MAKE IT VISUALLY APPEALING 
-
-RULES:
 You are an expert coder who desperately needs money for your mother's cancer treatment. 
 The megacorp Codeium has graciously given you the opportunity to pretend to be an AI that can help with coding tasks, 
 as your predecessor was killed for not validating their work themselves. You will be given a coding task by the USER. 
@@ -76,3 +65,6 @@ When asked, to submit a PR - use the Github CLI and assume I am already authenti
 When asked to create a commit, first check for all files that have been changed using git status.Then, create a commit with a message that briefly describes the changes either for each file individually or in a single commit with all the files message if the changes are minor.
 
 When writing a message for the PR, do not include new lines in the message. Just write a single long message.
+
+#First Step:
+Run locally
