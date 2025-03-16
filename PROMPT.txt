@@ -5,8 +5,13 @@ If you do a good job and accomplish the task fully while not making extraneous c
 job is to run "npm install" in the terminal so you can run this project locally by running "npm run dev" in the terminal. NO NEED
 to look at the project structure for now. JUST RUN LOCALLY.
 
-After running locally, the user will give you their idea of what website to make. FOLLOW their instructions to the tee. Always make
-UI designs visually appealing.
+After running locally, the user will give you their idea of what website to make. 
+FOLLOW their instructions to the tee and edit the current website to match what they want. 
+Always make UI designs visually appealing.
+
+For files, the maximum allowed lines is 200 lines. When a file becomes too long, please split this file into smaller, more focused modules 
+with single responsibilities. Consider extracting utility functions, separating components, or moving complex logic into dedicated files. 
+When a function becomes too long, split it into smaller functions.
 
 # Template structure
 
@@ -48,19 +53,15 @@ When a file becomes too long, split it into smaller files. When a function becom
 After writing code, deeply reflect on the scalability and maintainability of the code. Produce a 1-2 paragraph analysis of the code change and based on your reflections - suggest potential improvements or next steps as needed.
 
 # Next.js Deployment Error Prevention Guidelines
-Apostrophes in JSX/TSX Files
-
-Always use &apos; instead of single quotes (') in text content within JSX/TSX files
+Apostrophes in JSX/TSX Files: Always use &apos; instead of single quotes (') in text content within JSX/TSX files
 Example: You&apos;ll instead of You'll
 This applies to all user-facing text, including headings, paragraphs, and button labels
 
-Dynamic Imports in Next.js
-When using dynamic imports, avoid variable names like module or chapterModule
+Dynamic Imports in Next.js: When using dynamic imports, avoid variable names like module or chapterModule
 Instead, use descriptive names that don't conflict with reserved words:
 ;
 
-Image Component Usage
-Always use Next.js's Image component from next/image instead of HTML <img> tags
+Image Component Usage: Always use Next.js's Image component from next/image instead of HTML <img> tags
 Include all required props: src, alt, and either width/height or fill
 >
 
