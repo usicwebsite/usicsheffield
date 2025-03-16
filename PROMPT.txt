@@ -67,4 +67,5 @@ When asked to create a commit, first check for all files that have been changed 
 When writing a message for the PR, do not include new lines in the message. Just write a single long message.
 
 #First Step:
-Run locally
+1. npm install
+2. npm run dev
