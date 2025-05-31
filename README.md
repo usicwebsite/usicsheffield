@@ -1,9 +1,28 @@
-# The Islamic Circle (USIC) at the University of Sheffield
+# USIC Sheffield Website
 
-This website serves as a presentation for The Islamic Circle (USIC) at the University of Sheffield. Established in 1964, USIC aims to foster an Islamic environment that promotes growth among Muslim students.
+This is the official website for The Islamic Circle at the University of Sheffield.
 
-The site highlights USIC's core values: **Faith, Brotherhood & Sisterhood, and Knowledge**. It outlines their vision to create a space where Muslims can thrive spiritually, academically, and socially, encouraging members to become **Practicing, Practical, and Proactive** Muslims.
+## Getting Started
 
-The website also details **membership benefits**, such as exclusive discounts and early event access, and lists the variety of **events** USIC holds, including annual retreats, weekly circles, sports, and socials.
+To get the project up and running locally, follow these steps:
 
-Join USIC to experience true community and growth during your time at the University of Sheffield.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mwijanarko1/usicsheffield.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd usicsheffield
+   ```
+3. Install dependencies (assuming you have Node.js and npm/yarn installed):
+   ```bash
+   npm install
+   # or yarn install
+   ```
+4. Run the development server:
+   ```bash
+   npm run dev
+   # or yarn dev
+   ```
+
+The website should now be running at `http://localhost:3000`.
