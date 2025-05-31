@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        primary: "#18384D",
+        secondary: "#FFFFFE",
+      },
       typography: {
         DEFAULT: {
           css: {

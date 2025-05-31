@@ -1,11 +1,9 @@
-# Mikhail Speaks Website Template for Beginners
+# The Islamic Circle (USIC) at the University of Sheffield
 
-## Getting Started
+This website serves as a presentation for The Islamic Circle (USIC) at the University of Sheffield. Established in 1964, USIC aims to foster an Islamic environment that promotes growth among Muslim students.
 
-1. Download Cursor
-2. Clone repo: https://github.com/mwijanarko1/template
-3. Open the Composer (CMD + I) and make sure to select agent
-4. Copy the contents of the `PROMPT.txt` file and paste it into the Composer Agent
-5. Wait for Cursor Agent to generate the project
-6. Chat with the Cursor Agent and it will do everything for you
-7. When errors come up, just copy/paste or screenshot and paste to the agent and tell it to fix the error
+The site highlights USIC's core values: **Faith, Brotherhood & Sisterhood, and Knowledge**. It outlines their vision to create a space where Muslims can thrive spiritually, academically, and socially, encouraging members to become **Practicing, Practical, and Proactive** Muslims.
+
+The website also details **membership benefits**, such as exclusive discounts and early event access, and lists the variety of **events** USIC holds, including annual retreats, weekly circles, sports, and socials.
+
+Join USIC to experience true community and growth during your time at the University of Sheffield.

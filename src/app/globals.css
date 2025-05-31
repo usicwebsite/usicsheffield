@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,6 +11,61 @@
   .animation-delay-4000 {
     animation-delay: 4s;
   }
+}
+
+/* Typography styles */
+.font-heading {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.font-subheading {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.font-body {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+.section-title {
+  @apply font-heading text-3xl md:text-4xl lg:text-5xl font-bold;
+}
+
+.section-subtitle {
+  @apply font-subheading text-xl md:text-2xl font-semibold;
+}
+
+.section-description {
+  @apply font-body text-base md:text-lg leading-relaxed;
+}
+
+.heading-underline {
+  @apply block h-1.5 bg-white rounded-full mx-auto mt-4 mb-6 w-20;
+  background: linear-gradient(90deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.7) 100%);
+}
+
+/* Animation for hero section blobs */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
 }
 
 /* Custom scrollbar styles */
@@ -54,29 +111,34 @@ code {
 
 /* Base styles */
 body {
-  font-family: 'Geist', sans-serif;
+  font-family: 'Poppins', sans-serif;
   color: #1f2937;
   line-height: 1.5;
 }
 
 /* Prose styles for content */
 .prose h1 {
+  font-family: 'Playfair Display', serif;
   font-size: 2.25rem;
   font-weight: 700;
   margin-top: 2rem;
   margin-bottom: 1rem;
   color: #111827;
+  letter-spacing: -0.025em;
 }
 
 .prose h2 {
+  font-family: 'Playfair Display', serif;
   font-size: 1.875rem;
   font-weight: 700;
   margin-top: 1.75rem;
   margin-bottom: 0.75rem;
   color: #111827;
+  letter-spacing: -0.015em;
 }
 
 .prose h3 {
+  font-family: 'Playfair Display', serif;
   font-size: 1.5rem;
   font-weight: 600;
   margin-top: 1.5rem;
@@ -85,6 +147,7 @@ body {
 }
 
 .prose h4 {
+  font-family: 'Playfair Display', serif;
   font-size: 1.25rem;
   font-weight: 600;
   margin-top: 1.25rem;
@@ -93,8 +156,10 @@ body {
 }
 
 .prose p {
+  font-family: 'Poppins', sans-serif;
   margin-top: 1rem;
   margin-bottom: 1rem;
+  line-height: 1.7;
 }
 
 .prose a {

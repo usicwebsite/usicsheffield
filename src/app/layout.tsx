@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Initialize the Geist font with Latin subset
 const geistSans = Geist({
@@ -16,32 +18,32 @@ const geistMono = Geist_Mono({
 
 // Define metadata for better SEO
 export const metadata: Metadata = {
-  title: "Next.js Beginner Template",
-  description: "A beginner-friendly Next.js template with TailwindCSS and TypeScript",
-  keywords: ["Next.js", "React", "TailwindCSS", "TypeScript", "Template"],
-  authors: [{ name: "Created with Cursor Agent" }],
-  creator: "Cursor Agent",
-  publisher: "Cursor Agent",
+  title: "USIC - University of Sheffield Islamic Circle",
+  description: "The official website of the University of Sheffield Islamic Circle, providing social and welfare support for Muslim students.",
+  keywords: ["USIC", "University of Sheffield", "Islamic Circle", "Muslim Students", "Sheffield"],
+  authors: [{ name: "USIC" }],
+  creator: "USIC",
+  publisher: "USIC",
   openGraph: {
-    title: "Next.js Beginner Template",
-    description: "A beginner-friendly Next.js template with TailwindCSS and TypeScript",
-    url: "https://nextjs.org/",
-    siteName: "Next.js Beginner Template",
+    title: "USIC - University of Sheffield Islamic Circle",
+    description: "The official website of the University of Sheffield Islamic Circle, providing social and welfare support for Muslim students.",
+    url: "https://usic-sheffield.org/",
+    siteName: "USIC - University of Sheffield Islamic Circle",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Next.js Beginner Template",
+        alt: "USIC - University of Sheffield Islamic Circle",
       },
     ],
-    locale: "en_US",
+    locale: "en_GB",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Next.js Beginner Template",
-    description: "A beginner-friendly Next.js template with TailwindCSS and TypeScript",
+    title: "USIC - University of Sheffield Islamic Circle",
+    description: "The official website of the University of Sheffield Islamic Circle, providing social and welfare support for Muslim students.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -58,9 +60,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#18384D] text-gray-900 flex flex-col min-h-screen`}
       >
-        {children}
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );
