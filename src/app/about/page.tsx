@@ -5,36 +5,15 @@ export default function AboutPage() {
   return (
     <div className="bg-[#18384D] text-white min-h-screen">
       {/* Hero Section */}
-      <div className="text-center pt-16 pb-12 px-4">
+      <div className="text-center pt-16 pb-8 px-4">
         <h1 className="text-4xl md:text-5xl font-bold mb-2">THE ISLAMIC CIRCLE</h1>
-        <p className="text-sm text-blue-100 mb-12">The University of Sheffield&apos;s premier Islamic society since 1964</p>
-        
-        {/* Video Placeholder */}
-        <div className="relative max-w-4xl mx-auto aspect-video bg-[#0d2535] mb-8 flex items-center justify-center overflow-hidden">
-          <Image 
-            src="/images/1.png"
-            alt="USIC Community"
-            fill
-            className="object-cover opacity-80"
-          />
-          <div className="absolute inset-0 bg-black/30"></div>
-          <button className="w-16 h-16 rounded-full bg-blue-500/70 flex items-center justify-center relative z-10">
-            <span className="text-white text-xl">▶</span>
-          </button>
-        </div>
-        
-        {/* CTA Button */}
-        <div className="mt-4 mb-8">
-          <Link href="/membership" className="inline-block py-2 px-6 bg-blue-600 hover:bg-blue-700 transition text-sm uppercase tracking-wider font-medium rounded">
-            Join USIC
-          </Link>
-        </div>
+        <p className="text-sm text-blue-100">The University of Sheffield&apos;s premier Islamic society since 1964</p>
       </div>
 
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4">
         {/* What is USIC Section */}
-        <section className="mb-20 pt-12">
+        <section className="mb-20">
           <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase border-b border-blue-800 pb-2 text-white">
             WHAT IS THE ISLAMIC CIRCLE?
           </h2>

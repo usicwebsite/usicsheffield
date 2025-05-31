@@ -178,176 +178,151 @@ export default function EventsPage() {
     : allEvents.filter(event => event.category === categoryFilter);
 
   return (
-    <div className="bg-gradient-to-b from-[#18384D] to-[#102736] min-h-screen">
-      {/* Hero section */}
-      <div className="pt-16 px-4 text-center">
-        <h1 className="text-4xl md:text-5xl font-black mb-2 text-white uppercase tracking-tight">USIC EVENTS</h1>
-        <p className="text-lg max-w-3xl mx-auto text-blue-100 mb-16">
-          Join our events and activities throughout the year
-        </p>
+    <div className="bg-gradient-to-b from-[#18384D] to-[#102736] min-h-screen pt-16 px-4">
+      <div className="container mx-auto">
+        <h1 className="text-4xl md:text-5xl font-black mb-6 text-center text-white uppercase tracking-tight">OUR EVENTS & ACTIVITIES</h1>
         
-        {/* Video section */}
-        <div className="max-w-4xl mx-auto mb-16 relative bg-gray-900 aspect-video rounded-xl overflow-hidden shadow-2xl">
-          <Image 
-            src="/images/14.png" 
-            alt="USIC Events Video Thumbnail" 
-            fill 
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-            <button className="w-16 h-16 rounded-full flex items-center justify-center bg-[#18384D]/70 backdrop-blur-sm border-2 border-white/30 hover:bg-[#18384D] transition duration-300">
-              <svg viewBox="0 0 24 24" className="w-8 h-8 text-white" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </button>
-          </div>
+        {/* Link Tree Section */}
+        <div className="flex flex-col items-center space-y-4 mb-12">
+          <a 
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdM6Xs99V7oTUKkCDWqaVT69btgpHyK5rb-ahdjPI5iO0DoZw/viewform" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
+          >
+            Apply for EGM 25/26
+          </a>
+          <a 
+            href="https://docs.google.com/document/d/1YIbZpxLgHxGkir1YdB7QpOaKPw7BO3e8NlpN0mW287Q/edit?tab=t.0" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
+          >
+            View USIC Roles 25/26
+          </a>
         </div>
         
-        {/* Description text */}
-        <div className="max-w-4xl mx-auto text-left">
-          <div className="space-y-4 text-blue-100 mb-6">
-            <p>
-              At USIC, we organize a variety of events designed to enrich your university experience. Our events range from spiritual and educational gatherings to social and recreational activities.
-            </p>
-            <p>
-              Founded in 1964, USIC has a long tradition of bringing Muslim students together to strengthen their faith, build lasting friendships, and create a supportive community. Our events reflect our commitment to providing both spiritual growth and social connection.
-            </p>
-            <p>
-              Below you can find all our upcoming events with links to sign up. Most of our events require registration to help us plan accordingly, so please make sure to sign up in advance!
-            </p>
-          </div>
-          <div className="flex justify-center mt-8 mb-16">
-            <Link href="#event-list" className="px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider shadow-lg">
-              VIEW ALL EVENTS
-            </Link>
-          </div>
+        {/* Category filter buttons */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          <button
+            onClick={() => setCategoryFilter('All')}
+            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
+              categoryFilter === 'All'
+                ? 'bg-white text-[#18384D] shadow-lg'
+                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+            }`}
+          >
+            All Events
+          </button>
+          <button
+            onClick={() => setCategoryFilter('Weekly')}
+            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
+              categoryFilter === 'Weekly'
+                ? 'bg-white text-[#18384D] shadow-lg'
+                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+            }`}
+          >
+            Weekly Events
+          </button>
+          <button
+            onClick={() => setCategoryFilter('Annual')}
+            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
+              categoryFilter === 'Annual'
+                ? 'bg-white text-[#18384D] shadow-lg'
+                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+            }`}
+          >
+            Annual Events
+          </button>
+          <button
+            onClick={() => setCategoryFilter('Other')}
+            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
+              categoryFilter === 'Other'
+                ? 'bg-white text-[#18384D] shadow-lg'
+                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+            }`}
+          >
+            Other Events
+          </button>
         </div>
-      </div>
 
-      {/* Events list section */}
-      <div className="py-16 px-4" id="event-list">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-black mb-12 text-center text-white uppercase tracking-tight">OUR EVENTS & ACTIVITIES</h2>
-          
-          {/* Category filter buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <button
-              onClick={() => setCategoryFilter('All')}
-              className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-                categoryFilter === 'All'
-                  ? 'bg-white text-[#18384D] shadow-lg'
-                  : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
-              }`}
-            >
-              All Events
-            </button>
-            <button
-              onClick={() => setCategoryFilter('Weekly')}
-              className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-                categoryFilter === 'Weekly'
-                  ? 'bg-white text-[#18384D] shadow-lg'
-                  : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
-              }`}
-            >
-              Weekly Events
-            </button>
-            <button
-              onClick={() => setCategoryFilter('Annual')}
-              className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-                categoryFilter === 'Annual'
-                  ? 'bg-white text-[#18384D] shadow-lg'
-                  : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
-              }`}
-            >
-              Annual Events
-            </button>
-            <button
-              onClick={() => setCategoryFilter('Other')}
-              className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-                categoryFilter === 'Other'
-                  ? 'bg-white text-[#18384D] shadow-lg'
-                  : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
-              }`}
-            >
-              Other Events
-            </button>
-          </div>
+        {/* Brief description */}
+        {/* Removed the 'Most of our events require registration...' text */}
 
-          {/* Events grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredEvents.map((event) => (
-              <div key={event.id} className="bg-[#18384D] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition duration-300 border border-blue-200/10">
-                <div className="aspect-video bg-[#102736] relative">
-                  {event.image ? (
-                    <Image src={event.image} alt={event.title} width={640} height={360} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-[#102736] flex items-center justify-center">
-                      <span className="text-blue-300">No image</span>
-                    </div>
-                  )}
-                  <div className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
-                    {event.category}
+        {/* Events grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredEvents.map((event) => (
+            <div key={event.id} className="bg-[#18384D] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition duration-300 border border-blue-200/10">
+              <div className="aspect-video bg-[#102736] relative">
+                {event.image ? (
+                  <Image src={event.image} alt={event.title} width={640} height={360} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#102736] flex items-center justify-center">
+                    <span className="text-blue-300">No image</span>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">{event.title}</h3>
-                  <p className="text-blue-200 mb-4 text-sm">{event.description}</p>
-                  <div className="space-y-2 text-sm text-blue-200 mb-6">
-                    <div className="flex items-start">
-                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
-                      </svg>
-                      <span>{event.date}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
-                      </svg>
-                      <span>{event.time}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-                      </svg>
-                      <span>{event.location}</span>
-                    </div>
-                  </div>
-                  {event.signupLink && (
-                    <a 
-                      href={event.signupLink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
-                    >
-                      SIGN UP
-                    </a>
-                  )}
+                )}
+                <div className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
+                  {event.category}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* No events message */}
-          {filteredEvents.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-lg text-blue-200">No events found in this category.</p>
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">{event.title}</h3>
+                <p className="text-blue-200 mb-4 text-sm">{event.description}</p>
+                <div className="space-y-2 text-sm text-blue-200 mb-6">
+                  <div className="flex items-start">
+                    <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                    </svg>
+                    <span>{event.date}</span>
+                  </div>
+                  <div className="flex items-start">
+                    <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
+                    </svg>
+                    <span>{event.time}</span>
+                  </div>
+                  <div className="flex items-start">
+                    <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                    </svg>
+                    <span>{event.location}</span>
+                  </div>
+                </div>
+                {event.signupLink && (
+                  <a 
+                    href={event.signupLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
+                  >
+                    LEARN MORE
+                  </a>
+                )}
+              </div>
             </div>
-          )}
-          
-          {/* Contact section */}
-          <div className="text-center mt-16">
-            <h3 className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">SUGGEST AN EVENT</h3>
-            <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
-              We&apos;re always open to new ideas! If you have suggestions for events or activities, 
-              please get in touch with the USIC committee.
-            </p>
-            <a 
-              href="mailto:usic@sheffield.ac.uk" 
-              className="inline-block bg-white text-[#18384D] hover:bg-blue-50 px-6 py-3 rounded-full font-semibold transition duration-300 uppercase text-sm tracking-wider shadow-lg"
-            >
-              CONTACT US
-            </a>
+          ))}
+        </div>
+
+        {/* No events message */}
+        {filteredEvents.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-lg text-blue-200">No events found in this category.</p>
           </div>
+        )}
+        
+        {/* Contact section */}
+        <div className="text-center mt-16 mb-12">
+          <h3 className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">SUGGEST AN EVENT</h3>
+          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
+            We&apos;re always open to new ideas! If you have suggestions for events or activities, 
+            please get in touch with the USIC committee.
+          </p>
+          <a 
+            href="mailto:usic@sheffield.ac.uk" 
+            className="inline-block bg-white text-[#18384D] hover:bg-blue-50 px-6 py-3 rounded-full font-semibold transition duration-300 uppercase text-sm tracking-wider shadow-lg"
+          >
+            CONTACT US
+          </a>
         </div>
       </div>
     </div>

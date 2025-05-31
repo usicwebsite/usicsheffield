@@ -1,7 +1,7 @@
 "use client";
 
-import Link from 'next/link';
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 
 export default function MembershipSection() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,10 +48,11 @@ export default function MembershipSection() {
               <>
                 {/* Thumbnail with play button */}
                 <div className="absolute inset-0 bg-black">
-                  <img 
-                    src="/images/12.png" 
-                    alt="USIC Membership Video" 
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                  <Image
+                    src="/images/12.png"
+                    alt="USIC Membership Video Thumbnail"
+                    fill
+                    className="object-cover opacity-80"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#18384D]/50 to-[#18384D] z-10"></div>
                 </div>

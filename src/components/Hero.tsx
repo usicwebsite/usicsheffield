@@ -99,8 +99,10 @@ export default function Hero() {
         </p>
 
         <p className="font-body text-lg sm:text-xl mb-10 text-white/90 max-w-2xl italic">
-          "A sanctuary from the trials of university life."
+          &apos;A sanctuary from the trials of university life.&apos;
         </p>
+
+        <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">Join The Islamic Circle for a vibrant community, spiritual growth, and unforgettable experiences. Don&apos;t miss out on <span className="text-white font-semibold">Sheffield&apos;s premier Islamic society!</span></p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
