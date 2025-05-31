@@ -168,13 +168,32 @@ export default function EventsPage() {
     }
   ];
 
-  // State for category filter
+  // State for category filter and modal
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Weekly' | 'Annual' | 'Other'>('All');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   // Filter events based on selected category
   const filteredEvents = categoryFilter === 'All' 
     ? allEvents 
     : allEvents.filter(event => event.category === categoryFilter);
+
+  // Modal handlers
+  const openModal = (event: Event) => {
+    setSelectedEvent(event);
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  };
+
+  const closeModal = () => {
+    setSelectedEvent(null);
+    document.body.style.overflow = 'unset'; // Restore scrolling
+  };
+
+  // Handle click outside modal to close
+  const handleModalBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
 
   return (
     <div className="bg-gradient-to-b from-[#18384D] to-[#102736] min-h-screen pt-16 px-4">
@@ -245,13 +264,14 @@ export default function EventsPage() {
           </button>
         </div>
 
-        {/* Brief description */}
-        {/* Removed the 'Most of our events require registration...' text */}
-
         {/* Events grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredEvents.map((event) => (
-            <div key={event.id} className="bg-[#18384D] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition duration-300 border border-blue-200/10">
+            <div 
+              key={event.id} 
+              className="bg-[#18384D] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition duration-300 border border-blue-200/10 cursor-pointer"
+              onClick={() => openModal(event)}
+            >
               <div className="aspect-video bg-[#102736] relative">
                 {event.image ? (
                   <Image src={event.image} alt={event.title} width={640} height={360} className="w-full h-full object-cover" />
@@ -288,14 +308,15 @@ export default function EventsPage() {
                   </div>
                 </div>
                 {event.signupLink && (
-                  <a 
-                    href={event.signupLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking button
+                      openModal(event);
+                    }}
                     className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
                     LEARN MORE
-                  </a>
+                  </button>
                 )}
               </div>
             </div>
@@ -324,6 +345,125 @@ export default function EventsPage() {
           </a>
         </div>
       </div>
+
+      {/* Modal */}
+      {selectedEvent && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+          onClick={handleModalBackdropClick}
+        >
+          <div className="bg-gradient-to-b from-[#18384D] to-[#102736] rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-blue-200/20 shadow-2xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">{selectedEvent.title}</h2>
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
+                    {selectedEvent.category}
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={closeModal}
+                className="text-white hover:text-blue-200 transition duration-200 p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {/* Event Image */}
+              {selectedEvent.image && (
+                <div className="mb-6 rounded-lg overflow-hidden">
+                  <Image 
+                    src={selectedEvent.image} 
+                    alt={selectedEvent.title} 
+                    width={800} 
+                    height={400} 
+                    className="w-full h-64 md:h-80 object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Event Details */}
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                    </svg>
+                    <div>
+                      <h4 className="text-white font-semibold mb-1">Date</h4>
+                      <p className="text-blue-200">{selectedEvent.date}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
+                    </svg>
+                    <div>
+                      <h4 className="text-white font-semibold mb-1">Time</h4>
+                      <p className="text-blue-200">{selectedEvent.time}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                    </svg>
+                    <div>
+                      <h4 className="text-white font-semibold mb-1">Location</h4>
+                      <p className="text-blue-200">{selectedEvent.location}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path>
+                    </svg>
+                    <div>
+                      <h4 className="text-white font-semibold mb-1">Category</h4>
+                      <p className="text-blue-200">{selectedEvent.category} Event</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Description */}
+              <div className="mb-6">
+                <h4 className="text-white font-semibold mb-3 text-lg uppercase tracking-tight">About This Event</h4>
+                <p className="text-blue-100 leading-relaxed text-base">{selectedEvent.description}</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {selectedEvent.signupLink && (
+                  <a 
+                    href={selectedEvent.signupLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex-1 px-6 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-sm tracking-wider shadow-lg"
+                  >
+                    SIGN UP NOW
+                  </a>
+                )}
+                <button 
+                  onClick={closeModal}
+                  className="flex-1 px-6 py-3 bg-[#18384D] text-white hover:bg-[#234b64] transition duration-300 font-semibold rounded-full border border-blue-200/30 uppercase text-sm tracking-wider"
+                >
+                  CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
