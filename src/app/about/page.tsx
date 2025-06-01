@@ -3,10 +3,10 @@ import Image from 'next/image';
 
 export default function AboutPage() {
   return (
-    <div className="bg-[#18384D] text-white min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       {/* Hero Section */}
       <div className="text-center pt-16 pb-8 px-4">
-        <h1 className="text-4xl md:text-5xl font-bold mb-2">THE ISLAMIC CIRCLE</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">THE ISLAMIC CIRCLE</h1>
         <p className="text-sm text-blue-100">The University of Sheffield&apos;s premier Islamic society since 1964</p>
       </div>
 
@@ -20,7 +20,7 @@ export default function AboutPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0d2535] overflow-hidden rounded-lg shadow-md">
+            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
                 src="/images/6.png"
                 alt="USIC Community"
@@ -92,7 +92,7 @@ export default function AboutPage() {
             </div>
             
             {/* Right column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0d2535] overflow-hidden rounded-lg shadow-md">
+            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
                 src="/images/5.png"
                 alt="USIC Values"
@@ -112,7 +112,7 @@ export default function AboutPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0d2535] overflow-hidden rounded-lg shadow-md">
+            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
                 src="/images/7.png"
                 alt="USIC Vision"
@@ -215,7 +215,7 @@ export default function AboutPage() {
             </div>
             
             {/* Right column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0d2535] overflow-hidden rounded-lg shadow-md">
+            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
                 src="/images/8.png"
                 alt="USIC Membership"
@@ -235,7 +235,7 @@ export default function AboutPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0d2535] overflow-hidden rounded-lg shadow-md">
+            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
                 src="/images/9.png"
                 alt="USIC Events"
@@ -289,7 +289,7 @@ export default function AboutPage() {
         </section>
         
         {/* Call to Action */}
-        <section className="mb-12 bg-[#0d2535] text-white p-12 rounded-lg text-center">
+        <section className="mb-12 bg-[#0F1E2C] text-white p-12 rounded-lg text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Join Our Community Today</h2>
           <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
             Be part of USIC and join us in our mission to create a supportive environment for Muslim students at the University of Sheffield.

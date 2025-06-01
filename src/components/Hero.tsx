@@ -76,7 +76,7 @@ export default function Hero() {
 
       {/* Overlay gradient */}
       <div 
-        className="absolute inset-0 z-10 bg-gradient-to-b from-[#18384D]/60 via-[#18384D]/40 to-[#18384D]/80"
+        className="absolute inset-0 z-10 bg-gradient-to-b from-[#0A1219]/60 via-[#0A1219]/40 to-[#18384D]/80"
       ></div>
 
       {/* Content */}

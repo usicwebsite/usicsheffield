@@ -28,11 +28,11 @@ export default function BlogPage() {
   ];
 
   return (
-    <div className="bg-[#18384D] text-white min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       {/* Hero section */}
-      <div className="bg-[#18384D] text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">USIC STORIES</h1>
+      <div className="py-16 relative overflow-hidden">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">USIC STORIES</h1>
           <div className="heading-underline"></div>
           <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8">
             Stories and reflections from our community members sharing their journey of faith and growth.
@@ -44,7 +44,7 @@ export default function BlogPage() {
       <div className="container mx-auto px-4 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {blogPosts.map((post) => (
-            <div key={post.id} className="relative group overflow-hidden rounded-lg shadow-lg bg-[#122a3a] transition-all duration-300 hover:shadow-xl">
+            <div key={post.id} className="relative group overflow-hidden rounded-lg shadow-lg bg-[#0F1E2C] transition-all duration-300 hover:shadow-xl">
               {/* Post image */}
               <div className="relative h-[300px] overflow-hidden">
                 <Image 

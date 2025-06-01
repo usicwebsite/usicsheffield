@@ -180,21 +180,21 @@ export default function EventsSection() {
   }, []);
 
   return (
-    <section className="py-16 bg-[#18384D] text-white">
+    <section className="py-16 bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       {/* Title section with container */}
       <div className="container mx-auto px-4 mb-16">
         <div className="text-center relative">
           {/* Background outline text */}
-          <div className="absolute w-full text-center opacity-10 pointer-events-none">
-            <h2 className="font-bold text-[7rem] md:text-[10rem] tracking-tight uppercase">OUR EVENTS</h2>
+          <div className="absolute w-full text-center opacity-10 pointer-events-none overflow-hidden">
+            <h2 className="font-bold text-[4rem] sm:text-[7rem] md:text-[10rem] tracking-tight uppercase">OUR EVENTS</h2>
           </div>
           
           {/* Foreground text */}
-          <h2 className="section-title text-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
+          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-3xl sm:text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
             OUR EVENTS
           </h2>
           
-          <p className="text-lg md:text-xl text-white/70 mt-4 mb-12 font-light max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-blue-100 mt-4 mb-12 font-light max-w-2xl mx-auto px-4">
             Who said university life as a Muslim is boring?
             <span className="font-bold block mt-2">Be a part of a brotherhood and sisterhood like no other.</span>
           </p>

@@ -122,7 +122,7 @@ export default function AboutSection() {
   };
 
   return (
-    <section className="py-16 bg-[#18384D] text-white">
+    <section className="py-16 bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 relative">
           {/* Background outline text (similar to OUR MEMBERS?) */}
@@ -131,7 +131,7 @@ export default function AboutSection() {
           </div>
           
           {/* Foreground text (like the "WHO ARE OUR MEMBERS?") */}
-          <h2 className="section-title text-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
+          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
             WHO WE ARE
           </h2>
           

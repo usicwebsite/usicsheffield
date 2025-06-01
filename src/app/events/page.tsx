@@ -196,9 +196,9 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#18384D] to-[#102736] min-h-screen pt-16 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white pt-16 px-4">
       <div className="container mx-auto">
-        <h1 className="text-4xl md:text-5xl font-black mb-6 text-center text-white uppercase tracking-tight">OUR EVENTS & ACTIVITIES</h1>
+        <h1 className="text-4xl md:text-5xl font-black mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white uppercase tracking-tight">OUR EVENTS & ACTIVITIES</h1>
         
         {/* Link Tree Section */}
         <div className="flex flex-col items-center space-y-4 mb-12">
@@ -227,7 +227,7 @@ export default function EventsPage() {
             className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
               categoryFilter === 'All'
                 ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
             }`}
           >
             All Events
@@ -237,7 +237,7 @@ export default function EventsPage() {
             className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
               categoryFilter === 'Weekly'
                 ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
             }`}
           >
             Weekly Events
@@ -247,7 +247,7 @@ export default function EventsPage() {
             className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
               categoryFilter === 'Annual'
                 ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
             }`}
           >
             Annual Events
@@ -257,7 +257,7 @@ export default function EventsPage() {
             className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
               categoryFilter === 'Other'
                 ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#18384D] text-blue-100 hover:bg-[#234b64] border border-blue-200/30'
+                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
             }`}
           >
             Other Events
@@ -265,11 +265,11 @@ export default function EventsPage() {
         </div>
 
         {/* Events grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {filteredEvents.map((event) => (
             <div 
               key={event.id} 
-              className="bg-[#18384D] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition duration-300 border border-blue-200/10 cursor-pointer"
+              className="bg-[#0F1E2C] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-[1.02] cursor-pointer"
               onClick={() => openModal(event)}
             >
               <div className="aspect-video bg-[#102736] relative">
@@ -349,10 +349,10 @@ export default function EventsPage() {
       {/* Modal */}
       {selectedEvent && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto"
           onClick={handleModalBackdropClick}
         >
-          <div className="bg-gradient-to-b from-[#18384D] to-[#102736] rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-blue-200/20 shadow-2xl">
+          <div className="bg-[#0F1E2C] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
             <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-start">
               <div className="flex-1">

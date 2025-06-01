@@ -20,7 +20,7 @@ export default function MembershipSection() {
   };
 
   return (
-    <section className="py-16 bg-[#18384D] text-white">
+    <section className="py-16 bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 relative">
           {/* Background outline text */}
@@ -29,11 +29,11 @@ export default function MembershipSection() {
           </div>
           
           {/* Foreground text */}
-          <h2 className="section-title text-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
+          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
             BECOME A MEMBER
           </h2>
           
-          <p className="text-xl md:text-2xl text-white/70 mt-8 font-light max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-blue-100 mt-8 font-light max-w-3xl mx-auto">
             Join our community of believers.
           </p>
         </div>
@@ -41,7 +41,7 @@ export default function MembershipSection() {
         {/* Clickable Video Card - Sized like the slideshow */}
         <div className="relative max-w-5xl mx-auto overflow-hidden">
           <div 
-            className={`relative w-full h-[500px] md:h-[550px] bg-[#18384D] rounded-xl overflow-hidden border border-[#2c5a7a] ${!isPlaying ? 'cursor-pointer group' : ''}`}
+            className={`relative w-full h-[500px] md:h-[550px] bg-[#0F1E2C] rounded-xl overflow-hidden border border-[#2c5a7a] ${!isPlaying ? 'cursor-pointer group' : ''}`}
             onClick={!isPlaying ? handleVideoClick : undefined}
           >
             {!isPlaying ? (
@@ -54,7 +54,7 @@ export default function MembershipSection() {
                     fill
                     className="object-cover opacity-80"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#18384D]/50 to-[#18384D] z-10"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A1219]/50 to-[#18384D] z-10"></div>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center z-20">
                   <div className="w-20 h-20 rounded-full bg-blue-500/80 flex items-center justify-center group-hover:bg-blue-500 group-hover:scale-110 transition-all duration-300">
@@ -96,7 +96,7 @@ export default function MembershipSection() {
 
         {/* Large CTA Button */}
         <div className="text-center mt-12">
-          <p className="text-lg md:text-xl text-white/70 mb-8 font-light max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-blue-100 mb-8 font-light max-w-2xl mx-auto">
             The path to brotherhood and spiritual growth
             <span className="font-bold block mt-2">begins with a single step.</span>
           </p>
@@ -105,7 +105,7 @@ export default function MembershipSection() {
             href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="inline-block bg-white text-[#18384D] hover:bg-white/90 px-10 py-4 rounded-md font-bold transition duration-300 text-lg"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-10 py-4 rounded-full font-bold transition-all duration-300 transform hover:scale-105 text-lg"
           >
             JOIN USIC NOW
           </a>
