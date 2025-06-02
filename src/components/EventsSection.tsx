@@ -78,103 +78,108 @@ export default function EventsSection() {
     const topRow = topRowRef.current;
     const bottomRow = bottomRowRef.current;
     
-    if (!topRow || !bottomRow) return;
+    if (!topRow || !bottomRow) {
+      return;
+    }
     
-    // Set initial position for top row to start at the beginning
-    topRow.scrollLeft = 0;
+    // Speed in pixels per frame
+    const SCROLL_SPEED = 1;
     
-    // Set initial position for bottom row to appear to scroll from right to left
-    bottomRow.scrollLeft = bottomRow.scrollWidth - bottomRow.clientWidth;
-    
-    // Use requestAnimationFrame for smoother scrolling
-    let topLastTimestamp = 0;
-    let bottomLastTimestamp = 0;
-    
-    // Speed in pixels per second - will be converted to pixels per frame in the animation
-    const SCROLL_SPEED = 10; 
+    let topAnimationFrame: number;
+    let bottomAnimationFrame: number;
+    let isTopPaused = false;
+    let isBottomPaused = false;
     
     // Top row animation (left to right)
-    const animateTopRow = (timestamp: number) => {
-      if (!topRow) return;
+    const animateTopRow = () => {
+      if (!topRow) {
+        return;
+      }
       
-      if (!topLastTimestamp) topLastTimestamp = timestamp;
-      const elapsed = timestamp - topLastTimestamp;
+      if (isTopPaused) {
+        topAnimationFrame = requestAnimationFrame(animateTopRow);
+        return;
+      }
       
-      // Calculate how many pixels to move this frame
-      const pixelsToMove = (SCROLL_SPEED * elapsed) / 1000;
+      topRow.scrollLeft += SCROLL_SPEED;
       
-      if (pixelsToMove > 0) {
-        topRow.scrollLeft += pixelsToMove;
-        topLastTimestamp = timestamp;
-        
-        // Reset when reaching the end
-        if (topRow.scrollLeft >= (topRow.scrollWidth - topRow.clientWidth)) {
-          topRow.scrollLeft = 0;
-        }
+      // Reset when reaching the end (accounting for the tripled content)
+      const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
+      if (topRow.scrollLeft >= maxScroll) {
+        topRow.scrollLeft = 0;
       }
       
       topAnimationFrame = requestAnimationFrame(animateTopRow);
     };
     
     // Bottom row animation (right to left)
-    const animateBottomRow = (timestamp: number) => {
-      if (!bottomRow) return;
+    const animateBottomRow = () => {
+      if (!bottomRow) {
+        return;
+      }
       
-      if (!bottomLastTimestamp) bottomLastTimestamp = timestamp;
-      const elapsed = timestamp - bottomLastTimestamp;
+      if (isBottomPaused) {
+        bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
+        return;
+      }
       
-      // Calculate how many pixels to move this frame
-      const pixelsToMove = (SCROLL_SPEED * elapsed) / 1000;
+      bottomRow.scrollLeft -= SCROLL_SPEED;
       
-      if (pixelsToMove > 0) {
-        bottomRow.scrollLeft -= pixelsToMove;
-        bottomLastTimestamp = timestamp;
-        
-        // Reset when reaching the beginning
-        if (bottomRow.scrollLeft <= 0) {
-          bottomRow.scrollLeft = bottomRow.scrollWidth - bottomRow.clientWidth;
-        }
+      // Reset when reaching the beginning
+      if (bottomRow.scrollLeft <= 0) {
+        const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
+        bottomRow.scrollLeft = maxScroll;
       }
       
       bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
     };
     
-    let topAnimationFrame = requestAnimationFrame(animateTopRow);
-    let bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
-    
-    // Pause scrolling when hovering
-    const pauseScrolling = () => {
-      cancelAnimationFrame(topAnimationFrame);
-      cancelAnimationFrame(bottomAnimationFrame);
-    };
-    
-    // Resume scrolling
-    const resumeScrolling = () => {
-      // Reset timestamps to avoid jumps
-      topLastTimestamp = 0;
-      bottomLastTimestamp = 0;
+    // Initialize positions with delay to ensure DOM is ready
+    setTimeout(() => {
+      topRow.scrollLeft = 0;
+      const maxScroll = bottomRow.scrollWidth / 3;
+      bottomRow.scrollLeft = maxScroll;
       
+      // Start animations
       topAnimationFrame = requestAnimationFrame(animateTopRow);
       bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
+    }, 100);
+    
+    // Pause/resume functions for top row
+    const pauseTopScrolling = () => {
+      isTopPaused = true;
     };
     
-    topRow.addEventListener('mouseenter', pauseScrolling);
-    bottomRow.addEventListener('mouseenter', pauseScrolling);
+    const resumeTopScrolling = () => {
+      isTopPaused = false;
+    };
     
-    topRow.addEventListener('mouseleave', resumeScrolling);
-    bottomRow.addEventListener('mouseleave', resumeScrolling);
+    // Pause/resume functions for bottom row
+    const pauseBottomScrolling = () => {
+      isBottomPaused = true;
+    };
+    
+    const resumeBottomScrolling = () => {
+      isBottomPaused = false;
+    };
+    
+    // Add event listeners
+    topRow.addEventListener('mouseenter', pauseTopScrolling);
+    topRow.addEventListener('mouseleave', resumeTopScrolling);
+    bottomRow.addEventListener('mouseenter', pauseBottomScrolling);
+    bottomRow.addEventListener('mouseleave', resumeBottomScrolling);
     
     return () => {
       cancelAnimationFrame(topAnimationFrame);
       cancelAnimationFrame(bottomAnimationFrame);
       
       if (topRow) {
-        topRow.removeEventListener('mouseenter', pauseScrolling);
-        topRow.removeEventListener('mouseleave', resumeScrolling);
+        topRow.removeEventListener('mouseenter', pauseTopScrolling);
+        topRow.removeEventListener('mouseleave', resumeTopScrolling);
       }
       if (bottomRow) {
-        bottomRow.removeEventListener('mouseenter', pauseScrolling);
-        bottomRow.removeEventListener('mouseleave', resumeScrolling);
+        bottomRow.removeEventListener('mouseenter', pauseBottomScrolling);
+        bottomRow.removeEventListener('mouseleave', resumeBottomScrolling);
       }
     };
   }, []);
@@ -206,9 +211,10 @@ export default function EventsSection() {
         {/* Top row - scrolls right */}
         <div 
           ref={topRowRef}
-          className="flex overflow-x-hidden whitespace-nowrap mb-1"
+          className="flex overflow-x-auto whitespace-nowrap mb-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {/* Duplicate the images for continuous scrolling effect */}
+          {/* Triple the images for continuous scrolling effect */}
           {[...eventImages, ...eventImages, ...eventImages].map((image, index) => (
             <div 
               key={`top-${image.id}-${index}`} 
@@ -232,10 +238,11 @@ export default function EventsSection() {
         {/* Bottom row - scrolls left */}
         <div 
           ref={bottomRowRef}
-          className="flex overflow-x-hidden whitespace-nowrap"
+          className="flex overflow-x-auto whitespace-nowrap"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {/* Duplicate the images in reverse order for continuous scrolling effect */}
-          {[...eventImages.slice().reverse(), ...eventImages.slice().reverse(), ...eventImages.slice().reverse()].map((image, index) => (
+          {/* Triple the images for continuous scrolling effect */}
+          {[...eventImages, ...eventImages, ...eventImages].map((image, index) => (
             <div 
               key={`bottom-${image.id}-${index}`} 
               className="inline-block w-[350px] h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"

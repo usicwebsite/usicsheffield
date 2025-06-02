@@ -4,19 +4,21 @@ import Image from 'next/image';
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
-      {/* Hero Section */}
-      <div className="text-center pt-16 pb-8 px-4">
-        <h1 className="text-4xl md:text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">THE ISLAMIC CIRCLE</h1>
-        <p className="text-sm text-blue-100">The University of Sheffield&apos;s premier Islamic society since 1964</p>
+      {/* Hero section */}
+      <div className="py-16 relative overflow-hidden">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">THE ISLAMIC CIRCLE</h1>
+          <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8">
+            The University of Sheffield&apos;s premier Islamic society since 1964
+          </p>
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4">
         {/* What is USIC Section */}
         <section className="mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase border-b border-blue-800 pb-2 text-white">
-            WHAT IS THE ISLAMIC CIRCLE?
-          </h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">WHAT IS THE ISLAMIC CIRCLE?</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Image */}
@@ -32,7 +34,7 @@ export default function AboutPage() {
             
             {/* Right column - Text */}
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
                 99.9% of students will never experience the power of Islamic Brotherhood and Sisterhood.
               </h3>
               
@@ -61,14 +63,12 @@ export default function AboutPage() {
         
         {/* Our Values Section */}
         <section className="mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase border-b border-blue-800 pb-2 text-white">
-            OUR VALUES
-          </h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">OUR VALUES</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Text (Reverse order) */}
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
                 Values that define our identity and guide our actions.
               </h3>
               
@@ -106,9 +106,7 @@ export default function AboutPage() {
         
         {/* Our Vision Section */}
         <section className="mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase border-b border-blue-800 pb-2 text-white">
-            OUR VISION
-          </h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">OUR VISION</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Image */}
@@ -124,7 +122,7 @@ export default function AboutPage() {
             
             {/* Right column - Text */}
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
                 To foster an Islamic environment that promotes growth.
               </h3>
               
@@ -170,14 +168,12 @@ export default function AboutPage() {
         
         {/* Membership Benefits Section */}
         <section className="mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase border-b border-blue-800 pb-2 text-white">
-            MEMBERSHIP BENEFITS
-          </h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">MEMBERSHIP BENEFITS</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Text (Reverse order) */}
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
                 Join the 0.1% who experience true community.
               </h3>
               
@@ -229,9 +225,7 @@ export default function AboutPage() {
         
         {/* Events We Hold Section */}
         <section className="mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 uppercase border-b border-blue-800 pb-2 text-white">
-            EVENTS WE HOLD
-          </h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">EVENTS WE HOLD</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
             {/* Left column - Image */}
@@ -247,7 +241,7 @@ export default function AboutPage() {
             
             {/* Right column - Text */}
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
                 Activities that enrich your university experience.
               </h3>
               
@@ -290,7 +284,7 @@ export default function AboutPage() {
         
         {/* Call to Action */}
         <section className="mb-12 bg-[#0F1E2C] text-white p-12 rounded-lg text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Join Our Community Today</h2>
+          <h2 className="font-heading text-3xl font-bold mb-6">Join Our Community Today</h2>
           <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
             Be part of USIC and join us in our mission to create a supportive environment for Muslim students at the University of Sheffield.
           </p>

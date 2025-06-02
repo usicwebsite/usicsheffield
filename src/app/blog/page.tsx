@@ -32,16 +32,17 @@ export default function BlogPage() {
       {/* Hero section */}
       <div className="py-16 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">USIC STORIES</h1>
-          <div className="heading-underline"></div>
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">USIC STORIES</h1>
           <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8">
-            Stories and reflections from our community members sharing their journey of faith and growth.
+            Reflections, insights, and experiences from our community
           </p>
         </div>
       </div>
 
       {/* Featured posts grid */}
       <div className="container mx-auto px-4 pb-6">
+        <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">FEATURED STORIES</h2>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {blogPosts.map((post) => (
             <div key={post.id} className="relative group overflow-hidden rounded-lg shadow-lg bg-[#0F1E2C] transition-all duration-300 hover:shadow-xl">

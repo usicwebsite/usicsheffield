@@ -67,18 +67,18 @@ export default function SponsorsPage() {
       {/* Hero section */}
       <div className="py-16 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 relative inline-block">
-            Our Partners
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-gray-400 to-white rounded-full"></div>
-          </h1>
-          <p className="text-xl max-w-3xl mx-auto text-gray-300 mb-8">
-            Each partner focuses on different aspects of community support and student services.
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">OUR SPONSORS</h1>
+          <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8">
+            Each sponsor focuses on different aspects of community support and student services
           </p>
         </div>
       </div>
 
       {/* Main content */}
       <div className="container mx-auto px-4 py-12 relative">
+        {/* Current partners section */}
+        <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">CURRENT PARTNERS</h2>
+        
         {/* Slideshow container with relative positioning */}
         <div className="max-w-6xl mx-auto relative h-[36rem] md:h-[30rem]">
           {/* Left arrow navigation indicator - positioned higher */}
@@ -174,10 +174,7 @@ export default function SponsorsPage() {
         {/* Become a partner section */}
         <div className="mt-24 max-w-3xl mx-auto text-center relative">
           <div className="absolute inset-0 blur-3xl -z-10 bg-gradient-to-r from-gray-900/20 to-slate-900/20 rounded-full transform -translate-y-1/4"></div>
-          <h3 className="text-3xl font-bold mb-6 relative inline-block">
-            Become a Partner
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-gray-400 to-white rounded-full"></div>
-          </h3>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">BECOME A PARTNER</h2>
           <p className="text-lg text-gray-300 mb-8">
             Join our network of partners and connect with our community. Contact us to learn about partnership opportunities.
           </p>
