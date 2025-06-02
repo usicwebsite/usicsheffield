@@ -201,38 +201,44 @@ export default function EventsPage() {
       <div className="py-16 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">OUR EVENTS & ACTIVITIES</h1>
-          <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8">
-            Join us for weekly circles, annual retreats, and other engaging activities
+          <p className="text-xl max-w-3xl mx-auto text-blue-100">
+            Sign up for our events and activities using the links below
           </p>
+          
+          {/* Link Tree Section - moved inside hero */}
+          <div className="flex flex-col items-center space-y-4 mt-6">
+            <a 
+              href="https://docs.google.com/forms/d/e/1FAIpQLSdM6Xs99V7oTUKkCDWqaVT69btgpHyK5rb-ahdjPI5iO0DoZw/viewform" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
+            >
+              Apply for EGM 25/26
+            </a>
+            <a 
+              href="https://docs.google.com/document/d/1YIbZpxLgHxGkir1YdB7QpOaKPw7BO3e8NlpN0mW287Q/edit?tab=t.0" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
+            >
+              View USIC Roles 25/26
+            </a>
+          </div>
         </div>
       </div>
       
       {/* Main content */}
       <div className="container mx-auto px-4">
-        {/* Link Tree Section */}
-        <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">GET INVOLVED</h2>
-        
-        <div className="flex flex-col items-center space-y-4 mb-12">
-          <a 
-            href="https://docs.google.com/forms/d/e/1FAIpQLSdM6Xs99V7oTUKkCDWqaVT69btgpHyK5rb-ahdjPI5iO0DoZw/viewform" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
-          >
-            Apply for EGM 25/26
-          </a>
-          <a 
-            href="https://docs.google.com/document/d/1YIbZpxLgHxGkir1YdB7QpOaKPw7BO3e8NlpN0mW287Q/edit?tab=t.0" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
-          >
-            View USIC Roles 25/26
-          </a>
+        {/* Separator */}
+        <div className="flex justify-center mb-16">
+          <div className="w-16 h-1 bg-white/70"></div>
         </div>
         
         {/* Events section */}
-        <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">UPCOMING EVENTS</h2>
+        <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-center">OUR EVENTS</h2>
+        <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-12 text-center">
+          Discover our vibrant calendar of events that bring our community together year-round
+        </p>
         
         {/* Category filter buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-12">
