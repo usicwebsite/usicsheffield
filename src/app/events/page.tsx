@@ -198,7 +198,7 @@ export default function EventsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       {/* Hero section */}
-      <div className="py-16 relative overflow-hidden">
+      <div className="pt-16 pb-8 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">OUR EVENTS & ACTIVITIES</h1>
           <p className="text-xl max-w-3xl mx-auto text-blue-100">
@@ -230,15 +230,17 @@ export default function EventsPage() {
       {/* Main content */}
       <div className="container mx-auto px-4">
         {/* Separator */}
-        <div className="flex justify-center mb-16">
+        <div className="py-8 flex justify-center">
           <div className="w-16 h-1 bg-white/70"></div>
         </div>
         
         {/* Events section */}
-        <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-center">OUR EVENTS</h2>
-        <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-12 text-center">
-          Discover our vibrant calendar of events that bring our community together year-round
-        </p>
+        <div className="pt-8">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 text-center">OUR EVENTS</h2>
+          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-12 text-center">
+            Discover our vibrant calendar of events that bring our community together year-round
+          </p>
+        </div>
         
         {/* Category filter buttons */}
         <div className="flex flex-wrap justify-center gap-4 mb-12">
