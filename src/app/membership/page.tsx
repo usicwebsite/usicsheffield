@@ -8,9 +8,9 @@ export default function MembershipPage() {
           <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8">
             Join our community and unlock exclusive benefits
           </p>
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
+          <a href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
             Become a Member
-          </button>
+          </a>
         </div>
       </div>
 
@@ -66,9 +66,9 @@ export default function MembershipPage() {
           <p className="text-xl text-blue-100 mb-8">
             Join hundreds of students already enjoying exclusive benefits and unforgettable experiences.
           </p>
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-10 rounded-full transition-all duration-300 transform hover:scale-105">
+          <a href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-10 rounded-full transition-all duration-300 transform hover:scale-105">
             Sign Up Now
-          </button>
+          </a>
         </div>
       </div>
 

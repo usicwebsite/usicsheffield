@@ -1,28 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-
 export default function AboutSection() {
-  const [activeIndex, setActiveIndex] = useState(1); // Start with middle card active
-  const totalCards = 3;
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const autoRotateInterval = 5000; // Auto rotate every 5 seconds
-  
-  // Set up auto-rotation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      nextCard();
-    }, autoRotateInterval);
-    
-    return () => clearInterval(interval); // Clean up on unmount
-  }, [activeIndex]); // Reset the timer when activeIndex changes
-  
-  // Pause auto-rotation when user interacts with carousel
-  const pauseAutoRotation = () => {
-    // This function is attached to user interactions
-    // The timer will restart after the next activeIndex change
-  };
-
   // Card content data
   const cards = [
     {
@@ -111,26 +89,17 @@ export default function AboutSection() {
       )
     }
   ];
-  
-  // Handle next/prev card selection
-  const nextCard = () => {
-    setActiveIndex((prev) => (prev + 1) % totalCards);
-  };
-  
-  const prevSlide = () => {
-    setActiveIndex((prev) => (prev - 1 + totalCards) % totalCards);
-  };
 
   return (
     <section className="py-16 bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 relative">
-          {/* Background outline text (similar to OUR MEMBERS?) */}
+          {/* Background outline text */}
           <div className="absolute w-full text-center opacity-10 pointer-events-none">
             <h2 className="font-bold text-[7rem] md:text-[10rem] tracking-tight uppercase">WHO WE ARE</h2>
           </div>
           
-          {/* Foreground text (like the "WHO ARE OUR MEMBERS?") */}
+          {/* Foreground text */}
           <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
             WHO WE ARE
           </h2>
@@ -140,116 +109,38 @@ export default function AboutSection() {
           </p>
         </div>
 
-        {/* Carousel container */}
-        <div className="relative mt-12 px-4 overflow-hidden">
-          {/* Carousel navigation */}
-          <div className="absolute top-1/2 left-0 -translate-y-1/2 z-20 w-full flex justify-between px-4">
-            <button 
-              onClick={() => {
-                prevSlide();
-                pauseAutoRotation();
-              }}
-              className="bg-white text-[#18384D] rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-100 transition-all"
-              aria-label="Previous card"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button 
-              onClick={() => {
-                nextCard();
-                pauseAutoRotation();
-              }}
-              className="bg-white text-[#18384D] rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-100 transition-all"
-              aria-label="Next card"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Cards */}
-          <div 
-            className="flex items-center justify-center gap-8 py-16 transition-all duration-700 ease-in-out"
-            ref={carouselRef}
-          >
-            {cards.map((card, index) => {
-              // Calculate card position (relative to active)
-              const position = (index - activeIndex + totalCards) % totalCards;
-              // -1: left, 0: center, 1: right
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+          {cards.map((card) => (
+            <div key={card.id} className="relative rounded-xl p-0 overflow-hidden bg-white shadow-2xl transform transition-all duration-500 hover:scale-105 hover:shadow-3xl">
+              {/* Card top gradient bar */}
+              <div className="h-2 w-full bg-white"></div>
               
-              return (
-                <div
-                  key={card.id}
-                  className={`
-                    relative rounded-xl p-0 overflow-hidden
-                    transition-all duration-700 ease-in-out
-                    ${position === 0 ? 
-                      'z-10 scale-110 shadow-2xl -translate-y-6 transform-gpu' : 
-                      'scale-85 opacity-70 hover:opacity-90 transform-gpu shadow-lg'}
-                    ${position === 1 ? 'order-last translate-x-4' : position === totalCards - 1 ? 'order-first -translate-x-4' : ''}
-                    flex-1 min-w-64 max-w-md cursor-pointer
-                  `}
-                  onClick={() => {
-                    setActiveIndex(index);
-                    pauseAutoRotation();
-                  }}
-                >
-                  {/* Card top gradient bar */}
-                  <div className="h-2 w-full bg-white"></div>
-                  
-                  {/* Card content */}
-                  <div className="bg-white p-8">
-                    {/* Icon with gradient background */}
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-[#18384D] text-white transform transition-all duration-500">
-                      <div className={`transition-all duration-500 ${position === 0 ? 'scale-110' : ''}`}>
-                        {card.icon}
-                      </div>
-                    </div>
-                    
-                    {/* Title with underline accent */}
-                    <div className="mb-6">
-                      <h3 className="font-subheading text-2xl font-bold mb-2 transition-all duration-500 text-[#18384D]">
-                        {card.title}
-                      </h3>
-                      <div className={`h-1 w-16 bg-[#18384D] rounded-full transition-all duration-500 ${position === 0 ? 'w-24' : 'w-16'}`}></div>
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="transition-all duration-500">
-                      {card.content}
-                    </div>
-                  </div>
-                  
-                  {/* Card bottom decoration */}
-                  {position === 0 && (
-                    <div className="absolute bottom-0 left-0 w-full h-1 bg-[#18384D]"></div>
-                  )}
+              {/* Card content */}
+              <div className="bg-white p-8">
+                {/* Icon with gradient background */}
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-[#18384D] text-white transform transition-all duration-500">
+                  {card.icon}
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Pagination indicators */}
-          <div className="flex justify-center mt-8 space-x-3">
-            {cards.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setActiveIndex(index);
-                  pauseAutoRotation();
-                }}
-                className={`h-3 rounded-full transition-all duration-500 ${
-                  index === activeIndex 
-                  ? 'w-8 bg-white' 
-                  : 'w-3 bg-white/30 hover:bg-white/60'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
+                
+                {/* Title with underline accent */}
+                <div className="mb-6">
+                  <h3 className="font-subheading text-2xl font-bold mb-2 transition-all duration-500 text-[#18384D]">
+                    {card.title}
+                  </h3>
+                  <div className="h-1 w-16 bg-[#18384D] rounded-full transition-all duration-500"></div>
+                </div>
+                
+                {/* Content */}
+                <div className="transition-all duration-500">
+                  {card.content}
+                </div>
+              </div>
+              
+              {/* Card bottom decoration */}
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#18384D]"></div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export default function SponsorsPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -148,10 +149,11 @@ export default function SponsorsPage() {
                       rel="noopener noreferrer" 
                       className="block h-full cursor-pointer transition-transform duration-300 hover:scale-105"
                     >
-                      <img 
+                      <Image 
                         src={sponsor.image} 
                         alt={`${sponsor.name}`} 
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                     </a>

@@ -27,7 +27,7 @@ export default function EventsPage() {
       location: "Peak District",
       category: "Annual",
       description: "Join us for our annual charity hike through the beautiful Peak District during Charity Week. All proceeds will go to support humanitarian causes around the world. A great opportunity to connect with nature while making a difference.",
-      image: "/images/1.png",
+      image: "/images/WEB/IMG_9980.JPG",
       signupLink: "https://forms.google.com/charity-hike-2024"
     },
     {
@@ -49,7 +49,7 @@ export default function EventsPage() {
       location: "Diamond Building, University of Sheffield",
       category: "Annual",
       description: "The highlight of our calendar! A formal evening with inspiring speakers, delicious food, and an opportunity to celebrate our achievements as a community. Smart attire required for this prestigious gathering.",
-      image: "/images/3.png",
+      image: "/images/WEB/USIC Annual Dinner 2025-55.jpg",
       signupLink: "https://forms.google.com/annual-dinner-2025"
     },
     

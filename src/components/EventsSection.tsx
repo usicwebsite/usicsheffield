@@ -5,67 +5,151 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function EventsSection() {
-  // Event images data - adding more images for scrolling effect
+  // Event images data - using the same images as the hero slideshow
   const eventImages = [
     {
       id: 1,
-      title: "Annual Charity Hike",
-      imagePath: "/images/3.png",
-      alt: "Group hiking in the Peak District"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-2.jpg",
+      alt: "USIC Annual Dinner 2025 celebration"
     },
     {
       id: 2,
-      title: "Weekly Qur'an Circle",
-      imagePath: "/images/8.png",
-      alt: "Students gathered for Qur'an study"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-6.jpg",
+      alt: "USIC Annual Dinner 2025 gathering"
     },
     {
       id: 3,
-      title: "Annual Dinner",
-      imagePath: "/images/12.png",
-      alt: "USIC annual formal dinner"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-16.jpg",
+      alt: "USIC Annual Dinner 2025 event"
     },
     {
       id: 4,
-      title: "Sports Tournament",
-      imagePath: "/images/5.png",
-      alt: "Students playing sports"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-21.jpg",
+      alt: "USIC Annual Dinner 2025 celebration"
     },
     {
       id: 5,
-      title: "Speaker Event",
-      imagePath: "/images/2.png",
-      alt: "Guest speaker at USIC event"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-25.jpg",
+      alt: "USIC Annual Dinner 2025 event"
     },
     {
       id: 6,
-      title: "Community Iftar",
-      imagePath: "/images/9.png",
-      alt: "Community breaking fast together"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-45.jpg",
+      alt: "USIC Annual Dinner 2025 celebration"
     },
     {
       id: 7,
-      title: "Eid Celebration",
-      imagePath: "/images/1.png",
-      alt: "Eid celebration with students"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-55.jpg",
+      alt: "USIC Annual Dinner 2025 gathering"
     },
     {
       id: 8,
-      title: "Islamic Awareness Week",
-      imagePath: "/images/4.png",
-      alt: "Islamic Awareness Week activities"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-81.jpg",
+      alt: "USIC Annual Dinner 2025 event"
     },
     {
       id: 9,
-      title: "Campus Prayer",
-      imagePath: "/images/6.png",
-      alt: "Students praying on campus"
+      title: "USIC Annual Dinner 2025",
+      imagePath: "/images/WEB/USIC Annual Dinner 2025-107.jpg",
+      alt: "USIC Annual Dinner 2025 celebration"
     },
     {
       id: 10,
-      title: "Charity Fundraiser",
-      imagePath: "/images/7.png",
-      alt: "Charity fundraising event"
+      title: "USIC Community Event",
+      imagePath: "/images/WEB/IMG_0006.JPG",
+      alt: "USIC community gathering"
+    },
+    {
+      id: 11,
+      title: "USIC Community Event",
+      imagePath: "/images/WEB/IMG_0028.JPG",
+      alt: "USIC community activity"
+    },
+    {
+      id: 12,
+      title: "USIC Community Event",
+      imagePath: "/images/WEB/IMG_9262.JPG",
+      alt: "USIC community celebration"
+    },
+    {
+      id: 13,
+      title: "USIC Community Event",
+      imagePath: "/images/WEB/IMG_9980.JPG",
+      alt: "USIC community gathering"
+    },
+    {
+      id: 14,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/1.png",
+      alt: "USIC activities and events"
+    },
+    {
+      id: 15,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/2.png",
+      alt: "USIC community activities"
+    },
+    {
+      id: 16,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/3.png",
+      alt: "USIC events and gatherings"
+    },
+    {
+      id: 17,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/5.png",
+      alt: "USIC community events"
+    },
+    {
+      id: 18,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/8.png",
+      alt: "USIC activities and celebrations"
+    },
+    {
+      id: 19,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/9.png",
+      alt: "USIC community gatherings"
+    },
+    {
+      id: 20,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/10.png",
+      alt: "USIC events and activities"
+    },
+    {
+      id: 21,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/11.png",
+      alt: "USIC community celebrations"
+    },
+    {
+      id: 22,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/13.png",
+      alt: "USIC activities and events"
+    },
+    {
+      id: 23,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/14.png",
+      alt: "USIC community activities"
+    },
+    {
+      id: 24,
+      title: "USIC Activities",
+      imagePath: "/images/WEB/15.png",
+      alt: "USIC events and gatherings"
     }
   ];
   
