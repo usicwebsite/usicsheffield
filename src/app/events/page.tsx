@@ -38,7 +38,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Annual",
       description: "Our rejuvenating annual retreat takes place right after Winter Exams. Enjoy a weekend of spiritual refreshment, workshops, outdoor activities and brotherly/sisterly bonding in the beautiful countryside.",
-      image: "/images/WEB/2.png",
+      image: "/images/WEB/annualretreat.jpeg",
       signupLink: "https://forms.google.com/spring-camp-2025"
     },
     {
