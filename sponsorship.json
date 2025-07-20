@@ -1,0 +1,177 @@
+[
+    {
+      "name": "Diamond Sponsor",
+      "quantity": 1,
+      "benefits": {
+        "events_activities": [
+          "USIC will host 3 events at your business [resulting in approx 120-280 visitors to your business]",
+          "DIAMOND EXCLUSIVE! One of these events will be advertised on the University Students' Union website with your business named in the title.",
+          {
+            "description": "Shout-outs at our biggest events of the year - minimum of 100 people each time!",
+            "details": [
+              "Annual Dinner",
+              "Chaplaincy Dinner [hosted by the University of Sheffield's BNBR]",
+              "Two educational workshops"
+            ]
+          },
+          "DIAMOND EXCLUSIVE! Full-page advertisement in USIC's Freshers Guide which are distributed to over 200 students, and will be available online as a PDF",
+          "DIAMOND EXCLUSIVE! To be the only sponsor who's logo is featured on the noticeboard at the Fresher's AND Refresher's stall for everyone to see!",
+          "Distribution of your business leaflets at the Freshers AND Refreshers Fair",
+          "Your business logo added to the USIC Wall Calendar distributed to over 100 people at the Freshers Fair",
+          "DIAMOND EXCLUSIVE! Your business logo placed on the front of USIC's football shirts which are to be displayed at the University's Campus League competitions"
+        ],
+        "social_media_marketing": [
+          {
+            "description": "Your logo on the promotional posters for events hosted solely by USIC",
+            "details": [
+              "During Freshers, Charity and Discover Islam Week",
+              "All welfare and sporting events",
+              "BONUS! And the 3 weekly Islamic Circles"
+            ]
+          },
+          {
+            "description": "Shout-outs on Instagram and Facebook - this includes:",
+            "details": [
+              "A stand-alone post dedicated to your business",
+              "Additionally USIC will produce a reel that will be personalised to your business - to be posted on Instagram, TikTok and Youtube Shorts",
+              "Subsequently 6 shout-outs across stories and the final post in a carousel",
+              "Your business featured on our Instagram Highlights"
+            ]
+          },
+          {
+            "description": "Shout-outs on USIC's WhatsApp Announcements chat - this includes:",
+            "details": [
+              "An entire message dedicated to promoting your business",
+              "Subsequently, a shout-out within the announcement of 4 of our events"
+            ]
+          },
+          {
+            "description": "BONUS! Promotion on our Twitter with a minimum of 2 shout-outs",
+            "details": [
+              "DIAMOND EXCLUSIVE! Your logo featured on the USIC Twitter banner so it is first thing people see on our page"
+            ]
+          }
+        ],
+        "digital_marketing": [
+          {
+            "description": "Your business featured on the USIC website - this includes",
+            "details": [
+              "Logo to be featured on of our homepage alongside Gold sponsors",
+              "BONUS! A prominent feature with additional information and images",
+              "Your business highlighted on USIC Maps",
+              "A hyperlink to your business site to the footer of the website"
+            ]
+          },
+          {
+            "description": "Your business advertised on USIC's weekly newsletter - 4 times a year!",
+            "details": [
+              "At least 2 promotions which will take the full width of the text space",
+              "BONUS! To include a hyperlink to your website's site in the footer"
+            ]
+          },
+          "A shout-out to your business in 2 episodes of the USIC podcast",
+          "BONUS! An entire video advertising your business posted on YouTube and promoted on Instagram",
+          "Your business mentioned in all descriptions for YouTube videos posted this year thereby increasing your business's web presence and searchability"
+        ]
+      },
+      "disclaimer_note": "Whilst our 'DIAMOND EXCLUSIVE' and 'BONUS' benefits are only offered in the Diamond Package, other organisations may receive the BONUS features through other collaborations - however the 'DIAMOND EXCLUSIVE' benefits are ONLY reserved for the Diamond sponsor!"
+    },
+    {
+      "name": "Gold Sponsor",
+      "quantity": 2,
+      "benefits": {
+        "events_activities": [
+          "USIC will host 2 events at your business",
+          "Your business logo displayed on the arm of USIC's football shirts",
+          "Your business logo added to the USIC Wall Calendar",
+          "Distribution of your business leaflets at the Freshers AND Refreshers Fair",
+          "Half-a-page advertisement in USIC's Freshers Guide",
+          {
+            "description": "Special shout-outs at our biggest events of the year!",
+            "details": [
+              "Chaplaincy Dinner [hosted by the University of Sheffield's BNBR]",
+              "An educational workshop"
+            ]
+          }
+        ],
+        "social_media_marketing": [
+          {
+            "description": "Your logo on the promotional posters for events hosted solely by USIC",
+            "details": [
+              "During Freshers and Discover Islam Week",
+              "All welfare and sporting events"
+            ]
+          },
+          {
+            "description": "Shout-outs on Instagram and Facebook - this includes:",
+            "details": [
+              "USIC will produce a reel that will be personalised to your business",
+              "4 shout-outs across stories and the final slide in a carousel post",
+              "Your business featured on our Instagram Highlights"
+            ]
+          },
+          {
+            "description": "Shoutouts on USIC's WhatsApp Announcements chat - this includes:",
+            "details": [
+              "An entire message dedicated to promoting solely your business",
+              "Subsequently, a shout-out within the announcement of 2 of our events"
+            ]
+          }
+        ],
+        "digital_marketing": [
+          {
+            "description": "Your business featured on the USIC website - this includes",
+            "details": [
+              "Logo to be featured on of our homepage alongside the Diamond sponsor",
+              "Your business highlighted on USIC Maps",
+              "A hyperlink to your business site to the footer of the website"
+            ]
+          },
+          "Your business with a description advertised on USIC's weekly newsletter twice a year!",
+          "A shout-out to your business during an episode of the USIC podcast",
+          "Your business mentioned in all descriptions for YouTube videos posted this year"
+        ]
+      }
+    },
+    {
+      "name": "Silver Sponsor",
+      "quantity": 4,
+      "benefits": {
+        "events_activities": [
+          "USIC will host 1 event at your business",
+          "Distribution of your business leaflets at the Freshers AND Refreshers Fair",
+          "Your logo featured in USIC's Freshers Guide",
+          "Shout-outs at USIC events to reach at least 150 people in totall"
+        ],
+        "social_media_marketing": [
+          "Your logo on promotional posters for a variety of USIC events (Including but not Limited to welfare, sports, education, volunteering) - a minimum of 12 posters",
+          {
+            "description": "Shout-outs on Instagram and Facebook - this includes:",
+            "details": [
+              "2 shout-outs across stories and the final slide in a carousel post",
+              "Your business featured on our Instagram Highlights"
+            ]
+          },
+          {
+            "description": "Shoutouts on USIC's WhatsApp Announcements chat - this includes:",
+            "details": [
+              "An entire message dedicated to promoting your business alongside the other Silver sponsors",
+              "A shout-out within the announcement of 2 of our events dedicated solely for your business"
+            ]
+          }
+        ],
+        "digital_marketing": [
+          {
+            "description": "Your business featured on the USIC website - this includes",
+            "details": [
+              "Your business highlighted on USIC Maps",
+              "A hyperlink to your business site to the footer of the website"
+            ]
+          },
+          "Your logo displayed on USIC's weekly newsletter - at least 3 times a year",
+          "Your business mentioned in all descriptions for YouTube videos posted this year thereby increasing your business's web presence and searchability"
+        ]
+      },
+      "disclaimer_note": "Please note that all figures are based on previous event numbers and experiences, demonstrating the potential exposure and benefits your business can receive"
+    }
+  ]

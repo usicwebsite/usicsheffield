@@ -1,3 +1,0 @@
-IMPORTANT: Add your mosque-background.mp4 video file to this directory.
-
-See VIDEO_INSTRUCTIONS.md for details on how to add the video background. 
