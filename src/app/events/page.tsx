@@ -38,7 +38,7 @@ export default function EventsPage() {
       location: "Yorkshire Dales",
       category: "Annual",
       description: "Our rejuvenating spring camp takes place just before the start of Spring Semester. Enjoy a weekend of spiritual refreshment, workshops, outdoor activities and brotherly/sisterly bonding in the beautiful Yorkshire countryside.",
-      image: "/images/2.png",
+      image: "/images/WEB/2.png",
       signupLink: "https://forms.google.com/spring-camp-2025"
     },
     {
@@ -62,7 +62,7 @@ export default function EventsPage() {
       location: "Room 301, Diamond Building",
       category: "Weekly",
       description: "NEW! Dive into the rich history of Islam over the past century. These engaging sessions explore the major events, movements and personalities that have shaped the modern Muslim world.",
-      image: "/images/4.png",
+      image: "/images/WEB/3.png",
       signupLink: "https://forms.google.com/islamic-history-signup"
     },
     {
@@ -73,7 +73,7 @@ export default function EventsPage() {
       location: "Islamic Society Room, Student Union",
       category: "Weekly",
       description: "Brothers' and sisters' separate circles where we recite, translate and discuss different chapters of the Qur'an. A peaceful environment to connect with the divine revelation regardless of your level of knowledge.",
-      image: "/images/5.png",
+      image: "/images/WEB/5.png",
       signupLink: "https://forms.google.com/quran-circles-signup"
     },
     {
@@ -84,7 +84,7 @@ export default function EventsPage() {
       location: "Lecture Theatre 3, Arts Tower",
       category: "Weekly",
       description: "Our Tuesday evening classes cover different themes each semester, such as Qur'anic Tafsir/exegesis, Prophetic Seerah/biography, and methods of spiritual purification. Taught by knowledgeable speakers.",
-      image: "/images/6.png",
+      image: "/images/WEB/14.png",
       signupLink: "https://forms.google.com/roots-academy-signup"
     },
     {
@@ -95,7 +95,7 @@ export default function EventsPage() {
       location: "Common Room, Student Union",
       category: "Weekly",
       description: "A special social gathering for sisters to build strong bonds of sisterhood. Activities include crafts, games, discussions, and occasional workshops on topics relevant to Muslim women.",
-      image: "/images/7.png",
+      image: "/images/WEB/15.png",
       signupLink: "https://forms.google.com/welfare-wednesdays-signup"
     },
     {
@@ -106,7 +106,7 @@ export default function EventsPage() {
       location: "Islamic Society Room, Student Union",
       category: "Weekly",
       description: "Brothers' and sisters' separate circles discussing various topics in Islam - from practical daily matters to deeper theological questions. A safe space to ask questions and learn together.",
-      image: "/images/8.png",
+      image: "/images/WEB/8.png",
       signupLink: "https://forms.google.com/thursday-circles-signup"
     },
     {
@@ -117,7 +117,7 @@ export default function EventsPage() {
       location: "Outdoor Pitch, Sports Centre",
       category: "Weekly",
       description: "Brothers' special football sessions for all skill levels. A great way to end the week with physical activity and brotherhood. No experience necessary - just bring your enthusiasm!",
-      image: "/images/9.png",
+      image: "/images/WEB/9.png",
       signupLink: "https://forms.google.com/friday-football-signup"
     },
     {
@@ -128,7 +128,7 @@ export default function EventsPage() {
       location: "Sports Hall, Sports Centre",
       category: "Weekly",
       description: "Brothers' special badminton sessions every Saturday. Whether you're a complete beginner or experienced player, everyone is welcome to join for a fun and energetic afternoon.",
-      image: "/images/10.png",
+      image: "/images/WEB/10.png",
       signupLink: "https://forms.google.com/saturday-badminton-signup"
     },
     
@@ -141,7 +141,7 @@ export default function EventsPage() {
       location: "UNIT Restaurant (2024 Sponsor)",
       category: "Other",
       description: "Enjoy delicious meals and great company at our 2024 Restaurant Sponsor, UNIT. These casual gatherings are perfect for making new friends and strengthening our community bonds over good food.",
-      image: "/images/11.png",
+      image: "/images/WEB/11.png",
       signupLink: "https://forms.google.com/unit-social-signup"
     },
     {
@@ -152,7 +152,7 @@ export default function EventsPage() {
       location: "Peak District",
       category: "Other",
       description: "Explore the breathtaking landscapes of the Peak District with fellow USIC members. These recreational hikes are organized throughout the year when weather permits. Transportation provided from campus.",
-      image: "/images/12.png",
+      image: "/images/WEB/1.png",
       signupLink: "https://forms.google.com/peak-district-hike-signup"
     },
     {
@@ -163,7 +163,7 @@ export default function EventsPage() {
       location: "Various locations",
       category: "Other",
       description: "Throughout the year, we organize various sports activities including rounders, cricket, basketball and more. These casual sessions are open to all skill levels and are a great way to stay active.",
-      image: "/images/13.png",
+      image: "/images/WEB/13.png",
       signupLink: "https://forms.google.com/sports-socials-signup"
     }
   ];

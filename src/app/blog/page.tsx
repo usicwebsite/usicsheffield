@@ -8,21 +8,21 @@ export default function BlogPage() {
       id: 1,
       title: "Brotherhood Stories",
       description: "Real stories from USIC members about finding community and faith during university life.",
-      imagePath: "/images/3.png",
+      imagePath: "/images/WEB/3.png",
       category: "COMMUNITY"
     },
     {
       id: 2,
       title: "Faith & Studies",
       description: "How USIC members balance their Islamic values with academic excellence at Sheffield.",
-      imagePath: "/images/8.png",
+      imagePath: "/images/WEB/8.png",
       category: "FAITH"
     },
     {
       id: 3,
       title: "Campus Reflections",
       description: "Personal reflections on overcoming challenges in university life and finding inner strength through Islam.",
-      imagePath: "/images/5.png",
+      imagePath: "/images/WEB/5.png",
       category: "PERSONAL GROWTH"
     }
   ];

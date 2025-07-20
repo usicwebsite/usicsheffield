@@ -49,7 +49,7 @@ export default function MembershipSection() {
                 {/* Thumbnail with play button */}
                 <div className="absolute inset-0 bg-black">
                   <Image
-                    src="/images/12.png"
+                    src="/images/WEB/1.png"
                     alt="USIC Membership Video Thumbnail"
                     fill
                     className="object-cover opacity-80"
@@ -79,7 +79,7 @@ export default function MembershipSection() {
                   className="h-full max-h-full object-contain" 
                   controls 
                   src="/usichighlights.mp4"
-                  poster="/images/12.png"
+                  poster="/images/WEB/1.png"
                   style={{
                     // Maintain natural aspect ratio when in fullscreen
                     maxWidth: "100%",

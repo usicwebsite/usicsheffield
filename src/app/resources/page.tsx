@@ -8,7 +8,7 @@ export default function ResourcesPage() {
       id: 1,
       title: "USIC Map",
       description: "Interactive map showing key locations for USIC members including prayer rooms, halal food spots, and important campus buildings.",
-      imagePath: "/images/1.png",
+      imagePath: "/images/WEB/1.png",
       category: "NAVIGATION",
       link: "https://www.google.com/maps/d/u/0/viewer?mid=1sf6ignGjx9yqlVM-XgAoRiVtWUjk2KE&hl=en&ll=53.381545854028566%2C-1.4872821811864867&z=16",
       isExternal: true
@@ -17,7 +17,7 @@ export default function ResourcesPage() {
       id: 2,
       title: "Accommodation",
       description: "Guide to finding suitable accommodation near campus, including Muslim-friendly housing options and tips for new students.",
-      imagePath: "/images/2.png",
+      imagePath: "/images/WEB/2.png",
       category: "HOUSING",
       link: "/accommodation",
       isExternal: false
