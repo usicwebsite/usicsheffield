@@ -60,7 +60,6 @@ export default function MembershipTimeline() {
       if (!timelineRef.current) return;
 
       const timelineRect = timelineRef.current.getBoundingClientRect();
-      const timelineTop = timelineRect.top;
       const timelineHeight = timelineRect.height;
       const viewportHeight = window.innerHeight;
       const middleLine = viewportHeight / 2;
@@ -72,7 +71,6 @@ export default function MembershipTimeline() {
         if (itemRef) {
           const itemRect = itemRef.getBoundingClientRect();
           const itemTop = itemRect.top;
-          const itemBottom = itemRect.bottom;
           
           // If any part of the item has crossed the middle line, it should be visible
           if (itemTop < middleLine) {
