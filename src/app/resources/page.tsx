@@ -42,7 +42,7 @@ export default function ResourcesPage() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4">
         <div className="pt-8">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">AVAILABLE MATERIALS</h2>
         </div>
