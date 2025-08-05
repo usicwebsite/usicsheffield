@@ -41,7 +41,7 @@ export default function MembershipSection() {
         {/* Clickable Video Card - Sized like the slideshow */}
         <div className="relative max-w-5xl mx-auto overflow-hidden">
           <div 
-            className={`relative w-full h-[500px] md:h-[550px] bg-[#0F1E2C] rounded-xl overflow-hidden border border-[#2c5a7a] ${!isPlaying ? 'cursor-pointer group' : ''}`}
+            className={`relative w-full aspect-[9/16] sm:aspect-[9/16] md:h-[550px] bg-[#0F1E2C] rounded-xl overflow-hidden border border-[#2c5a7a] ${!isPlaying ? 'cursor-pointer group' : ''}`}
             onClick={!isPlaying ? handleVideoClick : undefined}
           >
             {!isPlaying ? (
@@ -49,10 +49,13 @@ export default function MembershipSection() {
                 {/* Thumbnail with play button */}
                 <div className="absolute inset-0 bg-black">
                   <Image
-                    src="/images/WEB/1.png"
+                    src="/images/WEB/brothers/5.png"
                     alt="USIC Membership Video Thumbnail"
                     fill
                     className="object-cover opacity-80"
+                    style={{
+                      objectPosition: 'center'
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A1219]/50 to-[#18384D] z-10"></div>
                 </div>

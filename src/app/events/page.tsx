@@ -27,7 +27,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Annual",
       description: "Join us for our annual charity hike during Charity Week. All proceeds will go to support humanitarian causes around the world. A great opportunity to connect with nature while making a difference.",
-      image: "/images/WEB/IMG_9980.JPG",
+      image: "/images/WEB/brothers/IMG_9980.JPG",
       signupLink: "https://forms.google.com/charity-hike-2024"
     },
     {
@@ -38,7 +38,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Annual",
       description: "Our rejuvenating annual retreat takes place right after Winter Exams. Enjoy a weekend of spiritual refreshment, workshops, outdoor activities and brotherly/sisterly bonding in the beautiful countryside.",
-      image: "/images/WEB/annualretreat.jpeg",
+      image: "/images/WEB/brothers/annualretreat.jpeg",
       signupLink: "https://forms.google.com/spring-camp-2025"
     },
     {
@@ -49,7 +49,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Annual",
       description: "The highlight of our calendar! A formal evening with inspiring speakers, delicious food, and an opportunity to celebrate our achievements as a community.",
-      image: "/images/WEB/USIC Annual Dinner 2025-55.jpg",
+      image: "/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg",
       signupLink: "https://forms.google.com/annual-dinner-2025"
     },
     
@@ -62,7 +62,7 @@ export default function EventsPage() {
       location: "Lecture Theatre 4, Arts Tower",
       category: "Weekly",
       description: "Our Tuesday evening classes cover different themes each semester, such as Qur'anic Tafsir/exegesis, Prophetic Seerah/biography, and methods of spiritual purification.",
-      image: "/images/WEB/1.png",
+      image: "/images/WEB/brothers/roots.png",
       signupLink: "https://forms.google.com/roots-academy-signup"
     },
     {
@@ -73,7 +73,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Weekly",
       description: "A special social gathering for sisters to build strong bonds of sisterhood. Activities include crafts, games, discussions, and occasional workshops on topics relevant to Muslim women.",
-      image: "/images/WEB/15.png",
+      image: "/images/WEB/sisters/8.png",
       signupLink: "https://forms.google.com/welfare-wednesdays-signup"
     },
     {
@@ -84,7 +84,7 @@ export default function EventsPage() {
       location: "The Wave Pitches",
       category: "Weekly",
       description: "Brothers' special football sessions. A great way to end the week with physical activity and brotherhood. 14 spots open each week - don't miss out!",
-      image: "/images/WEB/fridayfootball.jpeg",
+      image: "/images/WEB/brothers/brother3.jpeg",
       signupLink: "https://forms.google.com/friday-football-signup"
     },
     
@@ -97,7 +97,7 @@ export default function EventsPage() {
       location: "Various locations",
       category: "Other",
       description: "Throughout the year, we organize various sports activities including rounders, cricket, basketball and more. These casual sessions are open to all skill levels and are a great way to stay active.",
-      image: "/images/WEB/sports.jpeg",
+      image: "/images/WEB/brothers/fridayfootball.jpeg",
       signupLink: "https://forms.google.com/sports-socials-signup"
     }
   ];
