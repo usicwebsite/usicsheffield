@@ -69,7 +69,7 @@ export default function Navbar() {
               Resources
             </Link>
             <Link href="/blog" className="text-white hover:text-blue-200 transition duration-300">
-              Blog
+              Forum
             </Link>
             <Link href="/sponsors" className="text-white hover:text-blue-200 transition duration-300">
               Sponsors
@@ -143,7 +143,7 @@ export default function Navbar() {
               className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#234b64] hover:text-white"
               onClick={() => setIsMenuOpen(false)}
             >
-              Blog
+              Forum
             </Link>
             <Link 
               href="/sponsors" 

@@ -126,7 +126,7 @@ export default function MembershipTimeline() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Timeline Header */}
         <div className="text-center mb-16">
-          <h2 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
+          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white px-4">
             Your Membership Journey
           </h2>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto">

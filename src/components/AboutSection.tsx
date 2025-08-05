@@ -1,6 +1,10 @@
 "use client";
 
+import { useState } from 'react';
+
 export default function AboutSection() {
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+
   // Card content data
   const cards = [
     {
@@ -95,12 +99,12 @@ export default function AboutSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 relative">
           {/* Background outline text */}
-          <div className="absolute w-full text-center opacity-10 pointer-events-none">
-            <h2 className="font-bold text-[7rem] md:text-[10rem] tracking-tight uppercase">WHO WE ARE</h2>
+          <div className="absolute w-full text-center opacity-10 pointer-events-none overflow-hidden">
+            <h2 className="font-bold text-[4.1rem] sm:text-[5rem] md:text-[7rem] lg:text-[10rem] tracking-tight uppercase px-4">WHO WE ARE</h2>
           </div>
           
           {/* Foreground text */}
-          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
+          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight relative z-10 px-4">
             WHO WE ARE
           </h2>
           
@@ -109,8 +113,8 @@ export default function AboutSection() {
           </p>
         </div>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        {/* Cards Grid - Hidden on mobile, shown on desktop */}
+        <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
           {cards.map((card) => (
             <div key={card.id} className="relative rounded-xl p-0 overflow-hidden bg-white shadow-2xl transform transition-all duration-500 hover:scale-105 hover:shadow-3xl">
               {/* Card top gradient bar */}
@@ -131,10 +135,18 @@ export default function AboutSection() {
                   <div className="h-1 w-16 bg-[#18384D] rounded-full transition-all duration-500"></div>
                 </div>
                 
-                {/* Content */}
-                <div className="transition-all duration-500">
+                {/* Content - Hidden on mobile, shown on desktop */}
+                <div className="hidden md:block transition-all duration-500">
                   {card.content}
                 </div>
+                
+                {/* Mobile click button - shown only on mobile */}
+                <button 
+                  onClick={() => setSelectedCard(card.id)}
+                  className="md:hidden w-full mt-4 bg-[#18384D] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#234b64] transition-all duration-300"
+                >
+                  Learn More
+                </button>
               </div>
               
               {/* Card bottom decoration */}
@@ -142,6 +154,59 @@ export default function AboutSection() {
             </div>
           ))}
         </div>
+
+        {/* Mobile horizontal cards - shown only on mobile */}
+        <div className="md:hidden flex justify-between pb-4 mt-8 px-4">
+          {cards.map((card) => (
+            <div 
+              key={card.id} 
+              onClick={() => setSelectedCard(card.id)}
+              className="flex-1 mx-2 h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+            >
+              {/* Small icon */}
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#18384D] text-white mb-2">
+                {card.icon}
+              </div>
+              
+              {/* Title */}
+              <h3 className="font-subheading text-xs font-bold text-[#18384D] text-center leading-tight">
+                {card.title}
+              </h3>
+            </div>
+          ))}
+        </div>
+
+        {/* Modal for mobile */}
+        {selectedCard !== null && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 md:hidden">
+            <div className="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                {/* Modal header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#18384D] text-white">
+                      {cards[selectedCard].icon}
+                    </div>
+                    <h3 className="font-subheading text-xl font-bold text-[#18384D]">
+                      {cards[selectedCard].title}
+                    </h3>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedCard(null)}
+                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                {/* Modal content */}
+                <div className="text-gray-700">
+                  {cards[selectedCard].content}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

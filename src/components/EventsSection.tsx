@@ -167,7 +167,7 @@ export default function EventsSection() {
     }
     
     // Speed in pixels per frame
-    const SCROLL_SPEED = 1;
+    const SCROLL_SPEED = 0.3;
     
     let topAnimationFrame: number;
     let bottomAnimationFrame: number;
@@ -275,11 +275,11 @@ export default function EventsSection() {
         <div className="text-center relative">
           {/* Background outline text */}
           <div className="absolute w-full text-center opacity-10 pointer-events-none overflow-hidden">
-            <h2 className="font-bold text-[4rem] sm:text-[7rem] md:text-[10rem] tracking-tight uppercase">OUR EVENTS</h2>
+            <h2 className="font-bold text-[4.1rem] sm:text-[4rem] md:text-[6rem] lg:text-[8rem] xl:text-[10rem] tracking-tight uppercase px-4">OUR EVENTS</h2>
           </div>
           
           {/* Foreground text */}
-          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-3xl sm:text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
+          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight relative z-10 px-4">
             OUR EVENTS
           </h2>
           
@@ -302,14 +302,14 @@ export default function EventsSection() {
           {[...eventImages, ...eventImages, ...eventImages].map((image, index) => (
             <div 
               key={`top-${image.id}-${index}`} 
-              className="inline-block w-[350px] h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+              className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
               <Image
                 src={image.imagePath}
                 alt={image.alt}
                 fill
-                sizes="350px"
+                sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
                 style={{ 
                   objectFit: 'cover'
                 }}
@@ -329,14 +329,14 @@ export default function EventsSection() {
           {[...eventImages, ...eventImages, ...eventImages].map((image, index) => (
             <div 
               key={`bottom-${image.id}-${index}`} 
-              className="inline-block w-[350px] h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+              className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
             >
               <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
               <Image
                 src={image.imagePath}
                 alt={image.alt}
                 fill
-                sizes="350px"
+                sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
                 style={{ 
                   objectFit: 'cover'
                 }}

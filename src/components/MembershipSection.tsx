@@ -24,12 +24,12 @@ export default function MembershipSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 relative">
           {/* Background outline text */}
-          <div className="absolute w-full text-center opacity-10 pointer-events-none">
-            <h2 className="font-bold text-[7rem] md:text-[10rem] tracking-tight uppercase">MEMBERSHIP</h2>
+          <div className="absolute w-full text-center opacity-10 pointer-events-none overflow-hidden">
+            <h2 className="font-bold text-[4.1rem] sm:text-[5rem] md:text-[7rem] lg:text-[10rem] tracking-tight uppercase px-4">MEMBERSHIP</h2>
           </div>
           
           {/* Foreground text */}
-          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-4xl md:text-6xl font-black uppercase tracking-tight relative z-10">
+          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight relative z-10 px-4">
             BECOME A MEMBER
           </h2>
           

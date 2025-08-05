@@ -19,7 +19,7 @@ export default function SponsorsPage() {
       {/* Hero section */}
       <div className="pt-16 pb-8 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">OUR SPONSORS</h1>
+          <h1 className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white px-4">OUR SPONSORS</h1>
           <p className="text-xl max-w-3xl mx-auto text-blue-100">
             Each sponsor focuses on different aspects of community support and student services
           </p>

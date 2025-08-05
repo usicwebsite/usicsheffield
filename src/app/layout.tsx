@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { FirebaseProvider } from "@/contexts/FirebaseContext";
 
 // Initialize the Geist font with Latin subset
 const geistSans = Geist({
@@ -59,14 +60,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#18384D] text-gray-900 flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#18384D] text-gray-900 flex flex-col min-h-screen overflow-x-hidden`}
       >
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        <FirebaseProvider>
+          <Navbar />
+          <main className="flex-grow overflow-x-hidden">
+            {children}
+          </main>
+          <Footer />
+        </FirebaseProvider>
       </body>
     </html>
   );

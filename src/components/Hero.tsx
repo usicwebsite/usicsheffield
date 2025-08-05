@@ -91,7 +91,7 @@ export default function Hero() {
       {/* Content */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 lg:px-8">
         {/* SVG heading */}
-        <div className="w-full max-w-2xl mb-6">
+        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-2xl mb-6 px-4">
           <Image
             src="/Assalamu-aleykum-black.svg"
             alt="Assalamu Aleykum"
@@ -103,7 +103,7 @@ export default function Hero() {
         </div>
         
         {/* Subheading */}
-        <p className="font-subheading text-xl sm:text-2xl mb-8 text-white max-w-2xl tracking-wide">
+        <p className="font-subheading text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-8 text-white max-w-3xl tracking-wide font-bold">
           University of Sheffield Islamic Circle
         </p>
 
@@ -134,7 +134,7 @@ export default function Hero() {
         {/* Scroll down arrow */}
         <button 
           onClick={scrollToNextSection}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white cursor-pointer animate-bounce"
+          className="absolute bottom-8 left-2/5 transform -translate-x-1/2 text-white cursor-pointer animate-bounce"
           aria-label="Scroll down"
         >
           <svg 

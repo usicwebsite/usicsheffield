@@ -123,6 +123,12 @@ body {
   font-family: 'Poppins', sans-serif;
   color: #1f2937;
   line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal scrolling on mobile */
+html {
+  overflow-x: hidden;
 }
 
 /* Prose styles for content */

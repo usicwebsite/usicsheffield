@@ -84,7 +84,7 @@ export default function EventsPage() {
       location: "The Wave Pitches",
       category: "Weekly",
       description: "Brothers' special football sessions. A great way to end the week with physical activity and brotherhood. 14 spots open each week - don't miss out!",
-      image: "/images/WEB/9.png",
+      image: "/images/WEB/fridayfootball.jpeg",
       signupLink: "https://forms.google.com/friday-football-signup"
     },
     
@@ -97,7 +97,7 @@ export default function EventsPage() {
       location: "Various locations",
       category: "Other",
       description: "Throughout the year, we organize various sports activities including rounders, cricket, basketball and more. These casual sessions are open to all skill levels and are a great way to stay active.",
-      image: "/images/WEB/13.png",
+      image: "/images/WEB/sports.jpeg",
       signupLink: "https://forms.google.com/sports-socials-signup"
     }
   ];
@@ -134,7 +134,7 @@ export default function EventsPage() {
       {/* Hero section */}
       <div className="pt-16 pb-8 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">OUR EVENTS & ACTIVITIES</h1>
+          <h1 className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white px-4">OUR EVENTS & ACTIVITIES</h1>
           <p className="text-xl max-w-3xl mx-auto text-blue-100">
             Sign up for our events and activities using the links below
           </p>
