@@ -28,10 +28,13 @@ export default function AboutPage() {
             {/* Left column - Image */}
             <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
-                src="/images/WEB/IMG_0006.JPG"
+                src="/images/WEB/brothers/IMG_0006.JPG"
                 alt="USIC Community"
                 fill
                 className="object-cover"
+                style={{
+                  objectPosition: '60% 40%'
+                }}
               />
               <div className="absolute inset-0 bg-black/20"></div>
             </div>
@@ -90,7 +93,7 @@ export default function AboutPage() {
             {/* Right column - Image */}
             <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
-                src="/images/WEB/USIC Annual Dinner 2025-2.jpg"
+                src="/images/WEB/brothers/annualretreat.jpeg"
                 alt="USIC Values"
                 fill
                 className="object-cover"
@@ -108,7 +111,7 @@ export default function AboutPage() {
             {/* Left column - Image */}
             <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
-                src="/images/WEB/USIC Annual Dinner 2025-81.jpg"
+                src="/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg"
                 alt="USIC Events"
                 fill
                 className="object-cover"
@@ -189,7 +192,7 @@ export default function AboutPage() {
             {/* Right column - Image */}
             <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
               <Image
-                src="/images/WEB/USIC Annual Dinner 2025-107.jpg"
+                src="/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg"
                 alt="USIC Membership"
                 fill
                 className="object-cover"

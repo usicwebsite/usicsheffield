@@ -230,7 +230,24 @@ export default function EventsPage() {
             >
               <div className="aspect-video bg-[#102736] relative">
                 {event.image ? (
-                  <Image src={event.image} alt={event.title} width={640} height={360} className="w-full h-full object-cover" />
+                  <Image 
+                    src={event.image} 
+                    alt={event.title} 
+                    width={640} 
+                    height={360} 
+                    className="w-full h-full object-cover"
+                    style={{
+                      objectPosition: 
+                        event.title === "Charity Hike" ? 'center 60%' :
+                        event.title === "Annual Retreat" ? 'center 65%' :
+                        event.title === "Annual Dinner" ? 'center 45%' :
+                        event.title === "Roots Academy Classes" ? 'center 55%' :
+                        event.title === "Welfare Wednesdays" ? 'center 50%' :
+                        event.title === "Friday Football" ? 'center 90%' :
+                        event.title === "Sports Socials" ? 'center 50%' :
+                        'center 65%' // default for any other events
+                    }}
+                  />
                 ) : (
                   <div className="w-full h-full bg-[#102736] flex items-center justify-center">
                     <span className="text-blue-300">No image</span>
@@ -340,6 +357,9 @@ export default function EventsPage() {
                     width={800} 
                     height={400} 
                     className="w-full h-64 md:h-80 object-cover"
+                    style={{
+                      objectPosition: 'center 65%'
+                    }}
                   />
                 </div>
               )}
