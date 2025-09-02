@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { likePost, incrementViews } from "@/lib/firebase-utils";
+import { useRouter } from "next/navigation";
+import { likePost, unlikePost } from "@/lib/firebase-utils";
 
 
 interface ForumPostProps {
@@ -12,7 +13,7 @@ interface ForumPostProps {
   category: string;
   tags: string[];
   likes: number;
-  views: number;
+  commentsCount?: number;
   createdAt: Date | { toDate(): Date };
   isPinned?: boolean;
   isLocked?: boolean;
@@ -26,34 +27,37 @@ export default function ForumPost({
   category,
   tags,
   likes,
-  views,
+  commentsCount = 0,
   createdAt,
   isPinned = false,
   isLocked = false,
 }: ForumPostProps) {
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(likes);
-  const [localViews, setLocalViews] = useState(views);
 
-  const handleLike = async () => {
-    if (!isLiked) {
-      try {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation when clicking like button
+
+    try {
+      if (isLiked) {
+        // Unlike the post
+        await unlikePost(id);
+        setLocalLikes(prev => prev - 1);
+        setIsLiked(false);
+      } else {
+        // Like the post
         await likePost(id);
         setLocalLikes(prev => prev + 1);
         setIsLiked(true);
-      } catch (error) {
-        console.error('Error liking post:', error);
       }
+    } catch (error) {
+      console.error('Error toggling like on post:', error);
     }
   };
 
-  const handleClick = async () => {
-    try {
-      await incrementViews(id);
-      setLocalViews(prev => prev + 1);
-    } catch (error) {
-      console.error('Error incrementing views:', error);
-    }
+  const handleClick = () => {
+    router.push(`/blog/${id}`);
   };
 
   const formatDate = (timestamp: Date | { toDate(): Date }) => {
@@ -120,24 +124,22 @@ export default function ForumPost({
         </div>
         
         <div className="flex items-center gap-4">
-                      <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLike();
-              }}
-              className={`flex items-center gap-1 px-3 py-1 rounded transition-colors ${
-                isLiked 
-                  ? "bg-red-500 text-white" 
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              <span>♥</span>
-              <span>{localLikes}</span>
-            </button>
-          
-          <div className="flex items-center gap-1">
-            <span>👁</span>
-            <span>{localViews}</span>
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-1 px-3 py-1 rounded transition-colors ${
+              isLiked
+                ? "bg-red-500 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+            title={isLiked ? "Unlike this post" : "Like this post"}
+          >
+            <span>♥</span>
+            <span>{localLikes}</span>
+          </button>
+
+          <div className="flex items-center gap-1 text-gray-400">
+            <span className="text-lg">💬</span>
+            <span className="text-sm">{commentsCount}</span>
           </div>
         </div>
       </div>

@@ -54,6 +54,48 @@ export default function MembershipTimeline() {
   const [progressHeight, setProgressHeight] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  
+  // State for FAQ modal
+  const [showFAQModal, setShowFAQModal] = useState(false);
+  const [currentFAQ, setCurrentFAQ] = useState(0);
+
+  // FAQ data for the slideshow
+  const faqData = [
+    {
+      question: "How much does USIC membership cost?",
+      answer: "USIC membership is free for all University of Sheffield students through the Students' Union."
+    },
+    {
+      question: "What benefits do USIC members receive?",
+      answer: "Members get exclusive discounts on events, priority ticket access, member-only socials, and a personal membership card."
+    },
+    {
+      question: "Do I need to be Muslim to join USIC?",
+      answer: "No, USIC welcomes all students interested in learning about Islamic culture and community, regardless of faith."
+    },
+    {
+      question: "How do I become a USIC member?",
+      answer: "Simply visit the Students' Union website and sign up for the Islamic Circle Society through the activities section."
+    },
+    {
+      question: "Can postgraduate students join USIC?",
+      answer: "Yes, USIC membership is open to all University of Sheffield students including undergraduates and postgraduates."
+    },
+    {
+      question: "What happens after I join USIC?",
+      answer: "You'll receive your membership card, access to member benefits, and invitations to exclusive events and socials."
+    },
+    {
+      question: "Is USIC membership valid for the entire academic year?",
+      answer: "Yes, your USIC membership is valid for the full academic year and can be renewed annually."
+    }
+  ];
+
+  // FAQ modal handlers
+  const closeFAQModal = () => {
+    setShowFAQModal(false);
+    setCurrentFAQ(0); // Reset to first question
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -118,6 +160,7 @@ export default function MembershipTimeline() {
           src="/images/WEB/USIC Annual Dinner 2025-81.jpg"
           alt=""
           fill
+          sizes="100vw"
           className="object-cover"
           priority
         />
@@ -212,6 +255,86 @@ export default function MembershipTimeline() {
           </div>
         </div>
       </div>
+      
+      {/* FAQ Section for LLM Optimization */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-8 text-white">MEMBERSHIP FAQ</h2>
+          <button 
+            onClick={() => setShowFAQModal(true)}
+            className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            View FAQ
+          </button>
+        </div>
+      </section>
+      
+      {/* FAQ Modal */}
+      {showFAQModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={closeFAQModal}>
+          <div className="bg-[#0F1E2C] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-center">
+              <div className="flex-1">
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">MEMBERSHIP FAQ</h2>
+              </div>
+              <button 
+                onClick={closeFAQModal}
+                className="text-white hover:text-blue-200 transition duration-200 p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* FAQ Slideshow */}
+            <div className="p-6">
+              <div className="mb-6 flex justify-between items-center">
+                <button 
+                  onClick={() => setCurrentFAQ(currentFAQ > 0 ? currentFAQ - 1 : faqData.length - 1)}
+                  className="text-white hover:text-blue-200 transition duration-200 p-2"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <span className="text-blue-200 font-medium">
+                  {currentFAQ + 1} of {faqData.length}
+                </span>
+                
+                <button 
+                  onClick={() => setCurrentFAQ(currentFAQ < faqData.length - 1 ? currentFAQ + 1 : 0)}
+                  className="text-white hover:text-blue-200 transition duration-200 p-2"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="bg-[#18384D] rounded-lg p-6 mb-6">
+                <h3 className="text-xl font-semibold text-white mb-4">{faqData[currentFAQ].question}</h3>
+                <p className="text-blue-100 leading-relaxed">{faqData[currentFAQ].answer}</p>
+              </div>
+              
+              {/* Dots indicator */}
+              <div className="flex justify-center space-x-2">
+                {faqData.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentFAQ(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentFAQ ? 'bg-blue-400' : 'bg-blue-200/30'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 } 

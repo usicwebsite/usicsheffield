@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AuthStatus from './AuthStatus';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop menu */}
-          <nav className="hidden md:flex space-x-6">
+          <nav className="hidden md:flex items-center space-x-6">
             <Link href="/" className="text-white hover:text-blue-200 transition duration-300">
               Home
             </Link>
@@ -74,6 +75,11 @@ export default function Navbar() {
             <Link href="/sponsors" className="text-white hover:text-blue-200 transition duration-300">
               Sponsors
             </Link>
+            
+            {/* Authentication Status - Desktop */}
+            <div className="ml-4">
+              <AuthStatus />
+            </div>
           </nav>
 
           {/* Mobile menu button */}
@@ -152,6 +158,13 @@ export default function Navbar() {
             >
               Sponsors
             </Link>
+            
+            {/* Authentication Status - Mobile */}
+            <div className="border-t border-white/10 pt-3 mt-3">
+              <div className="px-3 py-2">
+                <AuthStatus />
+              </div>
+            </div>
           </div>
         </div>
       )}

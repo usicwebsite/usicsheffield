@@ -1,6 +1,6 @@
 "use client";
 
-import { createPost } from "@/lib/firebase-utils";
+import { createPost } from "@/lib/firebase-client";
 
 export default function SeedButton() {
   const handleSeed = async () => {

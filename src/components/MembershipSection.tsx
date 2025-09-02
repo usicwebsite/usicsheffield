@@ -52,6 +52,7 @@ export default function MembershipSection() {
                     src="/images/WEB/brothers/5.png"
                     alt="USIC Membership Video Thumbnail"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover opacity-80"
                     style={{
                       objectPosition: 'center'

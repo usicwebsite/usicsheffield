@@ -9,11 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-icons": "^1.3.2",
+    "cloudinary": "^2.7.0",
     "firebase": "^12.0.0",
+    "firebase-admin": "^13.4.0",
+    "isomorphic-dompurify": "^2.26.0",
+    "jose": "^6.0.12",
+    "lucide-react": "^0.536.0",
     "next": "15.2.2",
+    "next-cloudinary": "^6.16.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "swiper": "^11.2.10"
+    "react-image-crop": "^11.0.10",
+    "swiper": "^11.2.10",
+    "zod": "^4.0.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

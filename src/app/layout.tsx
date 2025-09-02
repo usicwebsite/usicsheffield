@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { FirebaseProvider } from "@/contexts/FirebaseContext";
+import AdminLayout from "@/components/AdminLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { generateCSRFToken } from "@/lib/csrf";
+import { cookies } from 'next/headers';
 
 // Initialize the Geist font with Latin subset
 const geistSans = Geist({
@@ -53,26 +55,39 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get CSRF token from cookies or generate a new one
+  const cookieStore = await cookies();
+  const csrfToken = cookieStore.get('csrf_token')?.value || generateCSRFToken();
+  
   return (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="csrf-token" content={csrfToken} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Ensure CSRF token is available globally
+              window.__CSRF_TOKEN__ = "${csrfToken}";
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#18384D] text-gray-900 flex flex-col min-h-screen overflow-x-hidden`}
       >
-        <FirebaseProvider>
-          <Navbar />
-          <main className="flex-grow overflow-x-hidden">
-            {children}
-          </main>
-          <Footer />
-        </FirebaseProvider>
+        <ErrorBoundary>
+          <FirebaseProvider>
+            <AdminLayout>
+              {children}
+            </AdminLayout>
+          </FirebaseProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

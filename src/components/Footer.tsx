@@ -45,6 +45,11 @@ export default function Footer() {
                   Blog
                 </Link>
               </li>
+              <li>
+                <Link href="/faq" className="hover:text-blue-200 transition duration-300">
+                  FAQ
+                </Link>
+              </li>
             </ul>
           </div>
 

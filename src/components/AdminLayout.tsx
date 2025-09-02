@@ -1,0 +1,24 @@
+"use client";
+
+import { usePathname } from 'next/navigation';
+import Navbar from './Navbar';
+import Footer from './Footer';
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const pathname = usePathname();
+  const isAdminPage = pathname.startsWith('/admin');
+
+  return (
+    <>
+      {!isAdminPage && <Navbar />}
+      <main className="flex-grow overflow-x-hidden">
+        {children}
+      </main>
+      {!isAdminPage && <Footer />}
+    </>
+  );
+} 

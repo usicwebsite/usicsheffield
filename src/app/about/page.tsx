@@ -24,13 +24,14 @@ export default function AboutPage() {
         <section className="mb-20">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">WELCOME TO YOUR NEW FAMILY</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
-            {/* Left column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 mb-16">
+            {/* Image - smaller on mobile */}
+            <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
                 src="/images/WEB/brothers/IMG_0006.JPG"
                 alt="USIC Community"
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
                 style={{
                   objectPosition: '60% 40%'
@@ -39,21 +40,22 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-black/20"></div>
             </div>
             
-            {/* Right column - Text */}
+            {/* Content */}
             <div>
-              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
+              {/* Subtitle */}
+              <h3 className="font-heading text-2xl md:text-3xl md:text-4xl font-bold mb-6 text-white">
                 Worried university life means no fun because everything is haram?
               </h3>
               
-              <p className="text-xl mb-6 text-blue-100">
+              <p className="text-lg md:text-xl mb-6 text-blue-100">
                 We get it. You&apos;ve heard the horror stories about university life. But here&apos;s the truth: <span className="text-white font-semibold">you can have an amazing university experience while staying true to your faith.</span>
               </p>
               
-              <p className="text-xl mb-6 text-blue-100">
+              <p className="text-lg md:text-xl mb-6 text-blue-100">
                 Founded in 1964, USIC is your <span className="text-white font-semibold">sanctuary from the trials of university life</span>. We&apos;re your halal social hub - where you can make friends, have fun, grow spiritually, and never feel like you&apos;re missing out.
               </p>
               
-              <p className="text-xl mb-6 text-blue-100">
+              <p className="text-lg md:text-xl mb-6 text-blue-100">
                 Whatever your background, faith level, or current beliefs - <span className="text-white font-semibold">everyone is welcome here.</span>
               </p>
             </div>
@@ -64,41 +66,43 @@ export default function AboutPage() {
         <section className="mb-20">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">WHY WE&apos;RE DIFFERENT</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
-            {/* Left column - Text */}
-            <div>
-              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
-                We don&apos;t just talk about Islamic values - we live them through fun, engaging activities.
-              </h3>
-              
-              <div className="space-y-4 mb-8">
-                <p className="text-xl text-blue-100">
-                  <span className="text-white font-semibold">Faith with Fun</span> - Deep spiritual connections through exciting activities
-                </p>
-                
-                <p className="text-xl text-blue-100">
-                  <span className="text-white font-semibold">Brotherhood & Sisterhood</span> - We&apos;re not just a society, we&apos;re a family
-                </p>
-                
-                <p className="text-xl text-blue-100">
-                  <span className="text-white font-semibold">Knowledge Through Experience</span> - Learn about Islam through interactive sessions
-                </p>
-                
-                <p className="text-xl text-blue-100">
-                  <span className="text-white font-semibold">Community Service</span> - Make a real difference while having fun
-                </p>
-              </div>
-            </div>
-            
-            {/* Right column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 mb-16">
+            {/* Image - smaller on mobile */}
+            <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
                 src="/images/WEB/brothers/annualretreat.jpeg"
                 alt="USIC Values"
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/20"></div>
+            </div>
+            
+            {/* Content */}
+            <div>
+              {/* Subtitle */}
+              <h3 className="font-heading text-2xl md:text-3xl md:text-4xl font-bold mb-6 text-white">
+                We don&apos;t just talk about Islamic values - we live them through fun, engaging activities.
+              </h3>
+              
+              <div className="space-y-4 mb-8">
+                <p className="text-lg md:text-xl text-blue-100">
+                  <span className="text-white font-semibold">Faith with Fun</span> - Deep spiritual connections through exciting activities
+                </p>
+                
+                <p className="text-lg md:text-xl text-blue-100">
+                  <span className="text-white font-semibold">Brotherhood & Sisterhood</span> - We&apos;re not just a society, we&apos;re a family
+                </p>
+                
+                <p className="text-lg md:text-xl text-blue-100">
+                  <span className="text-white font-semibold">Knowledge Through Experience</span> - Learn about Islam through interactive sessions
+                </p>
+                
+                <p className="text-lg md:text-xl text-blue-100">
+                  <span className="text-white font-semibold">Community Service</span> - Make a real difference while having fun
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -107,41 +111,43 @@ export default function AboutPage() {
         <section className="mb-20">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">FUN ACTIVITIES (YES, REALLY!)</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
-            {/* Left column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 mb-16">
+            {/* Image - smaller on mobile */}
+            <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
                 src="/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg"
                 alt="USIC Events"
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/20"></div>
             </div>
             
-            {/* Right column - Text */}
+            {/* Content */}
             <div>
-              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
+              {/* Subtitle */}
+              <h3 className="font-heading text-2xl md:text-3xl md:text-4xl font-bold mb-6 text-white">
                 From football to food socials - we&apos;ve got something for everyone.
               </h3>
               
-              <p className="text-xl mb-6 text-blue-100">
+              <p className="text-lg md:text-xl mb-6 text-blue-100">
                 Forget the stereotype that Islamic societies are boring. We&apos;re here to prove that halal fun is the best kind of fun!
               </p>
               
               <div className="space-y-4 mb-8">
                 <div>
-                  <h4 className="text-xl font-semibold mb-2 text-white">Annual Events</h4>
+                  <h4 className="text-lg md:text-xl font-semibold mb-2 text-white">Annual Events</h4>
                   <p className="text-blue-100">Charity Hike, Annual Retreat, Annual Dinner</p>
                 </div>
                 
                 <div>
-                  <h4 className="text-xl font-semibold mb-2 text-white">Weekly Events</h4>
+                  <h4 className="text-lg md:text-xl font-semibold mb-2 text-white">Weekly Events</h4>
                   <p className="text-blue-100">Islamic History Lessons, Qur&apos;an Circles, Football (Sisters Thursday, Brothers Friday), Welfare Wednesdays</p>
                 </div>
                 
                 <div>
-                  <h4 className="text-xl font-semibold mb-2 text-white">Other Fun Stuff</h4>
+                  <h4 className="text-lg md:text-xl font-semibold mb-2 text-white">Other Fun Stuff</h4>
                   <p className="text-blue-100">Food socials, Peak District hikes, Sports socials</p>
                 </div>
               </div>
@@ -153,56 +159,58 @@ export default function AboutPage() {
         <section className="mb-20">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">JOIN THE FAMILY</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
-            {/* Left column - Text */}
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 mb-16">
+            {/* Image - smaller on mobile */}
+            <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
+              <Image
+                src="/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg"
+                alt="USIC Membership"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-black/20"></div>
+      </div>
+
+            {/* Content */}
             <div>
-              <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
+              {/* Subtitle */}
+              <h3 className="font-heading text-2xl md:text-3xl md:text-4xl font-bold mb-6 text-white">
                 More than just a membership card - you get a whole new social life.
               </h3>
               
               <div className="space-y-4 mb-8">
-                <p className="flex items-center text-xl text-blue-100">
+                <p className="flex items-center text-lg md:text-xl text-blue-100">
                   <span className="text-blue-300 mr-3">✦</span>
                   Your personal <span className="text-white font-semibold">USIC membership card</span>
                 </p>
                 
-                <p className="flex items-center text-xl text-blue-100">
+                <p className="flex items-center text-lg md:text-xl text-blue-100">
                   <span className="text-blue-300 mr-3">✦</span>
                   <span className="text-white font-semibold">Exclusive discounts</span> for Annual Dinner and Spring Camp
                 </p>
                 
-                <p className="flex items-center text-xl text-blue-100">
+                <p className="flex items-center text-lg md:text-xl text-blue-100">
                   <span className="text-blue-300 mr-3">✦</span>
                   <span className="text-white font-semibold">Priority access</span> to tickets for popular events
                 </p>
                 
-                <p className="flex items-center text-xl text-blue-100">
+                <p className="flex items-center text-lg md:text-xl text-blue-100">
                   <span className="text-blue-300 mr-3">✦</span>
                   <span className="text-white font-semibold">Member-only socials</span> and merchandise discounts
                 </p>
-              </div>
-              
+      </div>
+
               <div className="mt-8">
                 <a href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" target="_blank" rel="noopener noreferrer" className="inline-block py-2 px-6 bg-blue-600 hover:bg-blue-700 transition text-sm uppercase tracking-wider font-medium rounded">
                   Become a Member
                 </a>
               </div>
             </div>
-            
-            {/* Right column - Image */}
-            <div className="relative aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md">
-              <Image
-                src="/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg"
-                alt="USIC Membership"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-black/20"></div>
-            </div>
           </div>
         </section>
-        
-        {/* Call to Action */}
+
+      {/* Call to Action */}
         <section className="mb-12 bg-[#0F1E2C] text-white p-12 rounded-lg text-center">
           <h2 className="font-heading text-3xl font-bold mb-6">Ready to Have the Best University Experience?</h2>
           <p className="text-blue-100 mb-8 max-w-2xl mx-auto">

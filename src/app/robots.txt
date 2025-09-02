@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://usic-sheffield.org/sitemap.xml 
+Sitemap: https://usic-sheffield.org/sitemap.xml
+Sitemap: https://usic-sheffield.org/ai-sitemap.xml 

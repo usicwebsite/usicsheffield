@@ -44,10 +44,11 @@ export default function SponsorsPage() {
                 rel="noopener noreferrer" 
                 className="w-64 h-64 relative hover:scale-105 transition-transform duration-300"
               >
-                <Image 
-                  src={sponsor.image} 
-                  alt={sponsor.name} 
+                <Image
+                  src={sponsor.image}
+                  alt={sponsor.name}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   className="object-contain"
                 />
               </a>

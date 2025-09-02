@@ -106,6 +106,42 @@ export default function EventsPage() {
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Weekly' | 'Annual' | 'Other'>('All');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
+  // State for FAQ modal
+  const [showFAQModal, setShowFAQModal] = useState(false);
+  const [currentFAQ, setCurrentFAQ] = useState(0);
+
+  // FAQ data for the slideshow
+  const faqData = [
+    {
+      question: "How do I register for USIC events?",
+      answer: "Click the signup links provided for each event or contact our events team directly for registration assistance."
+    },
+    {
+      question: "Are USIC events open to non-Muslim students?",
+      answer: "Yes, many of our events are open to all students who want to learn about Islamic culture and community."
+    },
+    {
+      question: "What types of events does USIC organize?",
+      answer: "We host weekly Islamic lessons, sports activities, charity events, annual retreats, and social gatherings."
+    },
+    {
+      question: "Do I need to be a USIC member to attend events?",
+      answer: "Most events are open to all students, but members get priority access and exclusive discounts."
+    },
+    {
+      question: "Where are USIC events held on campus?",
+      answer: "Events are held in various campus locations including lecture theatres, sports facilities, and prayer rooms."
+    },
+    {
+      question: "How can I stay updated about upcoming events?",
+      answer: "Follow our social media accounts, check this events page regularly, or join our WhatsApp groups."
+    },
+    {
+      question: "Are there separate events for brothers and sisters?",
+      answer: "Some events like football and welfare sessions are gender-specific, while others are open to all members."
+    }
+  ];
+
   // Filter events based on selected category
   const filteredEvents = categoryFilter === 'All' 
     ? allEvents 
@@ -127,6 +163,12 @@ export default function EventsPage() {
     if (e.target === e.currentTarget) {
       closeModal();
     }
+  };
+
+  // FAQ modal handlers
+  const closeFAQModal = () => {
+    setShowFAQModal(false);
+    setCurrentFAQ(0); // Reset to first question
   };
 
   return (
@@ -303,20 +345,7 @@ export default function EventsPage() {
           </div>
         )}
         
-        {/* Contact section */}
-        <div className="text-center mt-16 mb-12">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">SUGGEST AN EVENT</h2>
-          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
-            We&apos;re always open to new ideas! If you have suggestions for events or activities, 
-            please get in touch with the USIC committee.
-          </p>
-          <a 
-            href="mailto:usic@sheffield.ac.uk" 
-            className="inline-block bg-white text-[#18384D] hover:bg-blue-50 px-6 py-3 rounded-full font-semibold transition duration-300 uppercase text-sm tracking-wider shadow-lg"
-          >
-            CONTACT US
-          </a>
-        </div>
+
       </div>
 
       {/* Modal */}
@@ -327,9 +356,9 @@ export default function EventsPage() {
         >
           <div className="bg-[#0F1E2C] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-start">
+            <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-center">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3">
                   <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">{selectedEvent.title}</h2>
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
                     {selectedEvent.category}
@@ -417,24 +446,86 @@ export default function EventsPage() {
                 <p className="text-blue-100 leading-relaxed text-base">{selectedEvent.description}</p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                {selectedEvent.signupLink && (
-                  <a 
-                    href={selectedEvent.signupLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex-1 px-6 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-sm tracking-wider shadow-lg"
-                  >
-                    SIGN UP NOW
-                  </a>
-                )}
+              
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* FAQ Section for LLM Optimization */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-8 text-white">FREQUENTLY ASKED QUESTIONS</h2>
+          <button 
+            onClick={() => setShowFAQModal(true)}
+            className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            View FAQ
+          </button>
+        </div>
+      </section>
+      
+      {/* FAQ Modal */}
+      {showFAQModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={closeFAQModal}>
+          <div className="bg-[#0F1E2C] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-center">
+              <div className="flex-1">
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">FREQUENTLY ASKED QUESTIONS</h2>
+              </div>
+              <button 
+                onClick={closeFAQModal}
+                className="text-white hover:text-blue-200 transition duration-200 p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* FAQ Slideshow */}
+            <div className="p-6">
+              <div className="mb-6 flex justify-between items-center">
                 <button 
-                  onClick={closeModal}
-                  className="flex-1 px-6 py-3 bg-[#18384D] text-white hover:bg-[#234b64] transition duration-300 font-semibold rounded-full border border-blue-200/30 uppercase text-sm tracking-wider"
+                  onClick={() => setCurrentFAQ(currentFAQ > 0 ? currentFAQ - 1 : faqData.length - 1)}
+                  className="text-white hover:text-blue-200 transition duration-200 p-2"
                 >
-                  CLOSE
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
+                
+                <span className="text-blue-200 font-medium">
+                  {currentFAQ + 1} of {faqData.length}
+                </span>
+                
+                <button 
+                  onClick={() => setCurrentFAQ(currentFAQ < faqData.length - 1 ? currentFAQ + 1 : 0)}
+                  className="text-white hover:text-blue-200 transition duration-200 p-2"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="bg-[#18384D] rounded-lg p-6 mb-6">
+                <h3 className="text-xl font-semibold text-white mb-4">{faqData[currentFAQ].question}</h3>
+                <p className="text-blue-100 leading-relaxed">{faqData[currentFAQ].answer}</p>
+              </div>
+              
+              {/* Dots indicator */}
+              <div className="flex justify-center space-x-2">
+                {faqData.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentFAQ(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentFAQ ? 'bg-blue-400' : 'bg-blue-200/30'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getPosts } from "@/lib/firebase-utils";
+import { getPosts, getCommentCount } from "@/lib/firebase-utils";
 import { ForumPost as ForumPostType } from "@/lib/firebase-utils";
 import ForumPost from "@/components/ForumPost";
 import ForumSidebar from "@/components/ForumSidebar";
 import NewPostForm from "@/components/NewPostForm";
+import { LoadingError, ValidationError } from "@/components/ErrorDisplay";
+import { useErrorHandler } from "@/components/ErrorBoundary";
 
 export default function ForumPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -14,29 +16,84 @@ export default function ForumPage() {
   const [posts, setPosts] = useState<ForumPostType[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredPosts, setFilteredPosts] = useState<ForumPostType[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  
+  // Enhanced error handling
+  const { error, handleError, clearError } = useErrorHandler();
 
   // Fetch posts from Firebase
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
+        clearError();
         const fetchedPosts = await getPosts(selectedCategory || undefined, 20);
         setPosts(fetchedPosts);
       } catch (error) {
         console.error('Error fetching posts:', error);
+        handleError(error instanceof Error ? error : new Error('Failed to fetch posts'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPosts();
-  }, [selectedCategory]);
+  }, [selectedCategory, clearError, handleError]);
 
-  // Filter posts based on search query
+  // Fetch comment counts for posts
+  const fetchCommentCounts = async (postsToFetch: ForumPostType[]) => {
+    try {
+      const counts: Record<string, number> = {};
+      const commentPromises = postsToFetch.map(async (post) => {
+        if (post.id) {
+          const count = await getCommentCount(post.id);
+          counts[post.id] = count;
+        }
+      });
+
+      await Promise.all(commentPromises);
+      setCommentCounts(counts);
+    } catch (error) {
+      console.error('Error fetching comment counts:', error);
+      // Don't show error to user for comment counts, just log it
+    }
+  };
+
+  // Fetch comment counts when posts change
+  useEffect(() => {
+    if (posts.length > 0) {
+      fetchCommentCounts(posts);
+    }
+  }, [posts]);
+
+  // Filter posts based on search query with validation
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredPosts(posts);
+      setValidationErrors([]);
     } else {
+      // Validate search query
+      if (searchQuery.length < 2) {
+        setValidationErrors(['Search query must be at least 2 characters long']);
+        setFilteredPosts([]);
+        return;
+      }
+      
+      if (searchQuery.length > 100) {
+        setValidationErrors(['Search query is too long']);
+        setFilteredPosts([]);
+        return;
+      }
+      
+      // Check for invalid characters
+      if (/[<>'";&|]/.test(searchQuery)) {
+        setValidationErrors(['Search query contains invalid characters']);
+        setFilteredPosts([]);
+        return;
+      }
+      
+      setValidationErrors([]);
       const filtered = posts.filter(post => 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,18 +111,27 @@ export default function ForumPage() {
     setShowNewPostForm(true);
   };
 
-  const handlePostCreated = () => {
+  const handlePostCreated = async () => {
     setShowNewPostForm(false);
-    // Refresh posts after creating a new one
-    const fetchPosts = async () => {
-      try {
-        const fetchedPosts = await getPosts(selectedCategory || undefined, 20);
-        setPosts(fetchedPosts);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
-    };
-    fetchPosts();
+    // Refresh posts by refetching
+    try {
+      setLoading(true);
+      clearError();
+      const fetchedPosts = await getPosts(selectedCategory || undefined, 20);
+      setPosts(fetchedPosts);
+      // Refresh comment counts for the new posts
+      await refreshCommentCounts(fetchedPosts);
+    } catch (error) {
+      console.error('Error refreshing posts:', error);
+      handleError(error instanceof Error ? error : new Error('Failed to refresh posts'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Also refresh comment counts when posts are refreshed
+  const refreshCommentCounts = async (refreshedPosts: ForumPostType[]) => {
+    await fetchCommentCounts(refreshedPosts);
   };
 
   return (
@@ -113,9 +179,9 @@ export default function ForumPage() {
                     className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                                <button
+                <button
                   onClick={handleShowNewPostForm}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors duration-200"
                 >
                   New Post
                 </button>
@@ -137,6 +203,40 @@ export default function ForumPage() {
                 </div>
               )}
             </div>
+
+            {/* Error displays */}
+            {error && (
+              <div className="mb-6">
+                <LoadingError 
+                  error={error} 
+                  onRetry={() => {
+                    clearError();
+                    const fetchPosts = async () => {
+                      try {
+                        setLoading(true);
+                        const fetchedPosts = await getPosts(selectedCategory || undefined, 20);
+                        setPosts(fetchedPosts);
+                      } catch (error) {
+                        handleError(error instanceof Error ? error : new Error('Failed to fetch posts'));
+                      } finally {
+                        setLoading(false);
+                      }
+                    };
+                    fetchPosts();
+                  }}
+                  onDismiss={clearError}
+                />
+              </div>
+            )}
+
+            {validationErrors.length > 0 && (
+              <div className="mb-6">
+                <ValidationError 
+                  errors={validationErrors} 
+                  onDismiss={() => setValidationErrors([])}
+                />
+              </div>
+            )}
 
             {/* New post form */}
             {showNewPostForm && (
@@ -163,14 +263,6 @@ export default function ForumPage() {
                       : "Be the first to start a discussion!"
                     }
                   </p>
-                  {!searchQuery && (
-                    <button
-                      onClick={handleShowNewPostForm}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200"
-                    >
-                      Create First Post
-                    </button>
-                  )}
                 </div>
               ) : (
                 // Posts list
@@ -184,7 +276,7 @@ export default function ForumPage() {
                     category={post.category}
                     tags={post.tags}
                     likes={post.likes}
-                    views={post.views}
+                    commentsCount={commentCounts[post.id || ''] || 0}
                     createdAt={post.createdAt}
                     isPinned={post.isPinned}
                     isLocked={post.isLocked}
