@@ -99,6 +99,20 @@ The website will be available at `http://localhost:3000`
 Create a `.env.local` file with the following variables:
 
 ### Firebase Configuration (Required)
+
+**Important**: The Firebase environment variables must be configured in your production deployment platform. Copy the values from `docs/env.example` and set them in your deployment environment.
+
+For **Vercel**:
+1. Go to your project dashboard
+2. Navigate to Settings > Environment Variables
+3. Add each variable from `docs/env.example`
+
+For **Netlify**:
+1. Go to Site Settings > Environment Variables
+2. Add each variable from `docs/env.example`
+
+For **other platforms**, add the environment variables in their respective environment variable sections.
+
 ```env
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
@@ -108,6 +122,8 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ```
+
+**Note**: If you get a "Firebase: Error (auth/invalid-api-key)" error in production, it means these environment variables are not properly set in your deployment platform.
 
 ### Firebase Admin SDK (Required for admin features)
 ```env
@@ -121,8 +137,40 @@ JWT_SECRET=your_secure_jwt_secret
 
 ### Rate Limiting (Optional)
 ```env
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+# Questions endpoint rate limiting (3 questions per hour)
+RATE_LIMIT_QUESTIONS_WINDOW_MS=3600000
+RATE_LIMIT_QUESTIONS_PER_HOUR=3
+
+# Posts endpoint rate limiting (1 post per hour for regular users)
+RATE_LIMIT_POSTS_WINDOW_MS=3600000
+RATE_LIMIT_POSTS_PER_HOUR=1
+
+# Admin posts endpoint rate limiting (10 posts per hour for admins)
+RATE_LIMIT_POSTS_ADMIN_WINDOW_MS=3600000
+RATE_LIMIT_POSTS_ADMIN_PER_HOUR=10
+
+# Authentication rate limiting (20 attempts per 15 minutes)
+RATE_LIMIT_AUTH_WINDOW_MS=900000
+RATE_LIMIT_AUTH_ATTEMPTS=20
+
+# Token refresh rate limiting (30 refreshes per 5 minutes)
+RATE_LIMIT_REFRESH_WINDOW_MS=300000
+RATE_LIMIT_REFRESH_ATTEMPTS=30
+
+# Admin operations rate limiting (50 operations per hour)
+RATE_LIMIT_ADMIN_WINDOW_MS=3600000
+RATE_LIMIT_ADMIN_OPERATIONS=50
+
+# Rate limit cleanup interval (5 minutes)
+RATE_LIMIT_CLEANUP_INTERVAL_MS=300000
+```
+
+### Cloudinary (Required for profile photo uploads)
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_URL=cloudinary://your_api_key:your_api_secret@your_cloud_name
 ```
 
 ## 📁 Project Structure
