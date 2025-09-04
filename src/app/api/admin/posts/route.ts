@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
-import { getSubmittedPosts, getAllPosts, ForumPost } from '@/lib/firebase-utils';
+import { getSubmittedPosts, getAllPosts, ForumPost } from '@/lib/firebase-admin-utils';
 
 // Get submitted posts for admin approval
 async function getSubmittedPostsHandler(request: AuthenticatedRequest) {

@@ -69,11 +69,17 @@ export function middleware(request: NextRequest) {
   setCSRFTokenCookie(response, csrfToken);
 
   // Apply security headers to all responses
-  console.log('[DEBUG] 🔧 Applying security headers for path:', path);
+  // Only log security headers in development mode for debugging
+  if (process.env.NODE_ENV === 'development' && process.env.DEBUG_SECURITY_HEADERS === 'true') {
+    console.log('[DEBUG] 🔧 Applying security headers for path:', path);
+  }
+  
   Object.entries(securityHeaders).forEach(([key, value]) => {
     response.headers.set(key, value);
-    if (key.includes('Cross-Origin') || key.includes('Content-Security')) {
-      console.log('[DEBUG] 📋 Set header:', key, '=', value);
+    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_SECURITY_HEADERS === 'true') {
+      if (key.includes('Cross-Origin') || key.includes('Content-Security')) {
+        console.log('[DEBUG] 📋 Set header:', key, '=', value);
+      }
     }
   });
 

@@ -21,168 +21,162 @@ export default function EventsSection() {
     },
     {
       id: 3,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister5.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 4,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/brother2.jpeg",
       alt: "USIC brothers gathering"
     },
     {
-      id: 5,
+      id: 4,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister6.jpeg",
       alt: "USIC sisters community"
     },
     {
-      id: 6,
+      id: 5,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/brother3.jpeg",
       alt: "USIC brothers community"
     },
     {
-      id: 7,
+      id: 6,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister7.jpeg",
       alt: "USIC sisters gathering"
     },
     {
-      id: 8,
+      id: 7,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/brother4.jpeg",
       alt: "USIC brothers gathering"
     },
     {
-      id: 9,
+      id: 8,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister8.jpeg",
       alt: "USIC sisters community"
     },
     {
-      id: 10,
+      id: 9,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/brother5.jpeg",
       alt: "USIC brothers community"
     },
     {
-      id: 11,
+      id: 10,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister9.jpeg",
       alt: "USIC sisters gathering"
     },
     {
-      id: 12,
+      id: 11,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-2.jpg",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
-      id: 13,
+      id: 12,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister10.jpeg",
       alt: "USIC sisters community"
     },
     {
-      id: 14,
+      id: 13,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-6.jpg",
       alt: "USIC Annual Dinner 2025 gathering"
     },
     {
-      id: 15,
+      id: 14,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister11.jpeg",
       alt: "USIC sisters gathering"
     },
     {
-      id: 16,
+      id: 15,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
-      id: 17,
+      id: 16,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister24.jpeg",
       alt: "USIC sisters community"
     },
     {
-      id: 18,
+      id: 17,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-21.jpg",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
-      id: 19,
+      id: 18,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister25.jpeg",
       alt: "USIC sisters gathering"
     },
     {
-      id: 20,
+      id: 19,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-25.jpg",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
-      id: 21,
+      id: 20,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister26.jpeg",
       alt: "USIC sisters community"
     },
     {
-      id: 22,
+      id: 21,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-45.jpg",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
-      id: 23,
+      id: 22,
       title: "USIC Sisters",
       imagePath: "/images/WEB/sisters/sister27.jpeg",
       alt: "USIC sisters gathering"
     },
     {
-      id: 24,
+      id: 23,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg",
       alt: "USIC Annual Dinner 2025 gathering"
     },
     {
-      id: 25,
+      id: 24,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
-      id: 26,
+      id: 25,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
-      id: 27,
+      id: 26,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/IMG_0006.JPG",
       alt: "USIC community gathering"
     },
     {
-      id: 28,
+      id: 27,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/IMG_0028.JPG",
       alt: "USIC community activity"
     },
     {
-      id: 29,
+      id: 28,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/IMG_9262.JPG",
       alt: "USIC community celebration"
     },
     {
-      id: 30,
+      id: 29,
       title: "USIC Brothers",
       imagePath: "/images/WEB/brothers/IMG_9980.JPG",
       alt: "USIC community gathering"

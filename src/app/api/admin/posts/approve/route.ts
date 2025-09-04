@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { AuthenticatedRequest } from '@/lib/auth-api';
-import { approvePost } from '@/lib/firebase-utils';
+import { approvePost } from '@/lib/firebase-admin-utils';
 
 export async function POST(request: AuthenticatedRequest) {
   try {

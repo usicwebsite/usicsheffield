@@ -10,9 +10,10 @@ import Image from 'next/image';
 export default function Hero() {
   // Define slideshow images alternating between brothers and sisters
   const images = [
+    '/images/WEB/brothers/IMG_9262.JPG',
+    '/images/WEB/brothers/IMG_9980.JPG',
     '/images/WEB/sisters/sister3.jpeg',
     '/images/WEB/brothers/brother1.jpeg',
-    '/images/WEB/sisters/sister5.jpeg',
     '/images/WEB/brothers/brother2.jpeg',
     '/images/WEB/sisters/sister6.jpeg',
     '/images/WEB/brothers/brother3.jpeg',
@@ -38,8 +39,6 @@ export default function Hero() {
     '/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg',
     '/images/WEB/brothers/IMG_0006.JPG',
     '/images/WEB/brothers/IMG_0028.JPG',
-    '/images/WEB/brothers/IMG_9262.JPG',
-    '/images/WEB/brothers/IMG_9980.JPG',
   ];
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

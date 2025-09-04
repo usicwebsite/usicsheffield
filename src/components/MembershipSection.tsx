@@ -78,12 +78,11 @@ export default function MembershipSection() {
             ) : (
               /* Video player with proper aspect ratio handling */
               <div className="flex items-center justify-center w-full h-full bg-black">
-                <video 
+                <video
                   ref={videoRef}
-                  className="h-full max-h-full object-contain" 
-                  controls 
+                  className="h-full max-h-full object-contain"
+                  controls
                   src="/usichighlights.mp4"
-                  poster="/images/WEB/1.png"
                   style={{
                     // Maintain natural aspect ratio when in fullscreen
                     maxWidth: "100%",

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuth, UserAuthenticatedRequest } from '@/lib/auth-api';
-import { createPost } from '@/lib/firebase-utils';
+import { createPost } from '@/lib/firebase-admin-utils';
 import { checkPostRateLimit } from '@/lib/rateLimit';
 
 export const POST = withAuth(async (request: UserAuthenticatedRequest) => {

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
-// import { withAuth } from '@/lib/auth-api';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,9 +15,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if Firebase Admin is initialized
+    if (!adminAuth) {
+      console.error('[Login API] ❌ Firebase Admin Auth not initialized');
+      return NextResponse.json(
+        { error: 'Authentication service not available' },
+        { status: 503 }
+      );
+    }
+
     // Verify the Firebase ID token
     console.log('[Login API] Verifying Firebase ID token...');
-    const adminAuth = getAuth();
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     console.log('[Login API] ✅ Token verified for user:', decodedToken.uid);
 
@@ -28,16 +34,16 @@ export async function POST(request: NextRequest) {
     console.log('[Login API] ✅ Got Firebase user:', firebaseUser.email);
 
     // Check if user exists in Firestore (optional - depends on your user management)
-    const db = getFirestore();
-    const userDocRef = doc(db, 'users', decodedToken.uid);
-    let userDocSnap;
-
-    try {
-      userDocSnap = await getDoc(userDocRef);
-      console.log('[Login API] User document exists:', userDocSnap.exists());
-    } catch (error) {
-      console.log('[Login API] Error checking user document:', error);
-      // Continue without user document for now
+    let userDocSnap = null;
+    if (adminDb) {
+      try {
+        const userDocRef = adminDb.collection('users').doc(decodedToken.uid);
+        userDocSnap = await userDocRef.get();
+        console.log('[Login API] User document exists:', userDocSnap.exists);
+      } catch (error) {
+        console.log('[Login API] Error checking user document:', error);
+        // Continue without user document for now
+      }
     }
 
     // Create session data
