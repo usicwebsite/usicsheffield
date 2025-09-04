@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from "firebase/auth";
@@ -33,7 +33,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase with error handling
-let app: any = null;
+let app: FirebaseApp | null = null;
 try {
   if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);
