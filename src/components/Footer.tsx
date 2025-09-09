@@ -41,8 +41,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-blue-200 transition duration-300">
-                  Blog
+                <Link href="/forum" className="hover:text-blue-200 transition duration-300">
+                  Forum
                 </Link>
               </li>
               <li>

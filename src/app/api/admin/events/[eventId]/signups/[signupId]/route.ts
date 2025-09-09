@@ -1,26 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { verifyAdminToken } from '@/lib/firebase-admin-utils';
 
-// Helper function to verify admin token
-async function verifyAdminToken(request: NextRequest): Promise<{ success: boolean; error?: string; uid?: string }> {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { success: false, error: 'No authorization header' };
-    }
-
-    // For now, we'll skip token verification in development
-    // In production, you would verify the Firebase ID token here
-    if (process.env.NODE_ENV === 'development') {
-      return { success: true, uid: 'dev-admin' };
-    }
-
-    // TODO: Implement proper Firebase ID token verification
-    return { success: false, error: 'Token verification not implemented' };
-  } catch {
-    return { success: false, error: 'Token verification failed' };
-  }
-}
+// Admin token verification is now handled by the imported utility function
 
 // PATCH /api/admin/events/[eventId]/signups/[signupId] - Update signup payment status
 export async function PATCH(

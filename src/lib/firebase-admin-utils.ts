@@ -1,4 +1,4 @@
-import { adminDb } from './firebase-admin';
+import { adminDb, adminAuth } from './firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 // Types for forum data (server-side)
@@ -24,6 +24,60 @@ export interface ForumPost {
 }
 
 // SERVER-SIDE FUNCTIONS (using Admin SDK)
+
+// Verify Firebase ID token
+export const verifyFirebaseToken = async (token: string) => {
+  if (!adminAuth) {
+    throw new Error('Firebase Admin Auth is not initialized');
+  }
+
+  try {
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    return {
+      success: true,
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      emailVerified: decodedToken.email_verified,
+      name: decodedToken.name,
+      picture: decodedToken.picture,
+      customClaims: decodedToken.customClaims || {}
+    };
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Token verification failed'
+    };
+  }
+};
+
+// Verify admin token from request headers
+export const verifyAdminToken = async (request: Request) => {
+  try {
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { success: false, error: 'No authorization header' };
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const verification = await verifyFirebaseToken(token);
+
+    if (!verification.success) {
+      return verification;
+    }
+
+    // Check if user has admin privileges (you can implement custom claims or check against an admin users collection)
+    // For now, we'll allow any authenticated user - you can add admin role checking here
+    return verification;
+
+  } catch (error) {
+    console.error('Admin token verification failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Token verification failed'
+    };
+  }
+};
 
 // Create a new post in submitted_posts collection (server-side)
 export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 'updatedAt' | 'likes' | 'views' | 'isPinned' | 'isLocked' | 'isApproved' | 'approvedBy' | 'approvedAt' | 'rejectedBy' | 'rejectedAt' | 'rejectionReason'>) => {
