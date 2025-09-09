@@ -200,7 +200,7 @@ export default function EventDetailPage() {
     setImagePreviewUrl(null);
     // Update the event to remove the image
     if (event) {
-      setEvent({...event, imageUrl: null});
+      setEvent({...event, imageUrl: undefined});
     }
   };
 
@@ -244,7 +244,7 @@ export default function EventDetailPage() {
 
       // Handle image URL - send empty string to remove, or new URL if uploaded
       if (selectedImageFile) {
-        formData.append('imageUrl', newImageUrl);
+        formData.append('imageUrl', newImageUrl || '');
       } else if (event.imageUrl === null) {
         // Image was removed
         formData.append('imageUrl', '');
