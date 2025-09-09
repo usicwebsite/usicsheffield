@@ -117,7 +117,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Weekly",
       description: "A special social gathering for sisters to build strong bonds of sisterhood. Activities include crafts, games, discussions, and occasional workshops on topics relevant to Muslim women.",
-      image: "/images/WEB/sisters/sister11.jpeg",
+      image: "/images/WEB/sisters/sister27.jpeg",
       signupLink: "https://forms.google.com/welfare-wednesdays-signup"
     },
     {

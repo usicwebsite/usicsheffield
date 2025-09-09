@@ -75,7 +75,7 @@ export default function AboutPage() {
             <div>
               {/* Subtitle */}
               <h3 className="font-heading text-2xl md:text-3xl md:text-4xl font-bold mb-6 text-white">
-                Worried university life means no fun because everything is haram?
+              Worried about being able to grow and hold on to your faith while at university?
               </h3>
               
               <p className="text-lg md:text-xl mb-6 text-blue-100">
