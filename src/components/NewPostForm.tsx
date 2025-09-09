@@ -6,6 +6,7 @@ import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import ForumAuth from "./ForumAuth";
 import { useFormValidation, ClientValidationSchemas } from "@/lib/client-validation";
+import { categoryUtils } from "@/lib/static-data";
 
 interface NewPostFormProps {
   onPostCreated?: () => void;
@@ -27,8 +28,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
   } = useFormValidation(ClientValidationSchemas.postForm, {
     title: "",
     content: "",
-    category: "GENERAL",
-    tags: ""
+    category: categoryUtils.getCategoryIds()[0] // Use first category as default
   });
 
   // Listen to Firebase auth state changes
@@ -47,16 +47,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     return () => unsubscribe();
   }, []);
 
-  const categories = [
-    "GENERAL",
-    "FAITH",
-    "ACADEMIC",
-    "SOCIAL",
-    "EVENTS",
-    "ANNOUNCEMENTS",
-    "QUESTIONS",
-    "DISCUSSION"
-  ];
+  const categories = categoryUtils.getAllCategories();
 
   // Simple field validation functions
   const validateTitle = (value: string) => {
@@ -76,10 +67,6 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     return null;
   };
 
-  const validateTags = (value: string) => {
-    if (value && value.length > 200) return "Tags must be less than 200 characters";
-    return null;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,14 +78,12 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     const titleError = validateTitle(formData.title as string);
     const contentError = validateContent(formData.content as string);
     const categoryError = validateCategory(formData.category as string);
-    const tagsError = validateTags(formData.tags as string);
 
     // Set field errors
     const newFieldErrors: Record<string, string> = {};
     if (titleError) newFieldErrors.title = titleError;
     if (contentError) newFieldErrors.content = contentError;
     if (categoryError) newFieldErrors.category = categoryError;
-    if (tagsError) newFieldErrors.tags = tagsError;
 
     setSubmitFieldErrors(newFieldErrors);
 
@@ -116,18 +101,12 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     setIsSubmitting(true);
     
     try {
-      const tagsArray = (formData.tags as string)
-        .split(",")
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
-
       await createPost({
         title: (formData.title as string).trim(),
         content: (formData.content as string).trim(),
         author: user.displayName || user.email || "Anonymous User",
         authorId: user.uid,
         category: formData.category as string,
-        tags: tagsArray,
       });
 
       // Clear any previous error messages
@@ -143,8 +122,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
       // Reset form
       updateField("title", "");
       updateField("content", "");
-      updateField("category", "GENERAL");
-      updateField("tags", "");
+      updateField("category", categoryUtils.getCategoryIds()[0]);
 
       // Hide confirmation after 10 seconds
       setTimeout(() => {
@@ -312,8 +290,8 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
             }`}
           >
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
               </option>
             ))}
           </select>
@@ -345,27 +323,6 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
           )}
         </div>
 
-        <div>
-          <label htmlFor="tags" className="block text-sm font-medium text-gray-300 mb-2">
-            Tags (comma-separated)
-          </label>
-          <input
-            type="text"
-            id="tags"
-            value={formData.tags as string}
-            onChange={(e) => {
-              updateField("tags", e.target.value);
-              // Remove real-time validation - only validate on submit
-            }}
-            className={`w-full px-3 py-2 bg-gray-800 border rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              hasAttemptedSubmit && submitFieldErrors.tags ? 'border-red-500' : 'border-gray-600'
-            }`}
-            placeholder="e.g., islam, university, community"
-          />
-          {submitFieldErrors.tags && (
-            <p className="mt-1 text-sm text-red-400">{submitFieldErrors.tags}</p>
-          )}
-        </div>
 
         <button
           type="submit"

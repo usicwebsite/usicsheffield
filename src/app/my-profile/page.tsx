@@ -2,22 +2,22 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { User as FirebaseUser, updateProfile, updateEmail } from 'firebase/auth';
+import { User as FirebaseUser, updateProfile } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
-import { useFormValidation, ClientValidationSchemas } from '@/lib/client-validation';
-import { UserCircle, Edit, Save, X, Camera, Upload, Shield } from 'lucide-react';
+import { UserCircle, Camera, Upload, Shield } from 'lucide-react';
 import { PageLoadingSpinner } from '@/components/LoadingSpinner';
 import Image from 'next/image';
 import { checkUserAdminStatus, ForumPost } from '@/lib/firebase-client';
 import { getUserSubmittedPosts, getUserApprovedPosts, getUserRejectedPosts } from '@/lib/firebase-utils';
+import { categoryUtils } from '@/lib/static-data';
 
 export default function MyProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  // Removed isEditing state since we no longer have edit mode
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -28,17 +28,17 @@ export default function MyProfilePage() {
   const [postsLoading, setPostsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form validation
-  const {
-    data: formData,
-    fieldErrors,
-    isValid,
-    updateField,
-    validateField
-  } = useFormValidation(ClientValidationSchemas.profileForm || ClientValidationSchemas.loginForm, {
-    displayName: '',
-    email: ''
-  });
+  // Form validation - no longer needed for profile editing
+  // const {
+  //   data: formData,
+  //   fieldErrors,
+  //   isValid,
+  //   updateField,
+  //   validateField
+  // } = useFormValidation(ClientValidationSchemas.profileForm || ClientValidationSchemas.loginForm, {
+  //   displayName: '',
+  //   email: ''
+  // });
 
   // Check authentication status
   useEffect(() => {
@@ -67,9 +67,7 @@ export default function MyProfilePage() {
         }
         
         setUser(user);
-        // Initialize form data with user info
-        updateField('displayName', user.displayName || '');
-        updateField('email', user.email || '');
+        // No longer initializing form data since we're not editing display name/email
         
         // Check if user is admin by checking Firestore admins collection
         try {
@@ -93,7 +91,7 @@ export default function MyProfilePage() {
     });
 
     return () => unsubscribe();
-  }, [router, updateField]);
+  }, [router]);
 
   const loadUserPosts = useCallback(async () => {
     if (!user) return;
@@ -125,68 +123,7 @@ export default function MyProfilePage() {
     }
   }, [user, loadUserPosts]);
 
-  const handleEditProfile = () => {
-    setIsEditing(true);
-    setError(null);
-    setSuccessMessage('');
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setError(null);
-    setSuccessMessage('');
-    // Reset form data to original values
-    if (user) {
-      updateField('displayName', user.displayName || '');
-      updateField('email', user.email || '');
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    if (!user || !isValid) {
-      setError('Please fix validation errors before saving');
-      return;
-    }
-
-    try {
-      setError(null);
-      setSuccessMessage('');
-
-      const auth = getFirebaseAuth();
-      if (!auth) throw new Error('Authentication not available');
-
-      // Verify user object is still valid
-      if (typeof user.getIdToken !== 'function') {
-        throw new Error('Invalid user session. Please log in again.');
-      }
-
-      // Update display name if changed
-      if (formData.displayName !== user.displayName) {
-        await updateProfile(user, {
-          displayName: formData.displayName as string
-        });
-      }
-
-      // Update email if changed
-      if (formData.email !== user.email) {
-        await updateEmail(user, formData.email as string);
-      }
-
-      setSuccessMessage('Profile updated successfully!');
-      setIsEditing(false);
-      
-      // Refresh user data
-      setUser({ ...user });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      if (error instanceof Error && error.message.includes('getIdToken')) {
-        setError('Session expired. Please log in again.');
-        router.push('/login');
-      } else {
-        setError(error instanceof Error ? error.message : 'Failed to update profile');
-      }
-    }
-  };
+  // Removed handleEditProfile, handleCancelEdit, and handleSaveProfile since we no longer have edit mode
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -393,194 +330,84 @@ export default function MyProfilePage() {
                   </div>
                   <p className="text-gray-300 text-sm">{user.email}</p>
                   
-                  {/* Photo upload controls - only show in edit mode */}
-                  {isEditing && (
-                    <div className="mt-4 space-y-2">
-                      <button
-                        onClick={triggerFileInput}
-                        disabled={isUploadingPhoto}
-                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center text-sm"
-                      >
-                        {isUploadingPhoto ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Change Photo
-                          </>
-                        )}
-                      </button>
-                      
-                      {user.photoURL && (
-                        <button
-                          onClick={handleRemovePhoto}
-                          disabled={isUploadingPhoto}
-                          className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center text-sm"
-                        >
-                          Remove Photo
-                        </button>
+                  {/* Photo upload controls - always visible */}
+                  <div className="mt-4 space-y-2">
+                    <button
+                      onClick={triggerFileInput}
+                      disabled={isUploadingPhoto}
+                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center text-sm"
+                    >
+                      {isUploadingPhoto ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Change Photo
+                        </>
                       )}
-                    </div>
-                  )}
+                    </button>
+                    
+                    {user.photoURL && (
+                      <button
+                        onClick={handleRemovePhoto}
+                        disabled={isUploadingPhoto}
+                        className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center text-sm"
+                      >
+                        Remove Photo
+                      </button>
+                    )}
+                  </div>
                 </div>
 
 
 
-                {!isEditing && (
-                  <button
-                    onClick={handleEditProfile}
-                    className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center"
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Profile
-                  </button>
-                )}
+                {/* Removed Edit Profile button since we only allow photo editing */}
               </div>
             </div>
 
-            {/* Profile Form */}
+            {/* Profile Information - Read Only */}
             <div className="lg:col-span-2">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
                 <h3 className="text-xl font-bold text-white mb-6">Profile Information</h3>
 
-                {isEditing ? (
-                  <form className="space-y-6">
-                    {/* Display Name */}
-                    <div>
-                      <label htmlFor="displayName" className="block text-sm font-medium text-gray-300 mb-2">
-                        Display Name
-                      </label>
-                      <input
-                        type="text"
-                        id="displayName"
-                        value={formData.displayName as string}
-                        onChange={(e) => {
-                          updateField("displayName", e.target.value);
-                          validateField("displayName", e.target.value);
-                        }}
-                        onBlur={(e) => validateField("displayName", e.target.value)}
-                        className={`w-full px-3 py-2 bg-gray-800 border rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          fieldErrors.displayName ? 'border-red-500' : 'border-gray-600'
-                        }`}
-                        placeholder="Enter your display name"
-                      />
-                      {fieldErrors.displayName && (
-                        <p className="mt-1 text-sm text-red-400">{fieldErrors.displayName}</p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
+                    <p className="text-white">{user.displayName || 'Not set'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                    <p className="text-white">{user.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Joined</label>
+                    <p className="text-white">
+                      {user.metadata.creationTime ? formatDate(new Date(user.metadata.creationTime)) : 'Unknown'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Last Sign In</label>
+                    <p className="text-white">
+                      {user.metadata.lastSignInTime ? formatDate(new Date(user.metadata.lastSignInTime)) : 'Unknown'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Account Type</label>
+                    <div className="flex items-center gap-2">
+                      {isAdmin ? (
+                        <div className="flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 rounded-md px-3 py-1">
+                          <Shield className="w-4 h-4 text-blue-400" />
+                          <span className="text-blue-300 font-medium">Administrator</span>
+                        </div>
+                      ) : (
+                        <span className="text-white">Standard User</span>
                       )}
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        value={formData.email as string}
-                        onChange={(e) => {
-                          updateField("email", e.target.value);
-                          validateField("email", e.target.value);
-                        }}
-                        onBlur={(e) => validateField("email", e.target.value)}
-                        className={`w-full px-3 py-2 bg-gray-800 border rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          fieldErrors.email ? 'border-red-500' : 'border-gray-600'
-                        }`}
-                        placeholder="Enter your email address"
-                      />
-                      {fieldErrors.email && (
-                        <p className="mt-1 text-sm text-red-400">{fieldErrors.email}</p>
-                      )}
-                    </div>
-
-                    {/* Read-only fields */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Joined</label>
-                      <p className="text-gray-400 text-sm">
-                        {user.metadata.creationTime ? formatDate(new Date(user.metadata.creationTime)) : 'Unknown'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Last Sign In</label>
-                      <p className="text-gray-400 text-sm">
-                        {user.metadata.lastSignInTime ? formatDate(new Date(user.metadata.lastSignInTime)) : 'Unknown'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Account Type</label>
-                      <div className="flex items-center gap-2">
-                        {isAdmin ? (
-                          <div className="flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 rounded-md px-2 py-1">
-                            <Shield className="w-3 h-3 text-blue-400" />
-                            <span className="text-blue-300 text-sm font-medium">Administrator</span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm">Standard User</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex space-x-4">
-                      <button
-                        type="button"
-                        onClick={handleSaveProfile}
-                        disabled={!isValid}
-                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelEdit}
-                        className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
-                      <p className="text-white">{user.displayName || 'Not set'}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                      <p className="text-white">{user.email}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Joined</label>
-                      <p className="text-white">
-                        {user.metadata.creationTime ? formatDate(new Date(user.metadata.creationTime)) : 'Unknown'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Last Sign In</label>
-                      <p className="text-white">
-                        {user.metadata.lastSignInTime ? formatDate(new Date(user.metadata.lastSignInTime)) : 'Unknown'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Account Type</label>
-                      <div className="flex items-center gap-2">
-                        {isAdmin ? (
-                          <div className="flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 rounded-md px-3 py-1">
-                            <Shield className="w-4 h-4 text-blue-400" />
-                            <span className="text-blue-300 font-medium">Administrator</span>
-                          </div>
-                        ) : (
-                          <span className="text-white">Standard User</span>
-                        )}
-                      </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -696,7 +523,7 @@ export default function MyProfilePage() {
                             <h5 className="text-white font-medium mb-1">{post.title}</h5>
                             <p className="text-gray-300 text-sm mb-2 line-clamp-2">{post.content}</p>
                             <div className="flex items-center gap-4 text-xs text-gray-400">
-                              <span>Category: {post.category}</span>
+                              <span>Category: {categoryUtils.getCategoryName(post.category)}</span>
                               <span>
                                 {post.createdAt && (typeof post.createdAt === 'object' && 'toDate' in post.createdAt ? post.createdAt.toDate() : new Date(post.createdAt)).toLocaleDateString()}
                               </span>

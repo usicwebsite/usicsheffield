@@ -7,7 +7,7 @@ export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
     console.log('[Seed Posts API] Starting post seeding...');
     
     const body = await request.json();
-    const { title, content, author, authorId, category, tags } = body;
+    const { title, content, author, authorId, category } = body;
     
     if (!title || !content || !author || !authorId || !category) {
       return NextResponse.json(
@@ -28,7 +28,6 @@ export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
       author,
       authorId,
       category,
-      tags: tags || [],
     });
     
     console.log('[Seed Posts API] Post created successfully');

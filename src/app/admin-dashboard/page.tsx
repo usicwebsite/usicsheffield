@@ -2,32 +2,34 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { getFirestoreDb } from '@/lib/firebase';
-import { getSubmittedPosts, approvePost, rejectPost, getApprovedPosts, deletePost, updatePost, getComments, getCommentCount, deleteComment, ForumPost, ForumComment } from '@/lib/firebase-utils';
+import { getSubmittedPosts, approvePost, rejectPost, getApprovedPosts, updatePost, getComments, getCommentCount, deleteComment, ForumPost, ForumComment } from '@/lib/firebase-utils';
+import { categoryUtils } from '@/lib/static-data';
 
 // Helper function to get Firebase ID token
-// const getIdToken = async (): Promise<string | null> => {
-//   const auth = getAuth();
-//   const user = auth.currentUser;
-//   if (!user) {
-//     console.log('[AdminDashboard] ❌ No current user for ID token');
-//     return null;
-//   }
+const getIdToken = async (): Promise<string | null> => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    console.log('[AdminDashboard] ❌ No current user for ID token');
+    return null;
+  }
 
-//   console.log('[AdminDashboard] 🔑 Getting ID token for user:', user.uid);
-//   try {
-//     const token = await user.getIdToken();
-//     console.log('[AdminDashboard] ✅ ID token obtained, length:', token?.length);
-//     console.log('[AdminDashboard] 🔍 ID token starts with:', token?.substring(0, 50) + '...');
-//     return token;
-//   } catch (error) {
-//     console.error('[AdminDashboard] ❌ Error getting ID token:', error);
-//     return null;
-//   }
-// };
+  console.log('[AdminDashboard] 🔑 Getting ID token for user:', user.uid);
+  try {
+    const token = await user.getIdToken();
+    console.log('[AdminDashboard] ✅ ID token obtained, length:', token?.length);
+    console.log('[AdminDashboard] 🔍 ID token starts with:', token?.substring(0, 50) + '...');
+    return token;
+  } catch (error) {
+    console.error('[AdminDashboard] ❌ Error getting ID token:', error);
+    return null;
+  }
+};
 
 
 
@@ -38,6 +40,32 @@ interface AdminStats {
   rejectedPosts: number;
   totalUsers: number;
 }
+
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  price: string;
+  description: string;
+  imageUrl?: string;
+  formFields: string[];
+  createdAt: Date;
+  createdBy: string;
+}
+
+interface EventFormData {
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  price: string;
+  description: string;
+  imageFile?: File;
+  formFields: string[];
+}
+
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -52,7 +80,7 @@ export default function AdminDashboard() {
     rejectedPosts: 0,
     totalUsers: 0
   });
-  const [activeTab, setActiveTab] = useState<'overview' | 'posts'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'events'>('overview');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedPostForRejection, setSelectedPostForRejection] = useState<ForumPost | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -61,10 +89,38 @@ export default function AdminDashboard() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState('');
-  const [editTags, setEditTags] = useState<string[]>([]);
   const [postComments, setPostComments] = useState<{[postId: string]: ForumComment[]}>({});
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const [commentCounts, setCommentCounts] = useState<{[postId: string]: number}>({});
+  const [loadingPosts, setLoadingPosts] = useState<{[postId: string]: 'approving' | 'rejecting' | null}>({});
+  
+  // Events state
+  const [events, setEvents] = useState<Event[]>([]);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [eventFormData, setEventFormData] = useState<EventFormData>({
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    price: '',
+    description: '',
+    formFields: []
+  });
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  const [availableFormFields] = useState([
+    'name',
+    'email',
+    'phone',
+    'whatsapp',
+    'student_id',
+    'dietary_requirements',
+    'emergency_contact',
+    'transportation_needs',
+    'accommodation_needs',
+    'special_requests'
+  ]);
 
   const checkAdminStatus = async (uid: string): Promise<boolean> => {
     try {
@@ -176,6 +232,13 @@ export default function AdminDashboard() {
     }
   }, [activeTab, isAuthenticated, isAdmin, approvedPosts.length]);
 
+  // Load events when Events tab is selected
+  useEffect(() => {
+    if (activeTab === 'events' && isAuthenticated && isAdmin && events.length === 0) {
+      loadEvents();
+    }
+  }, [activeTab, isAuthenticated, isAdmin, events.length]);
+
   const loadDashboardData = async () => {
     try {
       console.log('[AdminDashboard] Loading dashboard data...');
@@ -242,6 +305,42 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadEvents = async () => {
+    try {
+      console.log('[AdminDashboard] Loading events...');
+      setIsLoading(true);
+
+      // Get ID token for authentication
+      const token = await getIdToken();
+      if (!token) {
+        throw new Error('Failed to get authentication token');
+      }
+
+      // Fetch events from the admin API
+      const response = await fetch('/api/admin/events', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch events');
+      }
+
+      const data = await response.json();
+      console.log('[AdminDashboard] Loaded', data.events?.length || 0, 'events');
+      
+      setEvents(data.events || []);
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to load events:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       return;
@@ -249,7 +348,29 @@ export default function AdminDashboard() {
 
     try {
       console.log('[AdminDashboard] Deleting post:', postId);
-      await deletePost(postId);
+      
+      // Get Firebase ID token for authentication
+      const idToken = await getIdToken();
+      if (!idToken) {
+        throw new Error('Unable to get authentication token');
+      }
+      
+      // Call the API endpoint to delete the post
+      const response = await fetch(`/api/admin/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete post');
+      }
+
+      const result = await response.json();
+      console.log('[AdminDashboard] Post deleted successfully:', result);
 
       // Remove from approved posts list
       setApprovedPosts(prev => prev.filter(post => post.id !== postId));
@@ -273,7 +394,6 @@ export default function AdminDashboard() {
     setEditTitle(post.title);
     setEditContent(post.content);
     setEditCategory(post.category);
-    setEditTags([...post.tags]);
   };
 
   const cancelEditing = () => {
@@ -281,7 +401,6 @@ export default function AdminDashboard() {
     setEditTitle('');
     setEditContent('');
     setEditCategory('');
-    setEditTags([]);
   };
 
   const savePostEdits = async () => {
@@ -294,7 +413,6 @@ export default function AdminDashboard() {
         title: editTitle.trim(),
         content: editContent.trim(),
         category: editCategory.trim(),
-        tags: editTags.filter(tag => tag.trim() !== '').map(tag => tag.trim()),
         updatedAt: new Date()
       };
 
@@ -374,11 +492,16 @@ export default function AdminDashboard() {
   const handleApprovePost = async (postId: string) => {
     try {
       console.log('[AdminDashboard] Approving post:', postId);
+      
+      // Set loading state
+      setLoadingPosts(prev => ({ ...prev, [postId]: 'approving' }));
+      
       const auth = getAuth();
       const user = auth.currentUser;
 
       if (!user || !postId) {
         console.error('[AdminDashboard] No authenticated user or invalid post ID');
+        setLoadingPosts(prev => ({ ...prev, [postId]: null }));
         return;
       }
 
@@ -398,17 +521,25 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error approving post:', error);
       // You could show an error message to the user here
+    } finally {
+      // Clear loading state
+      setLoadingPosts(prev => ({ ...prev, [postId]: null }));
     }
   };
 
   const handleRejectPost = async (postId: string, rejectionReason: string) => {
     try {
       console.log('[AdminDashboard] Rejecting post:', postId, 'with reason:', rejectionReason);
+      
+      // Set loading state
+      setLoadingPosts(prev => ({ ...prev, [postId]: 'rejecting' }));
+      
       const auth = getAuth();
       const user = auth.currentUser;
 
       if (!user || !postId) {
         console.error('[AdminDashboard] No authenticated user or invalid post ID');
+        setLoadingPosts(prev => ({ ...prev, [postId]: null }));
         return;
       }
 
@@ -433,6 +564,103 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error rejecting post:', error);
       // You could show an error message to the user here
+    } finally {
+      // Clear loading state
+      setLoadingPosts(prev => ({ ...prev, [postId]: null }));
+    }
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (eventFormData.formFields.length === 0) {
+      alert('Please select at least one form field');
+      return;
+    }
+
+    try {
+      setIsCreatingEvent(true);
+      
+      const auth = getAuth();
+      const user = auth.currentUser;
+      
+      if (!user) {
+        throw new Error('No authenticated user');
+      }
+
+      // Create FormData for the request
+      const formData = new FormData();
+      formData.append('title', eventFormData.title);
+      formData.append('date', eventFormData.date);
+      formData.append('time', eventFormData.time);
+      formData.append('location', eventFormData.location);
+      formData.append('price', eventFormData.price);
+      formData.append('description', eventFormData.description);
+      formData.append('formFields', JSON.stringify(eventFormData.formFields));
+      formData.append('createdBy', user.uid);
+      
+      if (eventFormData.imageFile) {
+        formData.append('image', eventFormData.imageFile);
+      }
+
+      // Get ID token for authentication
+      const token = await getIdToken();
+      if (!token) {
+        throw new Error('Failed to get authentication token');
+      }
+
+      // Call the API to create the event
+      const response = await fetch('/api/admin/events', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create event');
+      }
+
+      const result = await response.json();
+      
+      // Add the new event to the events list
+      const newEvent: Event = {
+        id: result.eventId,
+        title: eventFormData.title,
+        date: eventFormData.date,
+        time: eventFormData.time,
+        location: eventFormData.location,
+        price: eventFormData.price,
+        description: eventFormData.description,
+        imageUrl: result.imageUrl,
+        formFields: eventFormData.formFields,
+        createdAt: new Date(),
+        createdBy: user.uid
+      };
+      
+      setEvents(prev => [newEvent, ...prev]);
+      
+      // Reset form and close modal
+      setEventFormData({
+        title: '',
+        date: '',
+        time: '',
+        location: '',
+        price: '',
+        description: '',
+        formFields: []
+      });
+      setImagePreview(null);
+      setShowEventForm(false);
+      
+      console.log('Event created successfully:', result.eventId);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create event');
+    } finally {
+      setIsCreatingEvent(false);
     }
   };
 
@@ -597,6 +825,16 @@ export default function AdminDashboard() {
             >
               Manage Posts
             </button>
+            <button
+              onClick={() => setActiveTab('events')}
+              className={`py-2 px-4 border-b-2 transition-colors ${
+                activeTab === 'events'
+                  ? 'border-blue-500 text-blue-300'
+                  : 'border-transparent text-gray-300 hover:text-white'
+              }`}
+            >
+              Manage Events
+            </button>
           </div>
         </div>
       </nav>
@@ -645,35 +883,41 @@ export default function AdminDashboard() {
                         <div className="flex-1">
                           <h3 className="text-white font-semibold mb-2">{post.title}</h3>
                           <p className="text-gray-300 mb-4 line-clamp-3">{post.content}</p>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.map((tag, index) => (
-                              <span
-                                key={index}
-                                className="bg-gray-700 text-gray-300 px-2 py-1 text-xs rounded"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                      </div>
                           <div className="flex items-center text-gray-400 text-sm space-x-4">
                             <span>By {post.author}</span>
                             <span>{formatDate(post.createdAt)}</span>
-                            <span className="bg-blue-500 text-white px-2 py-1 rounded">{post.category}</span>
+                            <span className="bg-blue-500 text-white px-2 py-1 rounded">{categoryUtils.getCategoryName(post.category)}</span>
                             <span>Likes: {post.likes}</span>
                         </div>
                         </div>
                         <div className="flex flex-col space-y-2 ml-4">
                           <button
                             onClick={() => post.id && handleApprovePost(post.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition duration-300 text-sm"
+                            disabled={loadingPosts[post.id!] === 'approving' || loadingPosts[post.id!] === 'rejecting'}
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white px-4 py-2 rounded transition duration-300 text-sm flex items-center justify-center gap-2"
                           >
-                            Approve
+                            {loadingPosts[post.id!] === 'approving' ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Approving...
+                              </>
+                            ) : (
+                              'Approve'
+                            )}
                           </button>
                           <button
                             onClick={() => openRejectModal(post)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition duration-300 text-sm"
+                            disabled={loadingPosts[post.id!] === 'approving' || loadingPosts[post.id!] === 'rejecting'}
+                            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white px-4 py-2 rounded transition duration-300 text-sm flex items-center justify-center gap-2"
                           >
-                            Reject
+                            {loadingPosts[post.id!] === 'rejecting' ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Rejecting...
+                              </>
+                            ) : (
+                              'Reject'
+                            )}
                           </button>
                         </div>
                       </div>
@@ -770,21 +1014,6 @@ export default function AdminDashboard() {
                             </div>
                           </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                              </svg>
-                              Tags (comma-separated)
-                            </label>
-                            <input
-                              type="text"
-                              value={editTags.join(', ')}
-                              onChange={(e) => setEditTags(e.target.value.split(',').map(tag => tag.trim()))}
-                              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                              placeholder="tag1, tag2, tag3"
-                            />
-                          </div>
                         </div>
 
                         <div>
@@ -859,7 +1088,7 @@ export default function AdminDashboard() {
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                 </svg>
-                                {post.category}
+                                {categoryUtils.getCategoryName(post.category)}
                               </span>
                             </div>
 
@@ -873,17 +1102,6 @@ export default function AdminDashboard() {
                               </p>
                             </div>
 
-                            {/* Tags */}
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.map((tag, index) => (
-                              <span
-                                key={index}
-                                  className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 px-3 py-1 text-xs rounded-full border border-purple-500/30 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-200"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
 
                             {/* Post Metadata */}
                             <div className="flex items-center gap-6 text-gray-400 text-sm">
@@ -1032,6 +1250,389 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'events' && (
+          <div className="space-y-6">
+            {/* Events Management Header */}
+            <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    Event Management
+                  </h2>
+                  <p className="text-gray-300 text-sm">Create and manage community events</p>
+                </div>
+                <button
+                  onClick={() => setShowEventForm(true)}
+                  className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 flex items-center gap-3 font-semibold"
+                >
+                  <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Event
+                </button>
+              </div>
+            </div>
+
+            {/* Events Grid */}
+            {events.length === 0 ? (
+              <div className="bg-gradient-to-r from-white/5 to-white/3 backdrop-blur-sm border border-white/10 rounded-xl p-12 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-500/20 to-gray-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-white text-xl font-semibold mb-2">No Events Yet</h3>
+                <p className="text-gray-400 mb-6">Start by creating your first community event</p>
+                <button
+                  onClick={() => setShowEventForm(true)}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 inline-flex items-center gap-2 font-semibold"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Your First Event
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {events.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/admin-dashboard/events/${event.id}`}
+                    className="bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-white/10 group cursor-pointer block"
+                  >
+                    {/* Event Image */}
+                    {event.imageUrl && (
+                      <div className="mb-4 overflow-hidden rounded-lg">
+                        <Image
+                          src={event.imageUrl}
+                          alt={event.title}
+                          width={400}
+                          height={200}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+
+                    {/* Event Title and Status */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-green-500/20 text-green-300 px-3 py-1 text-xs font-bold rounded-full border border-green-500/30 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          ACTIVE
+                        </span>
+                        <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                          {event.formFields.length} FIELD{event.formFields.length !== 1 ? 'S' : ''}
+                        </span>
+                      </div>
+                      <h3 className="text-white font-bold text-lg mb-2 leading-tight group-hover:text-blue-200 transition-colors duration-200">{event.title}</h3>
+                    </div>
+
+                    {/* Event Details */}
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center text-gray-300 text-sm">
+                        <svg className="w-4 h-4 mr-3 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="truncate">{event.date}</span>
+                      </div>
+                      <div className="flex items-center text-gray-300 text-sm">
+                        <svg className="w-4 h-4 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="truncate">{event.time}</span>
+                      </div>
+                      <div className="flex items-center text-gray-300 text-sm">
+                        <svg className="w-4 h-4 mr-3 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                      {event.price && (
+                        <div className="flex items-center text-gray-300 text-sm">
+                          <svg className="w-4 h-4 mr-3 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          <span className="truncate">{event.price}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Event Description */}
+                    <div className="bg-white/5 rounded-lg p-3 mb-4 border border-white/10">
+                      <p className="text-gray-300 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+                    </div>
+
+                    {/* Click indicator */}
+                    <div className="flex items-center justify-center text-gray-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Click to manage event
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Event Creation Modal */}
+        {showEventForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">Create New Event</h3>
+                  <button
+                    onClick={() => {
+                      setShowEventForm(false);
+                      if (imagePreview) {
+                        URL.revokeObjectURL(imagePreview);
+                        setImagePreview(null);
+                      }
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <form onSubmit={handleCreateEvent} className="space-y-6">
+                  {/* Event Title */}
+                  <div>
+                    <label htmlFor="eventTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                      Event Title *
+                    </label>
+                    <input
+                      type="text"
+                      id="eventTitle"
+                      value={eventFormData.title}
+                      onChange={(e) => setEventFormData({...eventFormData, title: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter event title"
+                      required
+                    />
+                  </div>
+
+                  {/* Date and Time */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="eventDate" className="block text-sm font-medium text-gray-700 mb-2">
+                        Date *
+                      </label>
+                      <input
+                        type="date"
+                        id="eventDate"
+                        value={eventFormData.date}
+                        onChange={(e) => setEventFormData({...eventFormData, date: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="eventTime" className="block text-sm font-medium text-gray-700 mb-2">
+                        Time *
+                      </label>
+                      <input
+                        type="text"
+                        id="eventTime"
+                        value={eventFormData.time}
+                        onChange={(e) => setEventFormData({...eventFormData, time: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., 6:00 PM - 10:00 PM"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Location and Price */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="eventLocation" className="block text-sm font-medium text-gray-700 mb-2">
+                        Location *
+                      </label>
+                      <input
+                        type="text"
+                        id="eventLocation"
+                        value={eventFormData.location}
+                        onChange={(e) => setEventFormData({...eventFormData, location: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter event location"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="eventPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                        Price
+                      </label>
+                      <input
+                        type="text"
+                        id="eventPrice"
+                        value={eventFormData.price}
+                        onChange={(e) => setEventFormData({...eventFormData, price: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Free, £10, £15-20"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label htmlFor="eventDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                      Description *
+                    </label>
+                    <textarea
+                      id="eventDescription"
+                      value={eventFormData.description}
+                      onChange={(e) => setEventFormData({...eventFormData, description: e.target.value})}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter event description"
+                      required
+                    />
+                  </div>
+
+                  {/* Image Upload */}
+                  <div>
+                    <label htmlFor="eventImage" className="block text-sm font-medium text-gray-700 mb-2">
+                      Event Poster
+                    </label>
+                    <input
+                      type="file"
+                      id="eventImage"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setEventFormData({...eventFormData, imageFile: file});
+                          // Create preview URL
+                          const previewUrl = URL.createObjectURL(file);
+                          setImagePreview(previewUrl);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Upload an event poster (optional, max 5MB)</p>
+                    
+                    {/* Image Preview */}
+                    {imagePreview && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                        <div className="relative w-full max-w-xs">
+                          <Image
+                            src={imagePreview}
+                            alt="Event poster preview"
+                            width={300}
+                            height={200}
+                            className="w-full h-32 object-cover rounded-lg border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setEventFormData({...eventFormData, imageFile: undefined});
+                              // Clear the file input
+                              const fileInput = document.getElementById('eventImage') as HTMLInputElement;
+                              if (fileInput) fileInput.value = '';
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Form Fields Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Signup Form Fields *
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">Select which information to collect from attendees</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {availableFormFields.map((field) => (
+                        <label key={field} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={eventFormData.formFields.includes(field)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEventFormData({
+                                  ...eventFormData,
+                                  formFields: [...eventFormData.formFields, field]
+                                });
+                              } else {
+                                setEventFormData({
+                                  ...eventFormData,
+                                  formFields: eventFormData.formFields.filter(f => f !== field)
+                                });
+                              }
+                            }}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-700 capitalize">
+                            {field.replace('_', ' ')}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {eventFormData.formFields.length === 0 && (
+                      <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
+                    )}
+                  </div>
+
+                  {/* Submit Buttons */}
+                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEventForm(false);
+                        if (imagePreview) {
+                          URL.revokeObjectURL(imagePreview);
+                          setImagePreview(null);
+                        }
+                      }}
+                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isCreatingEvent || eventFormData.formFields.length === 0}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isCreatingEvent ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Event'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Rejection Reason Modal */}
         {showRejectModal && selectedPostForRejection && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1067,15 +1668,23 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={submitRejection}
-                  disabled={!rejectionReason.trim()}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed"
+                  disabled={!rejectionReason.trim() || (selectedPostForRejection?.id ? loadingPosts[selectedPostForRejection.id] === 'rejecting' : false)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Reject Post
+                  {selectedPostForRejection?.id && loadingPosts[selectedPostForRejection.id] === 'rejecting' ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Rejecting...
+                    </>
+                  ) : (
+                    'Reject Post'
+                  )}
                 </button>
               </div>
             </div>
           </div>
         )}
+
       </main>
     </div>
   );

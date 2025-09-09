@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import ForumAuth from "./ForumAuth";
+import { categoryUtils } from "@/lib/static-data";
 
 interface ForumSidebarProps {
   selectedCategory: string | null;
@@ -37,14 +38,7 @@ export default function ForumSidebar({
 
   const categories = [
     { id: "ALL", name: "All Posts" },
-    { id: "GENERAL", name: "General" },
-    { id: "FAITH", name: "Faith & Spirituality" },
-    { id: "ACADEMIC", name: "Academic" },
-    { id: "SOCIAL", name: "Social" },
-    { id: "EVENTS", name: "Events" },
-    { id: "ANNOUNCEMENTS", name: "Announcements" },
-    { id: "QUESTIONS", name: "Questions" },
-    { id: "DISCUSSION", name: "Discussion" },
+    ...categoryUtils.getAllCategories()
   ];
 
   if (isLoading) {

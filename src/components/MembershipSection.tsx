@@ -49,7 +49,7 @@ export default function MembershipSection() {
                 {/* Thumbnail with play button */}
                 <div className="absolute inset-0 bg-black">
                   <Image
-                    src="/images/WEB/brothers/5.png"
+                    src="/images/WEB/brothers/sports.jpeg"
                     alt="USIC Membership Video Thumbnail"
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -57,6 +57,8 @@ export default function MembershipSection() {
                     style={{
                       objectPosition: 'center'
                     }}
+                    priority={true}
+                    quality={85}
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A1219]/50 to-[#18384D] z-10"></div>
                 </div>

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getPost, getComments, addComment, likePost, unlikePost, likeComment, unlikeComment, ForumPost, ForumComment } from "@/lib/firebase-utils";
 import { LoadingError } from "@/components/ErrorDisplay";
 import { useErrorHandler } from "@/components/ErrorBoundary";
+import { categoryUtils } from "@/lib/static-data";
 
 export default function PostDetailPage() {
   const params = useParams();
@@ -280,7 +281,7 @@ export default function PostDetailPage() {
                 </span>
               )}
               <span className="bg-blue-500 text-white px-3 py-1 text-sm font-bold rounded">
-                {post.category}
+                {categoryUtils.getCategoryName(post.category)}
               </span>
             </div>
           </div>
@@ -313,18 +314,6 @@ export default function PostDetailPage() {
               </p>
             </div>
 
-            {post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-6">
-                {post.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-700 text-gray-300 px-3 py-1 text-sm rounded"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Comments Section */}

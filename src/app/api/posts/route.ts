@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withAuth, UserAuthenticatedRequest } from '@/lib/auth-api';
 import { createPost } from '@/lib/firebase-admin-utils';
 import { checkPostRateLimit } from '@/lib/rateLimit';
+import { categoryUtils } from '@/lib/static-data';
 
 export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
   try {
@@ -37,7 +38,7 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
     }
 
     const body = await request.json();
-    const { title, content, category, tags, author, authorId } = body;
+    const { title, content, category, author, authorId } = body;
 
     // Validate required fields
     if (!title || !content || !category || !author || !authorId) {
@@ -82,7 +83,7 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
     }
 
     // Validate category
-    const validCategories = ['GENERAL', 'FAITH', 'ACADEMIC', 'SOCIAL', 'EVENTS', 'ANNOUNCEMENTS', 'QUESTIONS', 'DISCUSSION'];
+    const validCategories = categoryUtils.getCategoryIds();
     if (!validCategories.includes(category)) {
       return NextResponse.json({
         success: false,
@@ -91,13 +92,8 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
       }, { status: 400 });
     }
 
-    // Process tags
-    const tagsArray = Array.isArray(tags)
-      ? tags.filter((tag: string) => tag && tag.trim().length > 0).map((tag: string) => tag.trim())
-      : [];
-
     console.log('[Posts API] Creating post for user:', request.user.uid);
-    console.log('[Posts API] Post data:', { title: title.substring(0, 50) + '...', category, tagsCount: tagsArray.length });
+    console.log('[Posts API] Post data:', { title: title.substring(0, 50) + '...', category });
 
     // Create the post
     const postId = await createPost({
@@ -105,8 +101,7 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
       content: content.trim(),
       author: author.trim(),
       authorId: authorId.trim(),
-      category,
-      tags: tagsArray
+      category
     });
 
     console.log('[Posts API] Post created successfully with ID:', postId);

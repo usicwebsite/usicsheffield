@@ -1,6 +1,37 @@
 import Image from 'next/image';
 
+// Function to get random images from the available pool
+function getRandomImages() {
+  const brothersImages = [
+    'annualretreat.jpeg', 'brother1.jpeg', 'brother2.jpeg', 'brother3.jpeg',
+    'brother4.jpeg', 'brother5.jpeg', 'fridayfootball.jpeg', 'IMG_0006.JPG',
+    'IMG_0028.JPG', 'IMG_9262.JPG', 'IMG_9980.JPG', 'roots.png', 'sports.jpeg',
+    'USIC Annual Dinner 2025-107.jpg', 'USIC Annual Dinner 2025-16.jpg',
+    'USIC Annual Dinner 2025-2.jpg', 'USIC Annual Dinner 2025-21.jpg',
+    'USIC Annual Dinner 2025-25.jpg', 'USIC Annual Dinner 2025-45.jpg',
+    'USIC Annual Dinner 2025-55.jpg', 'USIC Annual Dinner 2025-6.jpg',
+    'USIC Annual Dinner 2025-81.jpg'
+  ];
+
+  const sistersImages = [
+    'sister10.jpeg', 'sister11.jpeg', 'sister24.jpeg', 'sister25.jpeg', 
+    'sister26.jpeg', 'sister27.jpeg', 'sister3.jpeg', 'sister6.jpeg', 
+    'sister7.jpeg', 'sister8.jpeg', 'sister9.jpeg'
+  ];
+
+  // Combine all images
+  const allImages = [
+    ...brothersImages.map(img => `/images/WEB/brothers/${img}`),
+    ...sistersImages.map(img => `/images/WEB/sisters/${img}`)
+  ];
+
+  // Shuffle array and return 4 unique images
+  const shuffled = allImages.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 4);
+}
+
 export default function AboutPage() {
+  const randomImages = getRandomImages();
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       {/* Hero section */}
@@ -28,7 +59,7 @@ export default function AboutPage() {
             {/* Image - smaller on mobile */}
             <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
-                src="/images/WEB/brothers/IMG_0006.JPG"
+                src={randomImages[0]}
                 alt="USIC Community"
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -70,7 +101,7 @@ export default function AboutPage() {
             {/* Image - smaller on mobile */}
             <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
-                src="/images/WEB/brothers/annualretreat.jpeg"
+                src={randomImages[1]}
                 alt="USIC Values"
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -115,7 +146,7 @@ export default function AboutPage() {
             {/* Image - smaller on mobile */}
             <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
-                src="/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg"
+                src={randomImages[2]}
                 alt="USIC Events"
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -163,7 +194,7 @@ export default function AboutPage() {
             {/* Image - smaller on mobile */}
             <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
               <Image
-                src="/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg"
+                src={randomImages[3]}
                 alt="USIC Membership"
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -176,36 +207,13 @@ export default function AboutPage() {
             <div>
               {/* Subtitle */}
               <h3 className="font-heading text-2xl md:text-3xl md:text-4xl font-bold mb-6 text-white">
-                More than just a membership card - you get a whole new social life.
+                Your gateway to an incredible university experience
               </h3>
               
-              <div className="space-y-4 mb-8">
-                <p className="flex items-center text-lg md:text-xl text-blue-100">
-                  <span className="text-blue-300 mr-3">✦</span>
-                  Your personal <span className="text-white font-semibold">USIC membership card</span>
-                </p>
-                
-                <p className="flex items-center text-lg md:text-xl text-blue-100">
-                  <span className="text-blue-300 mr-3">✦</span>
-                  <span className="text-white font-semibold">Exclusive discounts</span> for Annual Dinner and Spring Camp
-                </p>
-                
-                <p className="flex items-center text-lg md:text-xl text-blue-100">
-                  <span className="text-blue-300 mr-3">✦</span>
-                  <span className="text-white font-semibold">Priority access</span> to tickets for popular events
-                </p>
-                
-                <p className="flex items-center text-lg md:text-xl text-blue-100">
-                  <span className="text-blue-300 mr-3">✦</span>
-                  <span className="text-white font-semibold">Member-only socials</span> and merchandise discounts
-                </p>
-      </div>
+              <p className="text-lg md:text-xl mb-8 text-blue-100">
+                Join thousands of students who&apos;ve made USIC their home away from home. <span className="text-white font-semibold">More than just a membership card</span> - you&apos;re joining a family that will support you throughout your university journey.
+              </p>
 
-              <div className="mt-8">
-                <a href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" target="_blank" rel="noopener noreferrer" className="inline-block py-2 px-6 bg-blue-600 hover:bg-blue-700 transition text-sm uppercase tracking-wider font-medium rounded">
-                  Become a Member
-                </a>
-              </div>
             </div>
           </div>
         </section>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
 import { getSubmittedPosts, getAllPosts, ForumPost } from '@/lib/firebase-admin-utils';
+import { categoryUtils } from '@/lib/static-data';
 
 // Get submitted posts for admin approval
 async function getSubmittedPostsHandler(request: AuthenticatedRequest) {
@@ -101,8 +102,7 @@ export const POST = async () => {
       content: "This is a test post to verify the submitted_posts collection works",
       author: "Test Admin",
       authorId: "admin123",
-      category: "GENERAL",
-      tags: ["test", "debug"],
+      category: categoryUtils.getCategoryIds()[0],
       likes: 0,
       views: 0,
       isPinned: false,

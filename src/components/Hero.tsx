@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 /**
- * Hero component for the USIC landing page with image slideshow
+ * Hero component for the USIC landing page with optimized image slideshow
  */
 export default function Hero() {
   // Define slideshow images alternating between brothers and sisters
-  const images = [
+  const images = useMemo(() => [
     '/images/WEB/brothers/IMG_9262.JPG',
     '/images/WEB/brothers/IMG_9980.JPG',
     '/images/WEB/sisters/sister3.jpeg',
@@ -27,8 +27,9 @@ export default function Hero() {
     '/images/WEB/brothers/USIC Annual Dinner 2025-6.jpg',
     '/images/WEB/sisters/sister11.jpeg',
     '/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg',
-    '/images/WEB/sisters/sister24.jpeg',
+    '/images/WEB/sisters/sister12.jpeg',
     '/images/WEB/brothers/USIC Annual Dinner 2025-21.jpg',
+    '/images/WEB/sisters/sister24.jpeg',
     '/images/WEB/sisters/sister25.jpeg',
     '/images/WEB/brothers/USIC Annual Dinner 2025-25.jpg',
     '/images/WEB/sisters/sister26.jpeg',
@@ -39,18 +40,65 @@ export default function Hero() {
     '/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg',
     '/images/WEB/brothers/IMG_0006.JPG',
     '/images/WEB/brothers/IMG_0028.JPG',
-  ];
+  ], []);
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // const [loadedImages] = useState<Set<number>>(new Set([0])); // Track loaded images
+  const [preloadedImages, setPreloadedImages] = useState<Set<number>>(new Set()); // Track preloaded images
+
+  // Progressive image loading effect
+  useEffect(() => {
+    // Preload next 2 images after current image loads
+    const preloadNextImages = (currentIndex: number) => {
+      const nextIndices = [
+        (currentIndex + 1) % images.length,
+        (currentIndex + 2) % images.length
+      ];
+      
+      nextIndices.forEach(index => {
+        if (!preloadedImages.has(index)) {
+          const img = new window.Image();
+          img.onload = () => {
+            setPreloadedImages(prev => new Set([...prev, index]));
+          };
+          img.src = images[index];
+        }
+      });
+    };
+
+    // Initial preload of next images
+    preloadNextImages(0);
+  }, [images, preloadedImages]);
 
   // Auto-rotate images
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000); // Change image every 6 seconds to allow for longer transition
+      setCurrentImageIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % images.length;
+        // Preload next images when changing
+        const preloadNextImages = (currentIndex: number) => {
+          const nextIndices = [
+            (currentIndex + 1) % images.length,
+            (currentIndex + 2) % images.length
+          ];
+          
+          nextIndices.forEach(index => {
+            if (!preloadedImages.has(index)) {
+              const img = new window.Image();
+              img.onload = () => {
+                setPreloadedImages(prev => new Set([...prev, index]));
+              };
+              img.src = images[index];
+            }
+          });
+        };
+        preloadNextImages(nextIndex);
+        return nextIndex;
+      });
+    }, 3000); // Change image every 3 seconds
     
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [images, preloadedImages]);
 
   // Scroll to next section
   const scrollToNextSection = () => {
@@ -64,28 +112,38 @@ export default function Hero() {
     <div className="relative overflow-hidden w-full h-screen">
       {/* Image slideshow background */}
       <div className="absolute inset-0 z-0">
-        {images.map((image, index) => (
-          <div
-            key={image}
-            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="relative w-full h-full">
-              <Image
-                src={image}
-                alt={`Slideshow image ${index + 1}`}
-                fill
-                sizes="100vw"
-                style={{ 
-                  objectFit: 'cover',
-                  filter: 'brightness(0.5)'
-                }}
-                priority={index === 0} // Load first image with priority
-              />
+        {images.map((image, index) => {
+          // Only render current image and next 2 preloaded images
+          const shouldRender = index === currentImageIndex || 
+                              (preloadedImages.has(index) && Math.abs(index - currentImageIndex) <= 2);
+          
+          if (!shouldRender) return null;
+          
+          return (
+            <div
+              key={image}
+              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <div className="relative w-full h-full">
+                <Image
+                  src={image}
+                  alt={`Slideshow image ${index + 1}`}
+                  fill
+                  sizes="100vw"
+                  style={{ 
+                    objectFit: 'cover',
+                    filter: 'brightness(0.5)'
+                  }}
+                  priority={index === 0} // Load first image with priority
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  quality={85} // Optimize quality for better performance
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Overlay gradient */}

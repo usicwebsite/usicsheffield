@@ -83,9 +83,6 @@ export const QuestionSchemas = {
     .refine((val) => ValidationPatterns.alphanumeric.test(val.replace(/\s/g, '')), 
       'Category can only contain letters, numbers, and spaces'),
 
-  tags: z.array(z.string().min(2).max(30))
-    .max(10, 'Too many tags')
-    .refine((tags) => new Set(tags).size === tags.length, 'Duplicate tags not allowed'),
 };
 
 // Admin-specific validation

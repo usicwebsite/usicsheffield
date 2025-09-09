@@ -26,7 +26,7 @@ const timelineData: TimelineItem[] = [
     id: "step-2", 
     title: "Get Your Benefits",
     description: "Receive your membership card and unlock exclusive discounts, priority tickets, and member-only access.",
-    image: "/images/WEB/USIC Annual Dinner 2025-2.jpg",
+    image: "/images/WEB/brothers/USIC Annual Dinner 2025-2.jpg",
     imageAlt: "USIC Annual Dinner",
     step: "02"
   },
@@ -34,7 +34,7 @@ const timelineData: TimelineItem[] = [
     id: "step-3",
     title: "Connect & Grow",
     description: "Attend events, build friendships, and strengthen your faith within our supportive community.",
-    image: "/images/WEB/USIC Annual Dinner 2025-16.jpg", 
+    image: "/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg", 
     imageAlt: "USIC Community Events",
     step: "03"
   },
@@ -42,7 +42,7 @@ const timelineData: TimelineItem[] = [
     id: "step-4",
     title: "Ready to Start Your Journey?",
     description: "Join hundreds of students already enjoying the USIC experience.",
-    image: "/images/WEB/IMG_9262.JPG",
+    image: "/images/WEB/brothers/IMG_9262.JPG",
     imageAlt: "USIC Community",
     step: "04",
     isCTA: true
@@ -157,7 +157,7 @@ export default function MembershipTimeline() {
       {/* Background decorative image */}
       <div className="absolute inset-0 opacity-10">
         <Image
-          src="/images/WEB/USIC Annual Dinner 2025-81.jpg"
+          src="/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg"
           alt=""
           fill
           sizes="100vw"

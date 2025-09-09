@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
-type Event = {
+type StaticEvent = {
   id: number;
   title: string;
   date: string;
@@ -15,9 +16,52 @@ type Event = {
   signupLink?: string;
 };
 
+type AdminEvent = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  price: string;
+  description: string;
+  imageUrl?: string;
+  formFields: string[];
+  createdAt: Date;
+};
+
 export default function EventsPage() {
+  const [adminEvents, setAdminEvents] = useState<AdminEvent[]>([]);
+  const [loadingAdminEvents, setLoadingAdminEvents] = useState(true);
+
+  // Function to format date like "Sep. 25th, 2025"
+  const formatEventDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+
+      const month = monthNames[date.getMonth()];
+      const day = date.getDate();
+      const year = date.getFullYear();
+
+      // Add ordinal suffix
+      const getOrdinalSuffix = (day: number) => {
+        if (day > 3 && day < 21) return 'th';
+        switch (day % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      };
+
+      return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
+    } catch {
+      return dateString; // Fallback to original format
+    }
+  };
+
   // Events data from events.txt
-  const allEvents: Event[] = [
+  const allEvents: StaticEvent[] = [
     // Annual Events
     {
       id: 1,
@@ -73,7 +117,7 @@ export default function EventsPage() {
       location: "TBA",
       category: "Weekly",
       description: "A special social gathering for sisters to build strong bonds of sisterhood. Activities include crafts, games, discussions, and occasional workshops on topics relevant to Muslim women.",
-      image: "/images/WEB/sisters/8.png",
+      image: "/images/WEB/sisters/sister11.jpeg",
       signupLink: "https://forms.google.com/welfare-wednesdays-signup"
     },
     {
@@ -104,11 +148,30 @@ export default function EventsPage() {
 
   // State for category filter and modal
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Weekly' | 'Annual' | 'Other'>('All');
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<StaticEvent | null>(null);
 
   // State for FAQ modal
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [currentFAQ, setCurrentFAQ] = useState(0);
+
+  // Fetch admin-created events
+  useEffect(() => {
+    const fetchAdminEvents = async () => {
+      try {
+        const response = await fetch('/api/events');
+        if (response.ok) {
+          const data = await response.json();
+          setAdminEvents(data.events || []);
+        }
+      } catch (error) {
+        console.error('Error fetching admin events:', error);
+      } finally {
+        setLoadingAdminEvents(false);
+      }
+    };
+
+    fetchAdminEvents();
+  }, []);
 
   // FAQ data for the slideshow
   const faqData = [
@@ -143,12 +206,15 @@ export default function EventsPage() {
   ];
 
   // Filter events based on selected category
-  const filteredEvents = categoryFilter === 'All' 
+  const filteredStaticEvents = categoryFilter === 'All' 
     ? allEvents 
     : allEvents.filter(event => event.category === categoryFilter);
 
+  // Admin events are always shown (they don't have categories)
+  const filteredEvents = filteredStaticEvents;
+
   // Modal handlers
-  const openModal = (event: Event) => {
+  const openModal = (event: StaticEvent) => {
     setSelectedEvent(event);
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
   };
@@ -183,21 +249,25 @@ export default function EventsPage() {
           
           {/* Link Tree Section - moved inside hero */}
           <div className="flex flex-col items-center space-y-4 mt-6">
-            <a 
-              href="https://docs.google.com/forms/d/e/1FAIpQLSdM6Xs99V7oTUKkCDWqaVT69btgpHyK5rb-ahdjPI5iO0DoZw/viewform" 
+            {/* Admin-created event signup links */}
+            {!loadingAdminEvents && adminEvents.map((event) => (
+              <Link 
+                key={event.id}
+                href={`/events/${event.id}`}
+                className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
+              >
+                {event.title} Sign Up
+              </Link>
+            ))}
+            
+            {/* Static links */}
+            <a
+              href="https://www.instagram.com/p/DORUV3lCDAg/?igsh=cWM0MGExNWkzcnZt"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
             >
-              Apply for EGM 25/26
-            </a>
-            <a 
-              href="https://docs.google.com/document/d/1YIbZpxLgHxGkir1YdB7QpOaKPw7BO3e8NlpN0mW287Q/edit?tab=t.0" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
-            >
-              View USIC Roles 25/26
+              Current Committee
             </a>
           </div>
         </div>
@@ -264,6 +334,7 @@ export default function EventsPage() {
 
         {/* Events grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          {/* Static events */}
           {filteredEvents.map((event) => (
             <div 
               key={event.id} 
@@ -277,7 +348,7 @@ export default function EventsPage() {
                     alt={event.title} 
                     width={640} 
                     height={360} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     style={{
                       objectPosition: 
                         event.title === "Charity Hike" ? 'center 60%' :
@@ -307,7 +378,7 @@ export default function EventsPage() {
                     <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                     </svg>
-                    <span>{event.date}</span>
+                    <span>{formatEventDate(event.date)}</span>
                   </div>
                   <div className="flex items-start">
                     <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -385,7 +456,7 @@ export default function EventsPage() {
                     alt={selectedEvent.title} 
                     width={800} 
                     height={400} 
-                    className="w-full h-64 md:h-80 object-cover"
+                    className="w-full h-64 md:h-80 object-contain"
                     style={{
                       objectPosition: 'center 65%'
                     }}
@@ -402,7 +473,7 @@ export default function EventsPage() {
                     </svg>
                     <div>
                       <h4 className="text-white font-semibold mb-1">Date</h4>
-                      <p className="text-blue-200">{selectedEvent.date}</p>
+                      <p className="text-blue-200">{formatEventDate(selectedEvent.date)}</p>
                     </div>
                   </div>
                   

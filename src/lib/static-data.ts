@@ -237,6 +237,37 @@ export const staticData = {
   }
 };
 
+// Category utilities
+export const categoryUtils = {
+  // Category mapping from ID to display name
+  categories: [
+    { id: "GENERAL", name: "General" },
+    { id: "FAITH", name: "Faith & Spirituality" },
+    { id: "ACADEMIC", name: "Academic" },
+    { id: "SOCIAL", name: "Social" },
+    { id: "EVENTS", name: "Events" },
+    { id: "ANNOUNCEMENTS", name: "Announcements" },
+    { id: "QUESTIONS", name: "Questions" },
+    { id: "DISCUSSION", name: "Discussion" }
+  ],
+
+  // Convert category ID to display name
+  getCategoryName: (categoryId: string): string => {
+    const category = categoryUtils.categories.find(cat => cat.id === categoryId);
+    return category ? category.name : categoryId;
+  },
+
+  // Get all category IDs
+  getCategoryIds: (): string[] => {
+    return categoryUtils.categories.map(cat => cat.id);
+  },
+
+  // Get all categories with both ID and name
+  getAllCategories: () => {
+    return categoryUtils.categories;
+  }
+};
+
 // SEO metadata for different pages
 export const seoMetadata = {
   home: {

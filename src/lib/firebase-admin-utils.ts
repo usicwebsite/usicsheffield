@@ -9,7 +9,6 @@ export interface ForumPost {
   author: string;
   authorId: string;
   category: string;
-  tags: string[];
   likes: number;
   views: number;
   isPinned: boolean;
@@ -49,8 +48,7 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
     console.log('[Firebase Admin Utils] Post data prepared:', {
       title: newPost.title.substring(0, 50) + '...',
       author: newPost.author,
-      category: newPost.category,
-      tagsCount: newPost.tags.length
+      category: newPost.category
     });
 
     const docRef = await adminDb.collection('submitted_posts').add(newPost);
@@ -239,6 +237,73 @@ export const getAllPosts = async (limitCount: number = 100) => {
     return posts;
   } catch (error) {
     console.error('[Firebase Admin Utils] Error getting all posts:', error);
+    throw error;
+  }
+};
+
+// Delete a post and its comments (server-side)
+export const deletePost = async (postId: string, adminUid: string) => {
+  if (!adminDb) {
+    throw new Error('Firebase Admin Database is not initialized');
+  }
+
+  try {
+    console.log('[Firebase Admin Utils] Deleting post:', postId, 'by admin:', adminUid);
+
+    // First, check if the post exists in any of the collections
+    const [submittedSnapshot, approvedSnapshot, rejectedSnapshot] = await Promise.all([
+      adminDb.collection('submitted_posts').doc(postId).get(),
+      adminDb.collection('approved_posts').doc(postId).get(),
+      adminDb.collection('rejected_posts').doc(postId).get()
+    ]);
+
+    let postExists = false;
+    let postCollection = '';
+    let postData: ForumPost | null = null;
+
+    if (submittedSnapshot.exists) {
+      postExists = true;
+      postCollection = 'submitted_posts';
+      postData = submittedSnapshot.data() as ForumPost;
+    } else if (approvedSnapshot.exists) {
+      postExists = true;
+      postCollection = 'approved_posts';
+      postData = approvedSnapshot.data() as ForumPost;
+    } else if (rejectedSnapshot.exists) {
+      postExists = true;
+      postCollection = 'rejected_posts';
+      postData = rejectedSnapshot.data() as ForumPost;
+    }
+
+    if (!postExists) {
+      throw new Error('Post not found in any collection');
+    }
+
+    console.log('[Firebase Admin Utils] Post found in collection:', postCollection);
+    console.log('[Firebase Admin Utils] Post title:', postData?.title);
+
+    // Delete all comments for this post first
+    console.log('[Firebase Admin Utils] Deleting comments for post:', postId);
+    const commentsQuery = adminDb.collection('comments').where('postId', '==', postId);
+    const commentsSnapshot = await commentsQuery.get();
+    
+    const deleteCommentPromises = commentsSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(deleteCommentPromises);
+    console.log('[Firebase Admin Utils] Deleted', commentsSnapshot.size, 'comments');
+
+    // Delete the post from its collection
+    await adminDb.collection(postCollection).doc(postId).delete();
+    console.log('[Firebase Admin Utils] Post deleted from', postCollection);
+
+    return {
+      postId,
+      deletedFrom: postCollection,
+      commentsDeleted: commentsSnapshot.size,
+      deletedBy: adminUid,
+      deletedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('[Firebase Admin Utils] Error deleting post:', error);
     throw error;
   }
 };

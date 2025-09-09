@@ -23,7 +23,6 @@ export interface ForumPost {
   author: string;
   authorId: string;
   category: string;
-  tags: string[];
   likes: number;
   views: number;
   isPinned: boolean;
@@ -124,7 +123,6 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
         title: postData.title,
         content: postData.content,
         category: postData.category,
-        tags: postData.tags,
         author: postData.author,
         authorId: postData.authorId
       })
@@ -280,11 +278,10 @@ export const searchPosts = async (searchTerm: string) => {
       const postData = doc.data() as ForumPost;
       const searchLower = searchTerm.toLowerCase();
 
-      // Search in title, content, and tags
+      // Search in title and content
       if (
         postData.title.toLowerCase().includes(searchLower) ||
-        postData.content.toLowerCase().includes(searchLower) ||
-        postData.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        postData.content.toLowerCase().includes(searchLower)
       ) {
         posts.push({
           id: doc.id,

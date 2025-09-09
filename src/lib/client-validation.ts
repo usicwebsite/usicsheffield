@@ -16,9 +16,6 @@ export const ClientValidationSchemas = {
     category: z.string()
       .min(2, 'Category must be at least 2 characters')
       .max(50, 'Category must be less than 50 characters'),
-    tags: z.string()
-      .max(200, 'Tags must be less than 200 characters')
-      .optional(),
     author: z.string()
       .min(1, 'Author name is required')
       .max(100, 'Author name must be less than 100 characters')

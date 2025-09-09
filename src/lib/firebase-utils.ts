@@ -12,7 +12,8 @@ import {
   increment,
   deleteDoc,
   serverTimestamp,
-  Firestore
+  Firestore,
+  QueryConstraint
 } from 'firebase/firestore';
 import { getFirestoreDb } from './firebase';
 
@@ -24,7 +25,6 @@ export interface ForumPost {
   author: string;
   authorId: string;
   category: string;
-  tags: string[];
   likes: number;
   views: number;
   isPinned: boolean;
@@ -534,18 +534,23 @@ export const getSubmittedPosts = async (limitCount: number = 50) => {
 // Get approved posts for public view
 export const getApprovedPosts = async (category?: string, limitCount: number = 20) => {
   try {
-    let q = query(
-      getApprovedPostsCollection(),
+    // Build query conditions array with proper typing
+    const queryConditions: QueryConstraint[] = [
       orderBy('createdAt', 'desc')
-    );
+    ];
 
+    // Add category filter if specified
     if (category) {
-      q = query(q, where('category', '==', category));
+      queryConditions.push(where('category', '==', category));
     }
 
+    // Add limit if specified
     if (limitCount) {
-      q = query(q, limit(limitCount));
+      queryConditions.push(limit(limitCount));
     }
+
+    // Create the query with all conditions
+    const q = query(getApprovedPostsCollection(), ...queryConditions);
 
     const querySnapshot = await getDocs(q);
     const posts: ForumPost[] = [];
@@ -659,11 +664,10 @@ export const searchApprovedPosts = async (searchTerm: string) => {
       const postData = doc.data() as ForumPost;
       const searchLower = searchTerm.toLowerCase();
 
-      // Search in title, content, and tags
+      // Search in title and content
       if (
         postData.title.toLowerCase().includes(searchLower) ||
-        postData.content.toLowerCase().includes(searchLower) ||
-        postData.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        postData.content.toLowerCase().includes(searchLower)
       ) {
         posts.push({
           id: doc.id,

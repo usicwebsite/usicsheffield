@@ -96,8 +96,7 @@ export default function ForumPage() {
       setValidationErrors([]);
       const filtered = posts.filter(post => 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        post.content.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredPosts(filtered);
     }
@@ -274,7 +273,6 @@ export default function ForumPage() {
                     content={post.content}
                     author={post.author}
                     category={post.category}
-                    tags={post.tags}
                     likes={post.likes}
                     commentsCount={commentCounts[post.id || ''] || 0}
                     createdAt={post.createdAt}

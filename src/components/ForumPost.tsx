@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { likePost, unlikePost } from "@/lib/firebase-utils";
+import { categoryUtils } from "@/lib/static-data";
 
 
 interface ForumPostProps {
@@ -11,7 +12,6 @@ interface ForumPostProps {
   content: string;
   author: string;
   category: string;
-  tags: string[];
   likes: number;
   commentsCount?: number;
   createdAt: Date | { toDate(): Date };
@@ -25,7 +25,6 @@ export default function ForumPost({
   content,
   author,
   category,
-  tags,
   likes,
   commentsCount = 0,
   createdAt,
@@ -92,7 +91,7 @@ export default function ForumPost({
               </span>
             )}
             <span className="bg-blue-500 text-white px-3 py-1 text-sm font-bold rounded">
-              {category}
+              {categoryUtils.getCategoryName(category)}
             </span>
           </div>
           
@@ -103,17 +102,6 @@ export default function ForumPost({
           <p className="text-gray-300 text-sm line-clamp-3 mb-4">
             {content}
           </p>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className="bg-gray-700 text-gray-300 px-2 py-1 text-xs rounded"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
       
