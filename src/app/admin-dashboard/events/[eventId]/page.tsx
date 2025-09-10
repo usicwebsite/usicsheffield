@@ -865,10 +865,8 @@ export default function EventDetailPage() {
                         'weekly',
                         'brothers only',
                         'sisters only',
-                        'both brothers and sisters',
                         'education',
-                        'welfare',
-                        'social responsibility'
+                        'welfare'
                       ].map((tag) => (
                         <label key={tag} className="flex items-center">
                           <input

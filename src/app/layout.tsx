@@ -6,6 +6,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { generateCSRFToken } from "@/lib/csrf";
 import { cookies } from 'next/headers';
+import GroupchatModalProvider from "@/components/GroupchatModalProvider";
 
 // Initialize the Geist font with Latin subset
 const geistSans = Geist({
@@ -83,9 +84,11 @@ export default async function RootLayout({
       >
         <ErrorBoundary>
           <FirebaseProvider>
-            <AdminLayout>
-              {children}
-            </AdminLayout>
+            <GroupchatModalProvider>
+              <AdminLayout>
+                {children}
+              </AdminLayout>
+            </GroupchatModalProvider>
           </FirebaseProvider>
         </ErrorBoundary>
       </body>

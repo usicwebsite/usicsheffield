@@ -415,14 +415,21 @@ export default function EventsSection() {
     // Speed in pixels per frame
     const SCROLL_SPEED = 0.3;
     
-    let topAnimationFrame: number;
-    let bottomAnimationFrame: number;
+    let topAnimationFrame: number | null = null;
+    let bottomAnimationFrame: number | null = null;
     let isTopPaused = false;
     let isBottomPaused = false;
+    let isInitialized = false;
+    let retryCount = 0;
+    
+    // Function to check if DOM is ready and has proper dimensions
+    const isDOMReady = () => {
+      return topRow.scrollWidth > 0 && bottomRow.scrollWidth > 0;
+    };
     
     // Top row animation (left to right)
     const animateTopRow = () => {
-      if (!topRow) {
+      if (!topRow || !isInitialized) {
         return;
       }
       
@@ -431,12 +438,16 @@ export default function EventsSection() {
         return;
       }
       
-      topRow.scrollLeft += SCROLL_SPEED;
-      
-      // Reset when reaching the end (accounting for the tripled content)
-      const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
-      if (topRow.scrollLeft >= maxScroll) {
-        topRow.scrollLeft = 0;
+      try {
+        topRow.scrollLeft += SCROLL_SPEED;
+        
+        // Reset when reaching the end (accounting for the tripled content)
+        const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
+        if (topRow.scrollLeft >= maxScroll) {
+          topRow.scrollLeft = 0;
+        }
+      } catch {
+        return;
       }
       
       topAnimationFrame = requestAnimationFrame(animateTopRow);
@@ -444,7 +455,7 @@ export default function EventsSection() {
     
     // Bottom row animation (right to left)
     const animateBottomRow = () => {
-      if (!bottomRow) {
+      if (!bottomRow || !isInitialized) {
         return;
       }
       
@@ -453,27 +464,58 @@ export default function EventsSection() {
         return;
       }
       
-      bottomRow.scrollLeft -= SCROLL_SPEED;
-      
-      // Reset when reaching the beginning
-      if (bottomRow.scrollLeft <= 0) {
-        const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
-        bottomRow.scrollLeft = maxScroll;
+      try {
+        bottomRow.scrollLeft -= SCROLL_SPEED;
+        
+        // Reset when reaching the beginning
+        if (bottomRow.scrollLeft <= 0) {
+          const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
+          bottomRow.scrollLeft = maxScroll;
+        }
+      } catch {
+        return;
       }
       
       bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
     };
     
-    // Initialize positions with delay to ensure DOM is ready
-    setTimeout(() => {
-      topRow.scrollLeft = 0;
-      const maxScroll = bottomRow.scrollWidth / 3;
-      bottomRow.scrollLeft = maxScroll;
+    // Initialize animations with proper DOM readiness check
+    const initializeAnimations = () => {
+      if (!isDOMReady()) {
+        // Retry after a short delay if DOM isn't ready (max 10 retries)
+        if (retryCount < 10) {
+          retryCount++;
+          setTimeout(initializeAnimations, 50);
+          return;
+        } else {
+          return;
+        }
+      }
       
-      // Start animations
-      topAnimationFrame = requestAnimationFrame(animateTopRow);
-      bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
-    }, 100);
+      try {
+        // Initialize positions
+        topRow.scrollLeft = 0;
+        const maxScroll = bottomRow.scrollWidth / 3;
+        bottomRow.scrollLeft = maxScroll;
+        
+        // Mark as initialized
+        isInitialized = true;
+        
+        // Start animations
+        topAnimationFrame = requestAnimationFrame(animateTopRow);
+        bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
+      } catch {
+        // Try to recover by reinitializing after a delay
+        setTimeout(() => {
+          if (!isInitialized) {
+            initializeAnimations();
+          }
+        }, 1000);
+      }
+    };
+    
+    // Start initialization with a small delay to ensure DOM is ready
+    const initTimeout = setTimeout(initializeAnimations, 150);
     
     // Pause/resume functions for top row
     const pauseTopScrolling = () => {
@@ -500,9 +542,18 @@ export default function EventsSection() {
     bottomRow.addEventListener('mouseleave', resumeBottomScrolling);
     
     return () => {
-      cancelAnimationFrame(topAnimationFrame);
-      cancelAnimationFrame(bottomAnimationFrame);
+      // Clear initialization timeout
+      clearTimeout(initTimeout);
       
+      // Cancel animation frames
+      if (topAnimationFrame !== null) {
+        cancelAnimationFrame(topAnimationFrame);
+      }
+      if (bottomAnimationFrame !== null) {
+        cancelAnimationFrame(bottomAnimationFrame);
+      }
+      
+      // Remove event listeners
       if (topRow) {
         topRow.removeEventListener('mouseenter', pauseTopScrolling);
         topRow.removeEventListener('mouseleave', resumeTopScrolling);

@@ -413,7 +413,7 @@ export default function EventsPage() {
       description: "Our Tuesday evening classes cover different themes each semester, such as Qur'anic Tafsir/exegesis, Prophetic Seerah/biography, and methods of spiritual purification.",
       image: "/images/WEB/brothers/roots.png",
       signupLink: "https://forms.google.com/roots-academy-signup",
-      tags: ["both brothers and sisters", "weekly", "education"],
+      tags: ["weekly", "education"],
     },
     {
       id: 22,
@@ -425,7 +425,7 @@ export default function EventsPage() {
       description: "Brothers' special football sessions. A great way to end the week with physical activity and brotherhood. 14 spots open each week - don't miss out!",
       image: "/images/WEB/brothers/brother3.jpeg",
       signupLink: "https://forms.google.com/friday-football-signup",
-      tags: ["brothers only", "weekly", "welfare"],
+      tags: ["brothers only", "weekly", "welfare", "sports"],
     }
   ];
 
@@ -719,7 +719,6 @@ export default function EventsPage() {
         
         {/* Unified Filter Buttons */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-white mb-6 text-center">Filter Events</h3>
 
           {/* Mobile Filter Dropdown */}
           <div className="filter-dropdown-container md:hidden">
@@ -754,10 +753,8 @@ export default function EventsPage() {
                     { key: 'weekly', display: 'Weekly Events' },
                     { key: 'brothers only', display: 'Brothers Only' },
                     { key: 'sisters only', display: 'Sisters Only' },
-                    { key: 'both brothers and sisters', display: 'Both Brothers & Sisters' },
                     { key: 'education', display: 'Education' },
                     { key: 'welfare', display: 'Welfare' },
-                    { key: 'social responsibility', display: 'Social Responsibility' },
                     { key: 'sports', display: 'Sports' },
                   ].map((tag) => (
                     <button
@@ -818,10 +815,8 @@ export default function EventsPage() {
               { key: 'weekly', display: 'Weekly Events' },
               { key: 'brothers only', display: 'Brothers Only' },
               { key: 'sisters only', display: 'Sisters Only' },
-              { key: 'both brothers and sisters', display: 'Both Brothers & Sisters' },
               { key: 'education', display: 'Education' },
               { key: 'welfare', display: 'Welfare' },
-              { key: 'social responsibility', display: 'Social Responsibility' },
               { key: 'sports', display: 'Sports' },
             ].map((tag) => (
               <button
