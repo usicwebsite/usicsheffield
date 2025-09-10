@@ -72,68 +72,85 @@ export async function PUT(
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const date = formData.get('date') as string;
-    const time = formData.get('time') as string;
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
     const location = formData.get('location') as string;
     const price = formData.get('price') as string;
     const description = formData.get('description') as string;
     const formFields = JSON.parse(formData.get('formFields') as string);
-    const imageFile = formData.get('image') as File;
+    const signupOpen = formData.get('signupOpen') === 'true';
+    const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
+    const existingImageUrl = formData.get('existingImageUrl') as string;
+    const newImageUrl = formData.get('imageUrl') as string;
 
     // Validate required fields
-    if (!title || !date || !time || !location || !description || !formFields) {
+    if (!title || !date || !startTime || !location || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (!Array.isArray(formFields) || formFields.length === 0) {
+    // Handle formFields - can be null/undefined for no signup events
+    let processedFormFields = [];
+    if (formFields) {
+      processedFormFields = Array.isArray(formFields) ? formFields : [];
+    }
+
+    // Only validate formFields if signup is needed
+    if (!noSignupNeeded && processedFormFields.length === 0) {
       return NextResponse.json({ error: 'At least one form field is required' }, { status: 400 });
     }
 
-    let imageUrl = formData.get('existingImageUrl') as string;
+    // Determine the final image URL
+    let imageUrl: string | undefined;
 
-    // Handle new image upload if provided
-    if (imageFile && imageFile.size > 0) {
-      try {
-        // Validate file type
-        if (!imageFile.type.startsWith('image/')) {
-          return NextResponse.json({ error: 'Invalid file type. Please upload an image.' }, { status: 400 });
-        }
-
-        // Validate file size (max 5MB)
-        if (imageFile.size > 5 * 1024 * 1024) {
-          return NextResponse.json({ error: 'File size too large. Maximum size is 5MB.' }, { status: 400 });
-        }
-
-        // Upload to Cloudinary
-        const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const uploadResult = await new Promise<{ secure_url: string }>((resolve, reject) => {
-          cloudinary.uploader.upload_stream(
-            { folder: 'usic-events' },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result as { secure_url: string });
-            }
-          ).end(buffer);
-        });
-
-        imageUrl = uploadResult.secure_url;
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
-      }
+    if (newImageUrl && newImageUrl.trim()) {
+      // New image was uploaded
+      imageUrl = newImageUrl.trim();
+    } else if (existingImageUrl && existingImageUrl.trim()) {
+      // Keep existing image
+      imageUrl = existingImageUrl.trim();
+    } else if (newImageUrl === '') {
+      // Image was removed
+      imageUrl = undefined;
     }
 
+    // Image upload is handled by the separate /api/upload-event-image endpoint
+    // This API only receives the resulting URL
+
     // Update the event in Firestore
-    const updateData = {
+    const updateData: {
+      title: string;
+      date: string;
+      startTime: string;
+      location: string;
+      price: string;
+      description: string;
+      formFields: string[];
+      signupOpen: boolean;
+      noSignupNeeded: boolean;
+      updatedAt: Date;
+      endTime?: string;
+      imageUrl?: string | null;
+    } = {
       title,
       date,
-      time,
+      startTime,
       location,
       price,
       description,
-      formFields,
-      ...(imageUrl && { imageUrl }),
-      updatedAt: new Date()
+      formFields: processedFormFields,
+      signupOpen,
+      noSignupNeeded,
+      updatedAt: new Date(),
+      ...(endTime && { endTime })
     };
+
+    // Handle image URL - include if we have a URL, or null if image was removed
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl;
+    } else if (newImageUrl === '') {
+      // Image was explicitly removed
+      updateData.imageUrl = null;
+    }
 
     await adminDb.collection('events').doc(eventId).update(updateData);
 

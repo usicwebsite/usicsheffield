@@ -4,18 +4,9 @@ import { getSubmittedPosts, getAllPosts, ForumPost } from '@/lib/firebase-admin-
 import { categoryUtils } from '@/lib/static-data';
 
 // Get submitted posts for admin approval
-async function getSubmittedPostsHandler(request: AuthenticatedRequest) {
+async function getSubmittedPostsHandler() {
   try {
-    console.log('[Admin Posts API] Getting submitted posts...');
-    console.log('[Admin Posts API] Current admin UID:', request.admin.uid);
-
-    console.log('[Admin Posts API] About to call getSubmittedPosts...');
     const posts = await getSubmittedPosts(50);
-    console.log('[Admin Posts API] getSubmittedPosts returned:', typeof posts);
-    console.log('[Admin Posts API] Posts is array?', Array.isArray(posts));
-
-    console.log('[Admin Posts API] Found', posts.length, 'submitted posts');
-    console.log('[Admin Posts API] Posts data:', posts.map((p: ForumPost) => ({ id: p.id, title: p.title, author: p.author })));
 
     const responseData = {
       success: true,
@@ -25,7 +16,6 @@ async function getSubmittedPostsHandler(request: AuthenticatedRequest) {
       }
     };
 
-    console.log('[Admin Posts API] Response data:', responseData);
 
     return NextResponse.json(responseData);
   } catch (error: unknown) {
@@ -47,17 +37,14 @@ async function getSubmittedPostsHandler(request: AuthenticatedRequest) {
 }
 
 // Get all posts (approved and pending) for admin view
-async function getAllPostsHandler(request: AuthenticatedRequest) {
+async function getAllPostsHandler() {
   try {
-    console.log('[Admin Posts API] Getting all posts...');
-    console.log('[Admin Posts API] Current admin UID:', request.admin.uid);
 
     const allPosts = await getAllPosts(100);
 
     const approvedPosts = allPosts.filter((post: ForumPost) => post.isApproved);
     const pendingPosts = allPosts.filter((post: ForumPost) => !post.isApproved);
 
-    console.log('[Admin Posts API] Found', allPosts.length, 'total posts');
 
     return NextResponse.json({
       success: true,
@@ -86,16 +73,15 @@ export const GET = withAdminAuth(async (request: AuthenticatedRequest) => {
   const type = searchParams.get('type');
 
   if (type === 'submitted' || type === 'pending') {
-    return getSubmittedPostsHandler(request);
+    return getSubmittedPostsHandler();
   } else {
-    return getAllPostsHandler(request);
+    return getAllPostsHandler();
   }
 });
 
 // Temporary test endpoint to create a sample post (no auth required for testing)
 export const POST = async () => {
   try {
-    console.log('[Admin Posts API] Creating test post...');
 
     const testPost = {
       title: "Test Post for Debugging",
@@ -112,15 +98,12 @@ export const POST = async () => {
       updatedAt: new Date()
     };
 
-    console.log('[Admin Posts API] Test post data:', testPost);
 
     const { addDoc, collection, getFirestore } = await import('firebase/firestore');
     const db = getFirestore();
     const submittedPostsRef = collection(db, 'submitted_posts');
 
-    console.log('[Admin Posts API] About to add test post to submitted_posts...');
     const docRef = await addDoc(submittedPostsRef, testPost);
-    console.log('[Admin Posts API] Test post created with ID:', docRef.id);
 
     return NextResponse.json({
       success: true,

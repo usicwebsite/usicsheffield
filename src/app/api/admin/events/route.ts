@@ -57,20 +57,30 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const date = formData.get('date') as string;
-    const time = formData.get('time') as string;
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
     const location = formData.get('location') as string;
     const price = formData.get('price') as string;
     const description = formData.get('description') as string;
     const formFields = JSON.parse(formData.get('formFields') as string);
+    const signupOpen = formData.get('signupOpen') === 'true';
+    const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
     const createdBy = formData.get('createdBy') as string;
     const imageFile = formData.get('image') as File;
 
     // Validate required fields
-    if (!title || !date || !time || !location || !description || !formFields || !createdBy) {
+    if (!title || !date || !startTime || !location || !description || !createdBy) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (!Array.isArray(formFields) || formFields.length === 0) {
+    // Handle formFields - can be null/undefined for no signup events
+    let processedFormFields = [];
+    if (formFields) {
+      processedFormFields = Array.isArray(formFields) ? formFields : [];
+    }
+
+    // Only validate formFields if signup is needed
+    if (!noSignupNeeded && processedFormFields.length === 0) {
       return NextResponse.json({ error: 'At least one form field is required' }, { status: 400 });
     }
 
@@ -122,12 +132,15 @@ export async function POST(request: NextRequest) {
     const eventData = {
       title,
       date,
-      time,
+      startTime,
+      ...(endTime && { endTime }),
       location,
       price: price || 'Free',
       description,
       imageUrl,
-      formFields,
+      formFields: processedFormFields,
+      signupOpen,
+      noSignupNeeded,
       createdBy,
       createdAt: new Date(),
       updatedAt: new Date()

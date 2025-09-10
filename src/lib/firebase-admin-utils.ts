@@ -86,8 +86,6 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
   }
 
   try {
-    console.log('[Firebase Admin Utils] Creating post with admin SDK...');
-    
     const newPost = {
       ...postData,
       likes: 0,
@@ -99,14 +97,7 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
       updatedAt: FieldValue.serverTimestamp(),
     };
 
-    console.log('[Firebase Admin Utils] Post data prepared:', {
-      title: newPost.title.substring(0, 50) + '...',
-      author: newPost.author,
-      category: newPost.category
-    });
-
     const docRef = await adminDb.collection('submitted_posts').add(newPost);
-    console.log('[Firebase Admin Utils] Post created successfully with ID:', docRef.id);
     
     return docRef.id;
   } catch (error) {
@@ -122,15 +113,12 @@ export const getSubmittedPosts = async (limitCount: number = 50) => {
   }
 
   try {
-    console.log('[Firebase Admin Utils] Getting submitted posts with admin SDK...');
-    
     const query = adminDb
       .collection('submitted_posts')
       .orderBy('createdAt', 'desc')
       .limit(limitCount);
 
     const querySnapshot = await query.get();
-    console.log('[Firebase Admin Utils] Query executed successfully, found:', querySnapshot.size, 'posts');
 
     const posts: ForumPost[] = [];
 
@@ -155,7 +143,6 @@ export const approvePost = async (postId: string, adminUid: string) => {
   }
 
   try {
-    console.log('[Firebase Admin Utils] Approving post:', postId, 'by admin:', adminUid);
 
     // Get the post from submitted_posts
     const submittedPostRef = adminDb.collection('submitted_posts').doc(postId);
@@ -166,7 +153,6 @@ export const approvePost = async (postId: string, adminUid: string) => {
     }
 
     const postData = postSnapshot.data() as ForumPost;
-    console.log('[Firebase Admin Utils] Post data retrieved:', postData.title);
 
     // Create the post in approved_posts collection
     const approvedPostData = {
@@ -178,11 +164,9 @@ export const approvePost = async (postId: string, adminUid: string) => {
     };
 
     const approvedDocRef = await adminDb.collection('approved_posts').add(approvedPostData);
-    console.log('[Firebase Admin Utils] Post added to approved_posts with ID:', approvedDocRef.id);
 
     // Delete from submitted_posts
     await submittedPostRef.delete();
-    console.log('[Firebase Admin Utils] Post deleted from submitted_posts');
 
     return approvedDocRef.id;
   } catch (error) {
@@ -198,7 +182,6 @@ export const rejectPost = async (postId: string, adminUid: string, rejectionReas
   }
 
   try {
-    console.log('[Firebase Admin Utils] Rejecting post:', postId, 'by admin:', adminUid, 'reason:', rejectionReason);
 
     // Get the post from submitted_posts
     const submittedPostRef = adminDb.collection('submitted_posts').doc(postId);
@@ -209,7 +192,6 @@ export const rejectPost = async (postId: string, adminUid: string, rejectionReas
     }
 
     const postData = postSnapshot.data() as ForumPost;
-    console.log('[Firebase Admin Utils] Post data retrieved:', postData.title);
 
     // Create the post in rejected_posts collection
     const rejectedPostData = {
@@ -222,11 +204,9 @@ export const rejectPost = async (postId: string, adminUid: string, rejectionReas
     };
 
     const rejectedDocRef = await adminDb.collection('rejected_posts').add(rejectedPostData);
-    console.log('[Firebase Admin Utils] Post added to rejected_posts with ID:', rejectedDocRef.id);
 
     // Delete from submitted_posts
     await submittedPostRef.delete();
-    console.log('[Firebase Admin Utils] Post deleted from submitted_posts');
 
     return rejectedDocRef.id;
   } catch (error) {
@@ -242,7 +222,6 @@ export const getAllPosts = async (limitCount: number = 100) => {
   }
 
   try {
-    console.log('[Firebase Admin Utils] Getting all posts with admin SDK...');
     
     // Get posts from all collections
     const [submittedSnapshot, approvedSnapshot, rejectedSnapshot] = await Promise.all([
@@ -287,7 +266,6 @@ export const getAllPosts = async (limitCount: number = 100) => {
       return bTime - aTime;
     });
 
-    console.log('[Firebase Admin Utils] Total posts found:', posts.length);
     return posts;
   } catch (error) {
     console.error('[Firebase Admin Utils] Error getting all posts:', error);
@@ -302,7 +280,6 @@ export const deletePost = async (postId: string, adminUid: string) => {
   }
 
   try {
-    console.log('[Firebase Admin Utils] Deleting post:', postId, 'by admin:', adminUid);
 
     // First, check if the post exists in any of the collections
     const [submittedSnapshot, approvedSnapshot, rejectedSnapshot] = await Promise.all([
@@ -313,41 +290,30 @@ export const deletePost = async (postId: string, adminUid: string) => {
 
     let postExists = false;
     let postCollection = '';
-    let postData: ForumPost | null = null;
-
     if (submittedSnapshot.exists) {
       postExists = true;
       postCollection = 'submitted_posts';
-      postData = submittedSnapshot.data() as ForumPost;
     } else if (approvedSnapshot.exists) {
       postExists = true;
       postCollection = 'approved_posts';
-      postData = approvedSnapshot.data() as ForumPost;
     } else if (rejectedSnapshot.exists) {
       postExists = true;
       postCollection = 'rejected_posts';
-      postData = rejectedSnapshot.data() as ForumPost;
     }
 
     if (!postExists) {
       throw new Error('Post not found in any collection');
     }
 
-    console.log('[Firebase Admin Utils] Post found in collection:', postCollection);
-    console.log('[Firebase Admin Utils] Post title:', postData?.title);
-
     // Delete all comments for this post first
-    console.log('[Firebase Admin Utils] Deleting comments for post:', postId);
     const commentsQuery = adminDb.collection('comments').where('postId', '==', postId);
     const commentsSnapshot = await commentsQuery.get();
     
     const deleteCommentPromises = commentsSnapshot.docs.map(doc => doc.ref.delete());
     await Promise.all(deleteCommentPromises);
-    console.log('[Firebase Admin Utils] Deleted', commentsSnapshot.size, 'comments');
 
     // Delete the post from its collection
     await adminDb.collection(postCollection).doc(postId).delete();
-    console.log('[Firebase Admin Utils] Post deleted from', postCollection);
 
     return {
       postId,

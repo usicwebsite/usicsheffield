@@ -9,12 +9,15 @@ interface Event {
   id: string;
   title: string;
   date: string;
-  time: string;
+  startTime: string;
+  endTime?: string;
   location: string;
   price: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
+  signupOpen: boolean;
+  noSignupNeeded: boolean;
   createdAt: Date;
   createdBy: string;
 }
@@ -42,15 +45,32 @@ export default function EventDetailPage() {
   const [editForm, setEditForm] = useState({
     title: '',
     date: '',
-    time: '',
+    startTime: '',
+    endTime: '',
     location: '',
     price: '',
-    description: ''
+    description: '',
+    formFields: [] as string[],
+    signupOpen: true,
+    noSignupNeeded: false
   });
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+
+  const [availableFormFields] = useState([
+    'name',
+    'email',
+    'phone',
+    'whatsapp',
+    'student_id',
+    'dietary_requirements',
+    'emergency_contact',
+    'transportation_needs',
+    'accommodation_needs',
+    'special_requests'
+  ]);
 
   // Function to format date like "Sep. 25th, 2025"
   const formatEventDate = (dateString: string) => {
@@ -79,6 +99,29 @@ export default function EventDetailPage() {
     }
   };
 
+  // Function to format time range like "6:00 PM - 10:00 PM"
+  const formatTimeRange = (startTime: string, endTime?: string) => {
+    if (!startTime) return "Time not set";
+
+    // Format the start time
+    const formatTime = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const formattedStart = formatTime(startTime);
+
+    if (endTime) {
+      const formattedEnd = formatTime(endTime);
+      return `${formattedStart} - ${formattedEnd}`;
+    }
+
+    return formattedStart;
+  };
+
   // Load event data
   const loadEvent = useCallback(async () => {
     try {
@@ -99,10 +142,14 @@ export default function EventDetailPage() {
         setEditForm({
           title: foundEvent.title,
           date: foundEvent.date,
-          time: foundEvent.time,
+          startTime: foundEvent.startTime,
+          endTime: foundEvent.endTime || '',
           location: foundEvent.location,
           price: foundEvent.price || '',
-          description: foundEvent.description
+          description: foundEvent.description,
+          formFields: foundEvent.formFields || [],
+          signupOpen: foundEvent.signupOpen || false,
+          noSignupNeeded: foundEvent.noSignupNeeded || false
         });
       }
     } catch (error) {
@@ -236,18 +283,32 @@ export default function EventDetailPage() {
       const formData = new FormData();
       formData.append('title', editForm.title);
       formData.append('date', editForm.date);
-      formData.append('time', editForm.time);
+      formData.append('startTime', editForm.startTime);
+      if (editForm.endTime) {
+        formData.append('endTime', editForm.endTime);
+      }
       formData.append('location', editForm.location);
       formData.append('price', editForm.price);
       formData.append('description', editForm.description);
-      formData.append('formFields', JSON.stringify(event.formFields));
+      // Only include formFields if signup is needed
+      if (editForm.noSignupNeeded) {
+        formData.append('formFields', JSON.stringify([])); // Empty array for no signup events
+      } else {
+        formData.append('formFields', JSON.stringify(editForm.formFields));
+      }
+      formData.append('signupOpen', editForm.signupOpen.toString());
+      formData.append('noSignupNeeded', editForm.noSignupNeeded.toString());
 
-      // Handle image URL - send empty string to remove, or new URL if uploaded
+      // Handle image URL
       if (selectedImageFile) {
+        // New image was uploaded
         formData.append('imageUrl', newImageUrl || '');
-      } else if (event.imageUrl === null) {
+      } else if (event.imageUrl === null || event.imageUrl === undefined) {
         // Image was removed
         formData.append('imageUrl', '');
+      } else {
+        // Keep existing image
+        formData.append('existingImageUrl', event.imageUrl || '');
       }
 
       const response = await fetch(`/api/admin/events/${eventId}`, {
@@ -427,7 +488,7 @@ export default function EventDetailPage() {
                     alt={event.title}
                     width={600}
                     height={300}
-                    className="max-w-full h-auto object-contain"
+                    className="w-full h-64 md:h-80 object-cover rounded-lg"
                   />
                 </div>
               )}
@@ -444,7 +505,7 @@ export default function EventDetailPage() {
                           alt="Event poster preview"
                           width={400}
                           height={200}
-                          className="max-w-full h-auto object-contain rounded-lg"
+                          className="w-full h-64 md:h-80 object-cover rounded-lg"
                         />
                         <button
                           type="button"
@@ -486,7 +547,7 @@ export default function EventDetailPage() {
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Date</label>
                       <input
@@ -497,12 +558,24 @@ export default function EventDetailPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Time</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Start Time</label>
                       <input
-                        type="text"
-                        value={editForm.time}
-                        onChange={(e) => setEditForm({...editForm, time: e.target.value})}
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                        type="time"
+                        value={editForm.startTime}
+                        onChange={(e) => setEditForm({...editForm, startTime: e.target.value})}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        End Time
+                        <span className="text-gray-500 text-xs ml-1">(optional)</span>
+                      </label>
+                      <input
+                        type="time"
+                        value={editForm.endTime}
+                        onChange={(e) => setEditForm({...editForm, endTime: e.target.value})}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
                       />
                     </div>
                   </div>
@@ -534,10 +607,121 @@ export default function EventDetailPage() {
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
                     />
                   </div>
+
+                  {/* Signup Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="editSignupOpen"
+                        checked={editForm.signupOpen}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setEditForm({
+                            ...editForm,
+                            signupOpen: checked,
+                            // If signup is being opened, no signup cannot be needed
+                            noSignupNeeded: checked ? false : editForm.noSignupNeeded
+                          });
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="editSignupOpen" className="ml-2 block text-sm font-medium text-gray-300">
+                        Sign up open?
+                        <span className="text-gray-500 text-xs ml-2">
+                          (If checked, public users can sign up for this event)
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="editNoSignupNeeded"
+                        checked={editForm.noSignupNeeded}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setEditForm({
+                            ...editForm,
+                            noSignupNeeded: checked,
+                            // If no signup is needed, signup cannot be open
+                            signupOpen: checked ? false : editForm.signupOpen,
+                            // Clear form fields if no signup is needed, or set defaults if signup is needed
+                            formFields: checked ? [] : (editForm.formFields.length === 0 ? ['name', 'email'] : editForm.formFields)
+                          });
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="editNoSignupNeeded" className="ml-2 block text-sm font-medium text-gray-300">
+                        No sign up needed
+                        <span className="text-gray-500 text-xs ml-2">
+                          (Check if this is a public event where people can just show up without registering)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Form Fields Selection - Only show if signup is needed */}
+                  {!editForm.noSignupNeeded && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Signup Form Fields *
+                        <span className="text-gray-500 text-xs ml-2">
+                          (Select which information to collect from attendees)
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                        {availableFormFields.map((field) => (
+                          <label key={field} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={editForm.formFields.includes(field)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEditForm({
+                                    ...editForm,
+                                    formFields: [...editForm.formFields, field]
+                                  });
+                                } else {
+                                  setEditForm({
+                                    ...editForm,
+                                    formFields: editForm.formFields.filter(f => f !== field)
+                                  });
+                                }
+                              }}
+                              className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="text-sm text-gray-300 capitalize">
+                              {field.replace(/_/g, ' ')}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      {editForm.formFields.length === 0 && (
+                        <p className="text-red-400 text-xs">Please select at least one form field</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Show message when no signup is needed */}
+                  {editForm.noSignupNeeded && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <h4 className="text-blue-800 font-medium">No Sign Up Required</h4>
+                          <p className="text-blue-600 text-sm">This is a public event where attendees can just show up without registering.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-3">
                     <button
                       onClick={handleSaveEvent}
-                      disabled={uploadingImage}
+                      disabled={uploadingImage || (!editForm.noSignupNeeded && editForm.formFields.length === 0)}
                       className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition duration-300 flex items-center gap-2"
                     >
                       {uploadingImage ? (
@@ -569,7 +753,20 @@ export default function EventDetailPage() {
                       ACTIVE EVENT
                     </span>
                     <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30">
-                      {event.formFields.length} FORM FIELDS
+                      {event.noSignupNeeded ? 0 : event.formFields.length} FORM FIELDS
+                    </span>
+                    <span className={`px-3 py-1 text-xs font-bold rounded-full border ${
+                      event.signupOpen && !event.noSignupNeeded
+                        ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                        : event.noSignupNeeded
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                        : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+                    }`}>
+                      {event.noSignupNeeded
+                        ? 'WALK-IN EVENT'
+                        : event.signupOpen
+                        ? 'SIGN UP OPEN'
+                        : 'SIGN UP CLOSED'}
                     </span>
                   </div>
 
@@ -592,7 +789,7 @@ export default function EventDetailPage() {
                         </svg>
                         <div>
                           <p className="text-sm text-gray-400">Time</p>
-                          <p className="font-semibold">{event.time}</p>
+                          <p className="font-semibold">{formatTimeRange(event.startTime, event.endTime)}</p>
                         </div>
                       </div>
                     </div>
@@ -614,7 +811,11 @@ export default function EventDetailPage() {
                           </svg>
                           <div>
                             <p className="text-sm text-gray-400">Price</p>
-                            <p className="font-semibold">{event.price}</p>
+                            <p className="font-semibold">
+                              {event.price === 'Free' || !event.price
+                                ? 'Free'
+                                : `£${event.price}`}
+                            </p>
                           </div>
                         </div>
                       )}

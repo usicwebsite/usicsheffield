@@ -34,12 +34,14 @@ export async function GET(
       id: eventDoc.id,
       title: eventData.title,
       date: eventData.date,
-      time: eventData.time,
+      startTime: eventData.startTime,
+      endTime: eventData.endTime,
       location: eventData.location,
       price: eventData.price,
       description: eventData.description,
       imageUrl: eventData.imageUrl,
       formFields: eventData.formFields,
+      signupOpen: eventData.signupOpen || false, // Default to false for backwards compatibility
       createdAt: eventData.createdAt?.toDate?.() || new Date()
     };
 

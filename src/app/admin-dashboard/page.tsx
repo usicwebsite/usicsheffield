@@ -15,15 +15,11 @@ const getIdToken = async (): Promise<string | null> => {
   const auth = getAuth();
   const user = auth.currentUser;
   if (!user) {
-    console.log('[AdminDashboard] ❌ No current user for ID token');
     return null;
   }
 
-  console.log('[AdminDashboard] 🔑 Getting ID token for user:', user.uid);
   try {
     const token = await user.getIdToken();
-    console.log('[AdminDashboard] ✅ ID token obtained, length:', token?.length);
-    console.log('[AdminDashboard] 🔍 ID token starts with:', token?.substring(0, 50) + '...');
     return token;
   } catch (error) {
     console.error('[AdminDashboard] ❌ Error getting ID token:', error);
@@ -45,12 +41,15 @@ interface Event {
   id: string;
   title: string;
   date: string;
-  time: string;
+  startTime: string;
+  endTime?: string;
   location: string;
   price: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
+  signupOpen: boolean;
+  noSignupNeeded: boolean;
   createdAt: Date;
   createdBy: string;
 }
@@ -58,12 +57,15 @@ interface Event {
 interface EventFormData {
   title: string;
   date: string;
-  time: string;
+  startTime: string;
+  endTime?: string;
   location: string;
   price: string;
   description: string;
   imageFile?: File;
   formFields: string[];
+  signupOpen: boolean;
+  noSignupNeeded: boolean;
 }
 
 
@@ -100,14 +102,29 @@ export default function AdminDashboard() {
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
     date: '',
-    time: '',
+    startTime: '',
+    endTime: '',
     location: '',
     price: '',
     description: '',
-    formFields: []
+    formFields: [],
+    signupOpen: true, // Default to open for signups
+    noSignupNeeded: false // Default to requiring signup
   });
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // AI-related state
+  const [eventFormTab, setEventFormTab] = useState<'manual' | 'ai'>('manual');
+  const [aiEventText, setAiEventText] = useState('');
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  // Batch events state
+  const [parsedEvents, setParsedEvents] = useState<Event[]>([]);
+  const [showBatchReview, setShowBatchReview] = useState(false);
+  const [batchCreationProgress, setBatchCreationProgress] = useState<{[key: number]: 'pending' | 'creating' | 'completed' | 'failed'}>({});
+  const [batchCreationErrors, setBatchCreationErrors] = useState<{[key: number]: string}>({});
   
   const [availableFormFields] = useState([
     'name',
@@ -124,47 +141,22 @@ export default function AdminDashboard() {
 
   const checkAdminStatus = async (uid: string): Promise<boolean> => {
     try {
-      console.log('[AdminDashboard] 🔍 Checking admin status for UID:', uid);
-      console.log('[AdminDashboard] 🔍 UID type:', typeof uid);
-      console.log('[AdminDashboard] 🔍 UID length:', uid?.length);
-
       const db = getFirestoreDb();
       if (!db) {
         console.error('[AdminDashboard] ❌ Firestore not initialized');
         return false;
       }
-      console.log('[AdminDashboard] ✅ Firestore initialized successfully');
 
-      console.log('[AdminDashboard] 🔍 Looking for admin document at path: admins/' + uid);
       const adminDocRef = doc(db, 'admins', uid);
-      console.log('[AdminDashboard] 🔍 Admin document reference created');
-
       const adminDocSnap = await getDoc(adminDocRef);
-      console.log('[AdminDashboard] 🔍 Admin document snapshot received');
-      console.log('[AdminDashboard] 🔍 Document exists:', adminDocSnap.exists());
-      console.log('[AdminDashboard] 🔍 Document data:', adminDocSnap.data());
 
       if (adminDocSnap.exists()) {
-        console.log('[AdminDashboard] ✅ Admin document found - user is admin');
         return true;
       } else {
-        console.log('[AdminDashboard] ❌ Admin document not found - user is not admin');
-
         // Let's also check what documents exist in the admins collection
-        console.log('[AdminDashboard] 🔍 Checking all documents in admins collection...');
         try {
           const adminsCollection = collection(db, 'admins');
-          const adminsSnapshot = await getDocs(adminsCollection);
-          console.log('[AdminDashboard] 🔍 Total documents in admins collection:', adminsSnapshot.size);
-
-          if (adminsSnapshot.size > 0) {
-            console.log('[AdminDashboard] 🔍 Existing admin UIDs:');
-            adminsSnapshot.forEach((doc) => {
-              console.log('  - UID:', doc.id, 'Data:', doc.data());
-            });
-          } else {
-            console.log('[AdminDashboard] ❌ No documents found in admins collection');
-          }
+          await getDocs(adminsCollection);
         } catch (collectionError) {
           console.error('[AdminDashboard] ❌ Error listing admins collection:', collectionError);
         }
@@ -183,35 +175,23 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    console.log('[AdminDashboard] Starting authentication check...');
-
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
-        console.log('[AdminDashboard] Auth state changed:', user ? 'User found' : 'No user');
-
         if (!user) {
-          console.log('[AdminDashboard] No authenticated user, redirecting to login');
           router.push('/admin-login');
           return;
         }
-
-        console.log('[AdminDashboard] User authenticated, checking admin status...');
-        console.log('[AdminDashboard] 🔍 User UID from Firebase:', user.uid);
-        console.log('[AdminDashboard] 🔍 User email from Firebase:', user.email);
-        console.log('[AdminDashboard] 🔍 User display name:', user.displayName);
 
         // Check admin status in Firestore
         const isAdminUser = await checkAdminStatus(user.uid);
 
         if (!isAdminUser) {
-          console.log('[AdminDashboard] User is not an admin, signing out and redirecting');
           await signOut(auth);
           router.push('/admin-login');
           return;
         }
 
-        console.log('[AdminDashboard] Admin verification successful, loading dashboard');
         setIsAdmin(true);
         setIsAuthenticated(true);
         setIsLoading(false);
@@ -241,20 +221,14 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      console.log('[AdminDashboard] Loading dashboard data...');
       setIsLoading(true);
-      
-      // Load submitted posts directly from Firestore
-      console.log('[AdminDashboard] Loading submitted posts...');
-      const submittedPosts = await getSubmittedPosts(50);
-      console.log('[AdminDashboard] Loaded', submittedPosts.length, 'submitted posts');
 
+      // Load submitted posts directly from Firestore
+      const submittedPosts = await getSubmittedPosts(50);
       setPendingPosts(submittedPosts);
 
       // Load approved posts for stats
-      console.log('[AdminDashboard] Loading approved posts for stats...');
       const approvedPostsData = await getApprovedPosts();
-      console.log('[AdminDashboard] Loaded', approvedPostsData.length, 'approved posts');
 
       // Calculate basic stats
       const totalPosts = submittedPosts.length + approvedPostsData.length;
@@ -271,23 +245,18 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('[AdminDashboard] Failed to load dashboard data:', error);
     } finally {
-      console.log('[AdminDashboard] Setting loading to false');
       setIsLoading(false);
     }
   };
 
   const loadApprovedPosts = async () => {
     try {
-      console.log('[AdminDashboard] Loading approved posts...');
       setIsLoading(true);
 
       const posts = await getApprovedPosts(undefined, 100); // Load up to 100 approved posts
-      console.log('[AdminDashboard] Loaded', posts.length, 'approved posts');
-
       setApprovedPosts(posts);
 
       // Load comment counts for all posts
-      console.log('[AdminDashboard] Loading comment counts for posts...');
       const counts: {[postId: string]: number} = {};
       await Promise.all(posts.map(async (post) => {
         if (post.id) {
@@ -297,7 +266,6 @@ export default function AdminDashboard() {
       }));
 
       setCommentCounts(counts);
-      console.log('[AdminDashboard] Loaded comment counts:', counts);
     } catch (error) {
       console.error('[AdminDashboard] Failed to load approved posts:', error);
     } finally {
@@ -307,7 +275,6 @@ export default function AdminDashboard() {
 
   const loadEvents = async () => {
     try {
-      console.log('[AdminDashboard] Loading events...');
       setIsLoading(true);
 
       // Get ID token for authentication
@@ -330,8 +297,6 @@ export default function AdminDashboard() {
       }
 
       const data = await response.json();
-      console.log('[AdminDashboard] Loaded', data.events?.length || 0, 'events');
-      
       setEvents(data.events || []);
     } catch (error) {
       console.error('[AdminDashboard] Failed to load events:', error);
@@ -347,8 +312,6 @@ export default function AdminDashboard() {
     }
 
     try {
-      console.log('[AdminDashboard] Deleting post:', postId);
-      
       // Get Firebase ID token for authentication
       const idToken = await getIdToken();
       if (!idToken) {
@@ -369,9 +332,6 @@ export default function AdminDashboard() {
         throw new Error(errorData.message || 'Failed to delete post');
       }
 
-      const result = await response.json();
-      console.log('[AdminDashboard] Post deleted successfully:', result);
-
       // Remove from approved posts list
       setApprovedPosts(prev => prev.filter(post => post.id !== postId));
 
@@ -381,8 +341,6 @@ export default function AdminDashboard() {
         approvedPosts: prev.approvedPosts - 1,
         totalPosts: prev.totalPosts - 1
       }));
-
-      console.log('[AdminDashboard] Post deleted successfully');
     } catch (error) {
       console.error('Error deleting post:', error);
       alert('Failed to delete post. Please try again.');
@@ -407,8 +365,6 @@ export default function AdminDashboard() {
     if (!editingPost) return;
 
     try {
-      console.log('[AdminDashboard] Updating post:', editingPost.id);
-
       const updates = {
         title: editTitle.trim(),
         content: editContent.trim(),
@@ -428,7 +384,6 @@ export default function AdminDashboard() {
       );
 
       cancelEditing();
-      console.log('[AdminDashboard] Post updated successfully');
     } catch (error) {
       console.error('Error updating post:', error);
       alert('Failed to update post. Please try again.');
@@ -463,7 +418,6 @@ export default function AdminDashboard() {
     }
 
     try {
-      console.log('[AdminDashboard] Deleting comment:', commentId);
       await deleteComment(commentId);
 
       // Remove comment from local state
@@ -477,8 +431,6 @@ export default function AdminDashboard() {
         ...prev,
         [postId]: Math.max(0, (prev[postId] || 0) - 1)
       }));
-
-      console.log('[AdminDashboard] Comment deleted successfully');
     } catch (error) {
       console.error('Error deleting comment:', error);
       alert('Failed to delete comment. Please try again.');
@@ -491,8 +443,6 @@ export default function AdminDashboard() {
 
   const handleApprovePost = async (postId: string) => {
     try {
-      console.log('[AdminDashboard] Approving post:', postId);
-      
       // Set loading state
       setLoadingPosts(prev => ({ ...prev, [postId]: 'approving' }));
       
@@ -516,8 +466,6 @@ export default function AdminDashboard() {
         pendingPosts: prev.pendingPosts - 1,
         approvedPosts: prev.approvedPosts + 1
       }));
-
-      console.log('[AdminDashboard] Post approved successfully');
     } catch (error) {
       console.error('Error approving post:', error);
       // You could show an error message to the user here
@@ -529,8 +477,6 @@ export default function AdminDashboard() {
 
   const handleRejectPost = async (postId: string, rejectionReason: string) => {
     try {
-      console.log('[AdminDashboard] Rejecting post:', postId, 'with reason:', rejectionReason);
-      
       // Set loading state
       setLoadingPosts(prev => ({ ...prev, [postId]: 'rejecting' }));
       
@@ -559,8 +505,6 @@ export default function AdminDashboard() {
         setShowRejectModal(false);
         setSelectedPostForRejection(null);
         setRejectionReason('');
-
-      console.log('[AdminDashboard] Post rejected successfully');
     } catch (error) {
       console.error('Error rejecting post:', error);
       // You could show an error message to the user here
@@ -573,8 +517,13 @@ export default function AdminDashboard() {
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (eventFormData.formFields.length === 0) {
+    if (!eventFormData.noSignupNeeded && eventFormData.formFields.length === 0) {
       alert('Please select at least one form field');
+      return;
+    }
+
+    if (!eventFormData.startTime) {
+      alert('Please select a start time');
       return;
     }
 
@@ -592,11 +541,21 @@ export default function AdminDashboard() {
       const formData = new FormData();
       formData.append('title', eventFormData.title);
       formData.append('date', eventFormData.date);
-      formData.append('time', eventFormData.time);
+      formData.append('startTime', eventFormData.startTime);
+      if (eventFormData.endTime) {
+        formData.append('endTime', eventFormData.endTime);
+      }
       formData.append('location', eventFormData.location);
       formData.append('price', eventFormData.price);
       formData.append('description', eventFormData.description);
-      formData.append('formFields', JSON.stringify(eventFormData.formFields));
+      // Only include formFields if signup is needed
+      if (eventFormData.noSignupNeeded) {
+        formData.append('formFields', JSON.stringify([])); // Empty array for no signup events
+      } else {
+        formData.append('formFields', JSON.stringify(eventFormData.formFields));
+      }
+      formData.append('signupOpen', eventFormData.signupOpen.toString());
+      formData.append('noSignupNeeded', eventFormData.noSignupNeeded.toString());
       formData.append('createdBy', user.uid);
       
       if (eventFormData.imageFile) {
@@ -630,12 +589,15 @@ export default function AdminDashboard() {
         id: result.eventId,
         title: eventFormData.title,
         date: eventFormData.date,
-        time: eventFormData.time,
+        startTime: eventFormData.startTime,
+        endTime: eventFormData.endTime,
         location: eventFormData.location,
         price: eventFormData.price,
         description: eventFormData.description,
         imageUrl: result.imageUrl,
         formFields: eventFormData.formFields,
+        signupOpen: eventFormData.signupOpen,
+        noSignupNeeded: eventFormData.noSignupNeeded,
         createdAt: new Date(),
         createdBy: user.uid
       };
@@ -646,16 +608,17 @@ export default function AdminDashboard() {
       setEventFormData({
         title: '',
         date: '',
-        time: '',
+        startTime: '',
+        endTime: '',
         location: '',
         price: '',
         description: '',
-        formFields: []
+        formFields: [],
+        signupOpen: true,
+        noSignupNeeded: false
       });
       setImagePreview(null);
       setShowEventForm(false);
-      
-      console.log('Event created successfully:', result.eventId);
     } catch (error) {
       console.error('Error creating event:', error);
       alert(error instanceof Error ? error.message : 'Failed to create event');
@@ -682,7 +645,214 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAIEventParsing = async () => {
+    if (!aiEventText.trim()) {
+      alert('Please enter event details to parse');
+      return;
+    }
 
+    try {
+      setIsProcessingAI(true);
+      
+      const token = await getIdToken();
+      if (!token) {
+        throw new Error('Failed to get authentication token');
+      }
+
+      const response = await fetch('/api/admin/events/ai-parse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ eventText: aiEventText }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to parse event details');
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.parsedData) {
+        // Handle multiple events
+        if (Array.isArray(result.parsedData) && result.parsedData.length > 1) {
+          // Multiple events - show batch review
+          setParsedEvents(result.parsedData);
+          setShowBatchReview(true);
+
+          // Initialize batch creation progress
+          const progress: {[key: number]: 'pending' | 'creating' | 'completed' | 'failed'} = {};
+          result.parsedData.forEach((event: Event, index: number) => {
+            progress[index] = 'pending';
+          });
+          setBatchCreationProgress(progress);
+          setBatchCreationErrors({});
+
+          // Show success message
+          alert(result.message || `Successfully parsed ${result.parsedData.length} events! Please review them before creating.`);
+        } else {
+          // Single event - populate form as before
+          const singleEvent = Array.isArray(result.parsedData) ? result.parsedData[0] : result.parsedData;
+          setEventFormData({
+            title: singleEvent.title || '',
+            date: singleEvent.date || '',
+            startTime: singleEvent.startTime || '',
+            endTime: singleEvent.endTime || '',
+            location: singleEvent.location || '',
+            price: singleEvent.price || '',
+            description: singleEvent.description || aiEventText,
+            formFields: ['name', 'email'], // Default form fields
+            signupOpen: true,
+            noSignupNeeded: false,
+            imageFile: undefined
+          });
+
+          // Set missing fields for visual indication
+          setMissingFields(result.eventsWithMissingFields?.[0]?.missingFields || []);
+
+          // Switch to manual tab to show the populated form
+          setEventFormTab('manual');
+
+          // Show appropriate message
+          const message = result.message || 'Event details parsed successfully! Please review and adjust as needed.';
+          alert(message);
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing event details:', error);
+      alert(error instanceof Error ? error.message : 'Failed to parse event details');
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
+  const handleBatchCreateEvents = async () => {
+    try {
+      setIsCreatingEvent(true);
+      const token = await getIdToken();
+      if (!token) {
+        throw new Error('Failed to get authentication token');
+      }
+
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error('No authenticated user');
+      }
+
+      const errors: {[key: number]: string} = {};
+      let successCount = 0;
+
+      // Create events one by one with progress tracking
+      for (let i = 0; i < parsedEvents.length; i++) {
+        const event = parsedEvents[i];
+
+        // Skip if missing required fields
+        const requiredFields = ['title', 'date', 'startTime', 'location', 'description'] as const;
+        const missing = requiredFields.filter(field => !event[field as keyof Event]);
+        if (missing.length > 0) {
+          errors[i] = `Missing required fields: ${missing.join(', ')}`;
+          setBatchCreationProgress(prev => ({ ...prev, [i]: 'failed' }));
+          setBatchCreationErrors(prev => ({ ...prev, [i]: errors[i] }));
+          continue;
+        }
+
+        // Skip form field validation if no signup is needed
+        if (!event.noSignupNeeded && (!event.formFields || event.formFields.length === 0)) {
+          errors[i] = 'Please select at least one form field';
+          setBatchCreationProgress(prev => ({ ...prev, [i]: 'failed' }));
+          setBatchCreationErrors(prev => ({ ...prev, [i]: errors[i] }));
+          continue;
+        }
+
+        try {
+          setBatchCreationProgress(prev => ({ ...prev, [i]: 'creating' }));
+
+          // Create FormData for the request
+          const formData = new FormData();
+          formData.append('title', event.title);
+          formData.append('date', event.date);
+          formData.append('startTime', event.startTime);
+          if (event.endTime) {
+            formData.append('endTime', event.endTime);
+          }
+          formData.append('location', event.location);
+          formData.append('price', event.price || 'Free');
+          formData.append('description', event.description);
+          // Use formFields from event if available, otherwise use defaults or empty array
+          const formFieldsToSend = event.noSignupNeeded ? [] : (event.formFields || ['name', 'email']);
+          formData.append('formFields', JSON.stringify(formFieldsToSend));
+          formData.append('signupOpen', 'true');
+          formData.append('noSignupNeeded', (event.noSignupNeeded || false).toString());
+          formData.append('createdBy', user.uid);
+
+          // Call the API to create the event
+          const response = await fetch('/api/admin/events', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create event');
+          }
+
+          const result = await response.json();
+          setBatchCreationProgress(prev => ({ ...prev, [i]: 'completed' }));
+          successCount++;
+
+          // Add to events list
+          const newEvent: Event = {
+            id: result.eventId,
+            title: event.title,
+            date: event.date,
+            startTime: event.startTime,
+            endTime: event.endTime,
+            location: event.location,
+            price: event.price || 'Free',
+            description: event.description,
+            imageUrl: result.imageUrl,
+            formFields: event.noSignupNeeded ? [] : (event.formFields || ['name', 'email']),
+            signupOpen: true,
+            noSignupNeeded: event.noSignupNeeded || false,
+            createdAt: new Date(),
+            createdBy: user.uid
+          };
+          setEvents(prev => [newEvent, ...prev]);
+
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to create event';
+          errors[i] = errorMessage;
+          setBatchCreationProgress(prev => ({ ...prev, [i]: 'failed' }));
+          setBatchCreationErrors(prev => ({ ...prev, [i]: errorMessage }));
+        }
+      }
+
+      // Show results
+      if (successCount === parsedEvents.length) {
+        alert(`Successfully created all ${successCount} events!`);
+        setShowBatchReview(false);
+        setParsedEvents([]);
+        setBatchCreationProgress({});
+        setBatchCreationErrors({});
+      } else if (successCount > 0) {
+        alert(`Created ${successCount} out of ${parsedEvents.length} events. Check the errors below for failed events.`);
+      } else {
+        alert('Failed to create any events. Please check the errors and try again.');
+      }
+
+    } catch (error) {
+      console.error('Error in batch creation:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create events');
+    } finally {
+      setIsCreatingEvent(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -700,7 +870,7 @@ export default function AdminDashboard() {
 
   const formatDate = (timestamp: Date | { toDate(): Date }) => {
     if (!timestamp) return "Unknown date";
-    
+
     const date = 'toDate' in timestamp ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
@@ -709,6 +879,28 @@ export default function AdminDashboard() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const formatTimeRange = (startTime: string, endTime?: string) => {
+    if (!startTime) return "Time not set";
+
+    // Format the start time
+    const formatTime = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const formattedStart = formatTime(startTime);
+
+    if (endTime) {
+      const formattedEnd = formatTime(endTime);
+      return `${formattedStart} - ${formattedEnd}`;
+    }
+
+    return formattedStart;
   };
 
   if (isLoading) {
@@ -1350,7 +1542,9 @@ export default function AdminDashboard() {
                         <svg className="w-4 h-4 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="truncate">{event.time}</span>
+                        <span className="truncate">
+                          {formatTimeRange(event.startTime, event.endTime)}
+                        </span>
                       </div>
                       <div className="flex items-center text-gray-300 text-sm">
                         <svg className="w-4 h-4 mr-3 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1364,7 +1558,11 @@ export default function AdminDashboard() {
                           <svg className="w-4 h-4 mr-3 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                           </svg>
-                          <span className="truncate">{event.price}</span>
+                          <span className="truncate">
+                            {event.price === 'Free' || !event.price
+                              ? 'Free'
+                              : `£${event.price}`}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -1399,6 +1597,9 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => {
                       setShowEventForm(false);
+                      setEventFormTab('manual');
+                      setAiEventText('');
+                      setMissingFields([]);
                       if (imagePreview) {
                         URL.revokeObjectURL(imagePreview);
                         setImagePreview(null);
@@ -1412,50 +1613,147 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
+                {/* Tabs */}
+                <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setEventFormTab('manual')}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                      eventFormTab === 'manual'
+                        ? 'bg-white text-gray-900 shadow'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Manual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEventFormTab('ai')}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                      eventFormTab === 'ai'
+                        ? 'bg-white text-gray-900 shadow'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    AI Assisted
+                  </button>
+                </div>
+
+                {eventFormTab === 'manual' && (
+                  <>
+                    {missingFields.length > 0 && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                          <h4 className="text-orange-800 font-medium">Please complete the missing information:</h4>
+                        </div>
+                        <ul className="mt-2 text-orange-700 text-sm">
+                          {missingFields.map(field => (
+                            <li key={field} className="flex items-center">
+                              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                              {field === 'title' ? 'Event Title' :
+                               field === 'date' ? 'Event Date' :
+                               field === 'startTime' ? 'Start Time' :
+                               field === 'endTime' ? 'End Time' :
+                               field === 'location' ? 'Event Location' :
+                               field === 'description' ? 'Event Description' :
+                               field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                 <form onSubmit={handleCreateEvent} className="space-y-6">
                   {/* Event Title */}
                   <div>
-                    <label htmlFor="eventTitle" className="block text-sm font-medium text-gray-700 mb-2">
-                      Event Title *
+                    <label htmlFor="eventTitle" className={`block text-sm font-medium mb-2 ${
+                      missingFields.includes('title') ? 'text-red-600' : 'text-gray-700'
+                    }`}>
+                      Event Title * {missingFields.includes('title') && <span className="text-red-500">(Please fill)</span>}
                     </label>
                     <input
                       type="text"
                       id="eventTitle"
                       value={eventFormData.title}
-                      onChange={(e) => setEventFormData({...eventFormData, title: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => {
+                        setEventFormData({...eventFormData, title: e.target.value});
+                        if (missingFields.includes('title') && e.target.value.trim()) {
+                          setMissingFields(missingFields.filter(f => f !== 'title'));
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        missingFields.includes('title')
+                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                          : 'border-gray-300'
+                      }`}
                       placeholder="Enter event title"
                       required
                     />
                   </div>
 
                   {/* Date and Time */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="eventDate" className="block text-sm font-medium text-gray-700 mb-2">
-                        Date *
+                      <label htmlFor="eventDate" className={`block text-sm font-medium mb-2 ${
+                        missingFields.includes('date') ? 'text-red-600' : 'text-gray-700'
+                      }`}>
+                        Date * {missingFields.includes('date') && <span className="text-red-500">(Please fill)</span>}
                       </label>
                       <input
                         type="date"
                         id="eventDate"
                         value={eventFormData.date}
-                        onChange={(e) => setEventFormData({...eventFormData, date: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onChange={(e) => {
+                          setEventFormData({...eventFormData, date: e.target.value});
+                          if (missingFields.includes('date') && e.target.value) {
+                            setMissingFields(missingFields.filter(f => f !== 'date'));
+                          }
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          missingFields.includes('date')
+                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                            : 'border-gray-300'
+                        }`}
                         required
                       />
                     </div>
                     <div>
-                      <label htmlFor="eventTime" className="block text-sm font-medium text-gray-700 mb-2">
-                        Time *
+                      <label htmlFor="startTime" className={`block text-sm font-medium mb-2 ${
+                        missingFields.includes('startTime') ? 'text-red-600' : 'text-gray-700'
+                      }`}>
+                        Start Time * {missingFields.includes('startTime') && <span className="text-red-500">(Please fill)</span>}
                       </label>
                       <input
-                        type="text"
-                        id="eventTime"
-                        value={eventFormData.time}
-                        onChange={(e) => setEventFormData({...eventFormData, time: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., 6:00 PM - 10:00 PM"
+                        type="time"
+                        id="startTime"
+                        value={eventFormData.startTime}
+                        onChange={(e) => {
+                          setEventFormData({...eventFormData, startTime: e.target.value});
+                          if (missingFields.includes('startTime') && e.target.value) {
+                            setMissingFields(missingFields.filter(f => f !== 'startTime'));
+                          }
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          missingFields.includes('startTime')
+                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                            : 'border-gray-300'
+                        }`}
                         required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
+                        End Time
+                        <span className="text-gray-500 text-xs ml-1">(optional)</span>
+                      </label>
+                      <input
+                        type="time"
+                        id="endTime"
+                        value={eventFormData.endTime || ''}
+                        onChange={(e) => setEventFormData({...eventFormData, endTime: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -1463,15 +1761,26 @@ export default function AdminDashboard() {
                   {/* Location and Price */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="eventLocation" className="block text-sm font-medium text-gray-700 mb-2">
-                        Location *
+                      <label htmlFor="eventLocation" className={`block text-sm font-medium mb-2 ${
+                        missingFields.includes('location') ? 'text-red-600' : 'text-gray-700'
+                      }`}>
+                        Location * {missingFields.includes('location') && <span className="text-red-500">(Please fill)</span>}
                       </label>
                       <input
                         type="text"
                         id="eventLocation"
                         value={eventFormData.location}
-                        onChange={(e) => setEventFormData({...eventFormData, location: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onChange={(e) => {
+                          setEventFormData({...eventFormData, location: e.target.value});
+                          if (missingFields.includes('location') && e.target.value.trim()) {
+                            setMissingFields(missingFields.filter(f => f !== 'location'));
+                          }
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          missingFields.includes('location')
+                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                            : 'border-gray-300'
+                        }`}
                         placeholder="Enter event location"
                         required
                       />
@@ -1486,25 +1795,89 @@ export default function AdminDashboard() {
                         value={eventFormData.price}
                         onChange={(e) => setEventFormData({...eventFormData, price: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Free, £10, £15-20"
+                        placeholder="e.g., Free, 10, 15-20 (GBP symbol added automatically)"
                       />
                     </div>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label htmlFor="eventDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                      Description *
+                    <label htmlFor="eventDescription" className={`block text-sm font-medium mb-2 ${
+                      missingFields.includes('description') ? 'text-red-600' : 'text-gray-700'
+                    }`}>
+                      Description * {missingFields.includes('description') && <span className="text-red-500">(Please fill)</span>}
                     </label>
                     <textarea
                       id="eventDescription"
                       value={eventFormData.description}
-                      onChange={(e) => setEventFormData({...eventFormData, description: e.target.value})}
+                      onChange={(e) => {
+                        setEventFormData({...eventFormData, description: e.target.value});
+                        if (missingFields.includes('description') && e.target.value.trim()) {
+                          setMissingFields(missingFields.filter(f => f !== 'description'));
+                        }
+                      }}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        missingFields.includes('description')
+                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                          : 'border-gray-300'
+                      }`}
                       placeholder="Enter event description"
                       required
                     />
+                  </div>
+
+                  {/* Sign Up Options */}
+                  <div className="space-y-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="signupOpen"
+                      checked={eventFormData.signupOpen}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setEventFormData({
+                          ...eventFormData,
+                          signupOpen: checked,
+                          // If signup is being opened, no signup cannot be needed
+                          noSignupNeeded: checked ? false : eventFormData.noSignupNeeded
+                        });
+                      }}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="signupOpen" className="ml-2 block text-sm font-medium text-gray-700">
+                      Sign up open?
+                      <span className="text-gray-500 text-xs ml-2">
+                        (If checked, public users can sign up for this event)
+                      </span>
+                    </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="noSignupNeeded"
+                        checked={eventFormData.noSignupNeeded}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setEventFormData({
+                            ...eventFormData,
+                            noSignupNeeded: checked,
+                            // If no signup is needed, signup cannot be open
+                            signupOpen: checked ? false : eventFormData.signupOpen,
+                            // Clear form fields if no signup is needed, or set defaults if signup is needed
+                            formFields: checked ? [] : (eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields)
+                          });
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="noSignupNeeded" className="ml-2 block text-sm font-medium text-gray-700">
+                        No sign up needed
+                        <span className="text-gray-500 text-xs ml-2">
+                          (Check if this is a public event where people can just show up without registering)
+                        </span>
+                      </label>
+                    </div>
                   </div>
 
                   {/* Image Upload */}
@@ -1559,43 +1932,60 @@ export default function AdminDashboard() {
                     )}
                   </div>
 
-                  {/* Form Fields Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Signup Form Fields *
-                    </label>
-                    <p className="text-xs text-gray-500 mb-3">Select which information to collect from attendees</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {availableFormFields.map((field) => (
-                        <label key={field} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={eventFormData.formFields.includes(field)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setEventFormData({
-                                  ...eventFormData,
-                                  formFields: [...eventFormData.formFields, field]
-                                });
-                              } else {
-                                setEventFormData({
-                                  ...eventFormData,
-                                  formFields: eventFormData.formFields.filter(f => f !== field)
-                                });
-                              }
-                            }}
-                            className="mr-2"
-                          />
-                          <span className="text-sm text-gray-700 capitalize">
-                            {field.replace('_', ' ')}
-                          </span>
-                        </label>
-                      ))}
+                  {/* Form Fields Selection - Only show if signup is needed */}
+                  {!eventFormData.noSignupNeeded && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Signup Form Fields *
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">Select which information to collect from attendees</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {availableFormFields.map((field) => (
+                          <label key={field} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={eventFormData.formFields.includes(field)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEventFormData({
+                                    ...eventFormData,
+                                    formFields: [...eventFormData.formFields, field]
+                                  });
+                                } else {
+                                  setEventFormData({
+                                    ...eventFormData,
+                                    formFields: eventFormData.formFields.filter(f => f !== field)
+                                  });
+                                }
+                              }}
+                              className="mr-2"
+                            />
+                            <span className="text-sm text-gray-700 capitalize">
+                              {field.replace('_', ' ')}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      {eventFormData.formFields.length === 0 && (
+                        <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
+                      )}
                     </div>
-                    {eventFormData.formFields.length === 0 && (
-                      <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
-                    )}
-                  </div>
+                  )}
+
+                  {/* Show message when no signup is needed */}
+                  {eventFormData.noSignupNeeded && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <h4 className="text-blue-800 font-medium">No Sign Up Required</h4>
+                          <p className="text-blue-600 text-sm">This is a public event where attendees can just show up without registering.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Submit Buttons */}
                   <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -1628,6 +2018,371 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </form>
+                  </>
+                )}
+
+                {eventFormTab === 'ai' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="aiEventText" className="block text-sm font-medium text-gray-700 mb-2">
+                        Event Details
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Paste your event details here and AI will automatically extract the title, date, time, location, and description.
+                      </p>
+                      <textarea
+                        id="aiEventText"
+                        value={aiEventText}
+                        onChange={(e) => setAiEventText(e.target.value)}
+                        rows={10}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder={`Examples:
+
+SINGLE EVENT:
+Fresher's Student Panel
+Thursday, 2 October⋅6:00 – 8:00pm
+The Quran as a Source of Guidance: Panel
+
+MULTIPLE EVENTS (use separators):
+---
+Fresher's Student Panel
+Thursday, 2 October⋅6:00 – 8:00pm
+The Quran as a Source of Guidance: Panel
+---
+
+Friday Football
+Friday, 3 October⋅7:00 – 9:00pm
+Join us for our weekly football session
+---
+
+Annual Dinner
+Saturday, 4 October⋅8:00pm – 11:00pm
+Celebrating another successful year
+---
+
+Or use numbered lists:
+1. Fresher's Student Panel - Thursday, 2 October⋅6:00 – 8:00pm - The Quran as a Source of Guidance
+2. Friday Football - Friday, 3 October⋅7:00 – 9:00pm - Weekly sports session
+3. Annual Dinner - Saturday, 4 October⋅8:00pm - Celebrating the year`}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowEventForm(false);
+                          setEventFormTab('manual');
+                          setAiEventText('');
+                          setMissingFields([]);
+                          if (imagePreview) {
+                            URL.revokeObjectURL(imagePreview);
+                            setImagePreview(null);
+                          }
+                        }}
+                        className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAIEventParsing}
+                        disabled={isProcessingAI || !aiEventText.trim()}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {isProcessingAI ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Create Event with AI
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Batch Events Review Modal */}
+        {showBatchReview && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Review Events ({parsedEvents.length})</h3>
+                    <p className="text-sm text-gray-600 mt-1">Review and create multiple events at once</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowBatchReview(false);
+                      setParsedEvents([]);
+                      setBatchCreationProgress({});
+                      setBatchCreationErrors({});
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Events List */}
+                <div className="space-y-4 mb-6">
+                  {parsedEvents.map((event, index) => {
+                    const requiredFields = ['title', 'date', 'startTime', 'location', 'description'] as const;
+                    const missing = requiredFields.filter(field => !event[field as keyof Event]);
+                    const progress = batchCreationProgress[index] || 'pending';
+                    const error = batchCreationErrors[index];
+
+                    return (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-gray-900">Event {index + 1}</h4>
+                          <div className="flex items-center gap-2">
+                            {progress === 'pending' && (
+                              <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">Pending</span>
+                            )}
+                            {progress === 'creating' && (
+                              <span className="px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded flex items-center gap-1">
+                                <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                Creating...
+                              </span>
+                            )}
+                            {progress === 'completed' && (
+                              <span className="px-2 py-1 text-xs bg-green-100 text-green-600 rounded flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Created
+                              </span>
+                            )}
+                            {progress === 'failed' && (
+                              <span className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded">Failed</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {error && (
+                          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                            <strong>Error:</strong> {error}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <input
+                              type="text"
+                              value={event.title || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].title = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.title ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                              placeholder="Event title"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input
+                              type="date"
+                              value={event.date || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].date = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.date ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                            <input
+                              type="time"
+                              value={event.startTime || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].startTime = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.startTime ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                            <input
+                              type="text"
+                              value={event.location || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].location = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.location ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                              placeholder="Event location"
+                            />
+                          </div>
+                        </div>
+
+                        {/* No Signup Needed Checkbox */}
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`noSignupNeeded-${index}`}
+                              checked={event.noSignupNeeded || false}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].noSignupNeeded = e.target.checked;
+                                // Clear form fields if no signup is needed
+                                if (e.target.checked) {
+                                  updatedEvents[index].formFields = [];
+                                } else if (!updatedEvents[index].formFields || updatedEvents[index].formFields.length === 0) {
+                                  // Set default form fields if signup is needed and none are set
+                                  updatedEvents[index].formFields = ['name', 'email'];
+                                }
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor={`noSignupNeeded-${index}`} className="ml-2 block text-sm font-medium text-gray-700">
+                              No sign up needed
+                              <span className="text-gray-500 text-xs ml-2">
+                                (Public event - people can just show up)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Show message when no signup is needed */}
+                        {event.noSignupNeeded && (
+                          <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                            <strong>Note:</strong> No form fields needed for walk-in events
+                          </div>
+                        )}
+
+                        {/* Form Fields - Only show if signup is needed */}
+                        {!event.noSignupNeeded && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Form Fields
+                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {availableFormFields.map((field) => (
+                                <label key={field} className="flex items-center text-xs">
+                                  <input
+                                    type="checkbox"
+                                    checked={event.formFields?.includes(field) || false}
+                                    onChange={(e) => {
+                                      const updatedEvents = [...parsedEvents];
+                                      const currentFields = updatedEvents[index].formFields || [];
+                                      if (e.target.checked) {
+                                        updatedEvents[index].formFields = [...currentFields, field];
+                                      } else {
+                                        updatedEvents[index].formFields = currentFields.filter(f => f !== field);
+                                      }
+                                      setParsedEvents(updatedEvents);
+                                    }}
+                                    className="mr-2 h-3 w-3"
+                                  />
+                                  <span className="capitalize">
+                                    {field.replace('_', ' ')}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                            {(!event.formFields || event.formFields.length === 0) && (
+                              <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                          <textarea
+                            value={event.description || ''}
+                            onChange={(e) => {
+                              const updatedEvents = [...parsedEvents];
+                              updatedEvents[index].description = e.target.value;
+                              setParsedEvents(updatedEvents);
+                            }}
+                            rows={2}
+                            className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                              !event.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                            placeholder="Event description"
+                          />
+                        </div>
+
+                        {missing.length > 0 && (
+                          <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                            <strong>Missing:</strong> {missing.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBatchReview(false);
+                      setParsedEvents([]);
+                      setBatchCreationProgress({});
+                      setBatchCreationErrors({});
+                    }}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBatchCreateEvents}
+                    disabled={isCreatingEvent}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isCreatingEvent ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Creating Events...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Create All Events ({parsedEvents.length})
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

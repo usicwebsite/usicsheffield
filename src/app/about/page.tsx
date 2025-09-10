@@ -174,7 +174,7 @@ export default function AboutPage() {
                 
                 <div>
                   <h4 className="text-lg md:text-xl font-semibold mb-2 text-white">Weekly Events</h4>
-                  <p className="text-blue-100">Islamic History Lessons, Qur&apos;an Circles, Football (Sisters Thursday, Brothers Friday), Welfare Wednesdays</p>
+                  <p className="text-blue-100">Islamic History Lessons, Qur&apos;an Circles, Football (Sisters Thursday, Brothers Friday)</p>
                 </div>
                 
                 <div>

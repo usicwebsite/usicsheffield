@@ -4,7 +4,6 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[Login API] Starting login process...');
 
     const { idToken } = await request.json();
 
@@ -25,23 +24,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the Firebase ID token
-    console.log('[Login API] Verifying Firebase ID token...');
     const decodedToken = await adminAuth.verifyIdToken(idToken);
-    console.log('[Login API] ✅ Token verified for user:', decodedToken.uid);
 
     // Get user info from Firebase Auth
     const firebaseUser = await adminAuth.getUser(decodedToken.uid);
-    console.log('[Login API] ✅ Got Firebase user:', firebaseUser.email);
 
     // Check if user exists in Firestore (optional - depends on your user management)
-    let userDocSnap = null;
     if (adminDb) {
       try {
         const userDocRef = adminDb.collection('users').doc(decodedToken.uid);
-        userDocSnap = await userDocRef.get();
-        console.log('[Login API] User document exists:', userDocSnap.exists);
-      } catch (error) {
-        console.log('[Login API] Error checking user document:', error);
+        await userDocRef.get();
+      } catch {
         // Continue without user document for now
       }
     }
@@ -66,7 +59,6 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
-    console.log('[Login API] ✅ Login successful for user:', firebaseUser.email);
 
     return NextResponse.json({
       success: true,

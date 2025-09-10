@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 
 type StaticEvent = {
   id: number;
@@ -20,28 +19,159 @@ type AdminEvent = {
   id: string;
   title: string;
   date: string;
-  time: string;
+  startTime: string;
+  endTime?: string;
   location: string;
   price: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
+  signupOpen: boolean;
+  noSignupNeeded: boolean;
   createdAt: Date;
 };
 
 export default function EventsPage() {
   const [adminEvents, setAdminEvents] = useState<AdminEvent[]>([]);
-  const [loadingAdminEvents, setLoadingAdminEvents] = useState(true);
+  const [, setLoadingAdminEvents] = useState(true);
 
   // Function to format date like "Sep. 25th, 2025"
   const formatEventDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+      // Handle dates with ordinal suffixes like "November 11th, 2025"
+      const ordinalRegex = /^(\w+)\s+(\d+)(?:st|nd|rd|th),\s+(\d{4})$/;
+      const match = dateString.match(ordinalRegex);
 
-      const month = monthNames[date.getMonth()];
-      const day = date.getDate();
-      const year = date.getFullYear();
+      if (match) {
+        const [, monthName, dayStr, yearStr] = match;
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthName.toLowerCase());
+
+        if (monthIndex !== -1) {
+          const date = new Date(parseInt(yearStr), monthIndex, parseInt(dayStr));
+          const shortMonthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
+                                  'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+
+          const month = shortMonthNames[date.getMonth()];
+          const day = date.getDate();
+          const year = date.getFullYear();
+
+          // Add ordinal suffix
+          const getOrdinalSuffix = (day: number) => {
+            if (day > 3 && day < 21) return 'th';
+            switch (day % 10) {
+              case 1: return 'st';
+              case 2: return 'nd';
+              case 3: return 'rd';
+              default: return 'th';
+            }
+          };
+
+          return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
+        }
+      }
+
+      // Try standard date parsing for other formats
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
+                           'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+
+        const month = monthNames[date.getMonth()];
+        const day = date.getDate();
+        const year = date.getFullYear();
+
+        // Add ordinal suffix
+        const getOrdinalSuffix = (day: number) => {
+          if (day > 3 && day < 21) return 'th';
+          switch (day % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+          }
+        };
+
+        return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
+      }
+
+      return dateString; // Fallback to original format
+    } catch {
+      return dateString; // Fallback to original format
+    }
+  };
+
+  // Function to format time range like "6:00 PM - 10:00 PM"
+  const formatTimeRange = (startTime: string, endTime?: string) => {
+    if (!startTime) return "Time not set";
+
+    // Format the start time
+    const formatTime = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const formattedStart = formatTime(startTime);
+
+    if (endTime) {
+      const formattedEnd = formatTime(endTime);
+      return `${formattedStart} - ${formattedEnd}`;
+    }
+
+    return formattedStart;
+  };
+
+  // Function to organize events by date
+  const organizeEventsByDate = (events: StaticEvent[], adminEvents: AdminEvent[]) => {
+    const dates: { [key: string]: (StaticEvent | AdminEvent)[] } = {};
+
+    // Helper function to parse event date and get a standardized date key
+    const getDateKey = (dateString: string): string | null => {
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+
+      // Handle dates with ordinal suffixes like "November 11th, 2025"
+      const ordinalRegex = /^(\w+)\s+(\d+)(?:st|nd|rd|th),\s+(\d{4})$/;
+      const match = dateString.match(ordinalRegex);
+
+      if (match) {
+        const [, monthName, dayStr, yearStr] = match;
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthName.toLowerCase());
+
+        if (monthIndex !== -1) {
+          const date = new Date(parseInt(yearStr), monthIndex, parseInt(dayStr));
+          return date.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+        }
+      }
+
+      // Try standard date parsing
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+
+      return null;
+    };
+
+    // Helper function to format date for display
+    const formatDateForDisplay = (dateKey: string): string => {
+      const [year, month, day] = dateKey.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+
+      const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
+                         'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+
+      const monthName = monthNames[date.getMonth()];
+      const dayNum = date.getDate();
+      const yearNum = date.getFullYear();
 
       // Add ordinal suffix
       const getOrdinalSuffix = (day: number) => {
@@ -54,52 +184,193 @@ export default function EventsPage() {
         }
       };
 
-      return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
-    } catch {
-      return dateString; // Fallback to original format
-    }
+      return `${monthName} ${dayNum}${getOrdinalSuffix(dayNum)}, ${yearNum}`;
+    };
+
+    // Helper function to calculate recurring event dates
+    const calculateRecurringDates = (dateString: string, eventTitle: string, numOccurrences: number = 3): string[] => {
+      const dates: string[] = [];
+
+      if (!dateString.includes('Every')) return dates;
+
+      const dayMap: { [key: string]: number } = {
+        'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4,
+        'Friday': 5, 'Saturday': 6, 'Sunday': 0
+      };
+
+      const dayMatch = dateString.match(/Every (\w+)/);
+      if (!dayMatch) return dates;
+
+      const dayOfWeek = dayMap[dayMatch[1]];
+      if (dayOfWeek === undefined) return dates;
+
+      // Special handling for Roots Academy Classes - use specific dates
+      if (eventTitle === 'Roots Academy Classes') {
+        const specificRootsDates = [
+          '2025-10-07', '2025-10-14', '2025-10-21', '2025-10-28',
+          '2025-11-04', '2025-11-11', '2025-11-18', '2025-11-25',
+          '2025-12-02', '2025-12-09', '2025-12-16',
+          '2026-03-24', '2026-03-31', '2026-04-07', '2026-04-14', '2026-04-21', '2026-04-28',
+          '2026-05-05', '2026-05-12', '2026-05-19'
+        ];
+
+        // Filter to only include future dates
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return specificRootsDates.filter(dateStr => {
+          const eventDate = new Date(dateStr);
+          return eventDate >= today;
+        });
+      }
+
+      // Define start dates for other recurring events
+      const eventStartDates: { [key: string]: Date } = {
+        'Friday Football': new Date(2025, 9, 1)       // October 1st, 2025 - will find first Friday
+      };
+
+      const startDate = eventStartDates[eventTitle] || new Date();
+
+      // Find the first occurrence of the specified day on or after the start date
+      let firstOccurrence = new Date(startDate);
+      const startDay = startDate.getDay();
+      const diff = dayOfWeek - startDay;
+
+      if (diff < 0) {
+        firstOccurrence.setDate(startDate.getDate() + diff + 7);
+      } else if (diff > 0) {
+        firstOccurrence.setDate(startDate.getDate() + diff);
+      } else {
+        // If start date is already the correct day, use it
+        firstOccurrence = new Date(startDate);
+      }
+
+      // Generate the specified number of occurrences
+      for (let i = 0; i < numOccurrences; i++) {
+        const occurrenceDate = new Date(firstOccurrence);
+        occurrenceDate.setDate(firstOccurrence.getDate() + (i * 7)); // Add 7 days for each occurrence
+
+        // Only include dates that are today or in the future
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (occurrenceDate >= today) {
+          dates.push(occurrenceDate.toISOString().split('T')[0]);
+        }
+      }
+
+      return dates;
+    };
+
+    // Process static events
+    events.forEach(event => {
+      if (event.date.includes('Every')) {
+        // Handle recurring events - calculate next few dates (limit to avoid clutter)
+        const recurringDates = calculateRecurringDates(event.date, event.title, 12); // Show next 12 occurrences
+        recurringDates.forEach(dateKey => {
+          if (!dates[dateKey]) {
+            dates[dateKey] = [];
+          }
+          // Prevent duplicate events on the same date
+          const existingEvent = dates[dateKey].find(e =>
+            ('id' in e ? (e as StaticEvent).id : (e as AdminEvent).id) === event.id
+          );
+          if (!existingEvent) {
+            dates[dateKey].push(event);
+          }
+        });
+      } else {
+        // Handle specific dates
+        const dateKey = getDateKey(event.date);
+        if (dateKey) {
+          if (!dates[dateKey]) {
+            dates[dateKey] = [];
+          }
+          dates[dateKey].push(event);
+        }
+      }
+    });
+
+    // Process admin events
+    adminEvents.forEach(event => {
+      const dateKey = getDateKey(event.date);
+      if (dateKey) {
+        if (!dates[dateKey]) {
+          dates[dateKey] = [];
+        }
+        dates[dateKey].push(event);
+      }
+    });
+
+    // Note: Current date filtering could be added here in the future
+
+    // Sort dates chronologically (show all events, both past and future)
+    const allDateKeys = Object.keys(dates).sort();
+
+    // Helper function to get event time for sorting
+    const getEventTime = (event: StaticEvent | AdminEvent): string => {
+      if ('category' in event) {
+        // Static event - use time field
+        return event.time;
+      } else {
+        // Admin event - use startTime field
+        return event.startTime;
+      }
+    };
+
+    // Helper function to convert time string to minutes for comparison
+    const timeToMinutes = (timeStr: string): number => {
+      try {
+        // Handle formats like "7:00 PM - 8:30 PM" or "18:00"
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+        if (timeMatch) {
+          let hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          const ampm = timeMatch[3]?.toUpperCase();
+
+          // Convert 12-hour to 24-hour format
+          if (ampm === 'PM' && hours !== 12) {
+            hours += 12;
+          } else if (ampm === 'AM' && hours === 12) {
+            hours = 0;
+          }
+
+          return hours * 60 + minutes;
+        }
+
+        // Fallback: try to parse as 24-hour format
+        const parts = timeStr.split(':');
+        if (parts.length >= 2) {
+          const hours = parseInt(parts[0]);
+          const minutes = parseInt(parts[1]);
+          return hours * 60 + minutes;
+        }
+
+        return 0; // Default fallback
+      } catch {
+        return 0; // Default fallback
+      }
+    };
+
+    const sortedDates = allDateKeys
+      .map(dateKey => ({
+        dateKey,
+        dateDisplay: formatDateForDisplay(dateKey),
+        events: dates[dateKey].sort((a, b) => {
+          const timeA = timeToMinutes(getEventTime(a));
+          const timeB = timeToMinutes(getEventTime(b));
+          return timeA - timeB; // Sort by time (earlier first)
+        })
+      }));
+
+    return sortedDates;
   };
 
   // Events data from events.txt
   const allEvents: StaticEvent[] = [
-    // Annual Events
-    {
-      id: 1,
-      title: "Charity Hike",
-      date: "November",
-      time: "9:00 AM - 5:00 PM",
-      location: "TBA",
-      category: "Annual",
-      description: "Join us for our annual charity hike during Charity Week. All proceeds will go to support humanitarian causes around the world. A great opportunity to connect with nature while making a difference.",
-      image: "/images/WEB/brothers/IMG_9980.JPG",
-      signupLink: "https://forms.google.com/charity-hike-2024"
-    },
-    {
-      id: 2,
-      title: "Annual Retreat",
-      date: "January",
-      time: "All Day",
-      location: "TBA",
-      category: "Annual",
-      description: "Our rejuvenating annual retreat takes place right after Winter Exams. Enjoy a weekend of spiritual refreshment, workshops, outdoor activities and brotherly/sisterly bonding in the beautiful countryside.",
-      image: "/images/WEB/brothers/annualretreat.jpeg",
-      signupLink: "https://forms.google.com/spring-camp-2025"
-    },
-    {
-      id: 3,
-      title: "Annual Dinner",
-      date: "March/April",
-      time: "6:00 PM - 10:00 PM",
-      location: "TBA",
-      category: "Annual",
-      description: "The highlight of our calendar! A formal evening with inspiring speakers, delicious food, and an opportunity to celebrate our achievements as a community.",
-      image: "/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg",
-      signupLink: "https://forms.google.com/annual-dinner-2025"
-    },
-    
     // Weekly Events
     {
-      id: 4,
+      id: 1,
       title: "Roots Academy Classes",
       date: "Every Tuesday",
       time: "7:00 PM - 8:30 PM",
@@ -110,18 +381,7 @@ export default function EventsPage() {
       signupLink: "https://forms.google.com/roots-academy-signup"
     },
     {
-      id: 5,
-      title: "Welfare Wednesdays",
-      date: "Every Wednesday",
-      time: "6:00 PM - 8:00 PM",
-      location: "TBA",
-      category: "Weekly",
-      description: "A special social gathering for sisters to build strong bonds of sisterhood. Activities include crafts, games, discussions, and occasional workshops on topics relevant to Muslim women.",
-      image: "/images/WEB/sisters/sister27.jpeg",
-      signupLink: "https://forms.google.com/welfare-wednesdays-signup"
-    },
-    {
-      id: 6,
+      id: 22,
       title: "Friday Football",
       date: "Every Friday",
       time: "7:00 PM",
@@ -130,25 +390,12 @@ export default function EventsPage() {
       description: "Brothers' special football sessions. A great way to end the week with physical activity and brotherhood. 14 spots open each week - don't miss out!",
       image: "/images/WEB/brothers/brother3.jpeg",
       signupLink: "https://forms.google.com/friday-football-signup"
-    },
-    
-    // Other Events
-    {
-      id: 7,
-      title: "Sports Socials",
-      date: "Various dates",
-      time: "Varies",
-      location: "Various locations",
-      category: "Other",
-      description: "Throughout the year, we organize various sports activities including rounders, cricket, basketball and more. These casual sessions are open to all skill levels and are a great way to stay active.",
-      image: "/images/WEB/brothers/fridayfootball.jpeg",
-      signupLink: "https://forms.google.com/sports-socials-signup"
     }
   ];
 
   // State for category filter and modal
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Weekly' | 'Annual' | 'Other'>('All');
-  const [selectedEvent, setSelectedEvent] = useState<StaticEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<StaticEvent | AdminEvent | null>(null);
 
   // State for FAQ modal
   const [showFAQModal, setShowFAQModal] = useState(false);
@@ -206,15 +453,19 @@ export default function EventsPage() {
   ];
 
   // Filter events based on selected category
-  const filteredStaticEvents = categoryFilter === 'All' 
-    ? allEvents 
+  const filteredStaticEvents = categoryFilter === 'All'
+    ? allEvents
     : allEvents.filter(event => event.category === categoryFilter);
 
-  // Admin events are always shown (they don't have categories)
-  const filteredEvents = filteredStaticEvents;
+  // Combine static events and admin events for display
+  // Admin events don't have categories, so they're always included
+  const combinedEvents = [...filteredStaticEvents, ...adminEvents];
+
+  // Filter combined events for display
+  const filteredEvents = combinedEvents;
 
   // Modal handlers
-  const openModal = (event: StaticEvent) => {
+  const openModal = (event: StaticEvent | AdminEvent) => {
     setSelectedEvent(event);
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
   };
@@ -246,29 +497,87 @@ export default function EventsPage() {
           <p className="text-xl max-w-3xl mx-auto text-blue-100">
             Sign up for our events and activities using the links below
           </p>
-          
-          {/* Link Tree Section - moved inside hero */}
-          <div className="flex flex-col items-center space-y-4 mt-6">
-            {/* Admin-created event signup links */}
-            {!loadingAdminEvents && adminEvents.map((event) => (
-              <Link 
-                key={event.id}
-                href={`/events/${event.id}`}
-                className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
-              >
-                {event.title} Sign Up
-              </Link>
-            ))}
-            
-            {/* Static links */}
-            <a
-              href="https://www.instagram.com/p/DORUV3lCDAg/?igsh=cWM0MGExNWkzcnZt"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full max-w-sm px-8 py-3 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full uppercase text-sm tracking-wider text-center shadow-lg"
-            >
-              Current Committee
-            </a>
+        </div>
+        
+        {/* Full-width Date-based Events Timeline */}
+        <div className="mt-4 sm:mt-8 w-full relative">
+          {/* Horizontal timeline line - spans full width */}
+          <div className="absolute top-6 sm:top-12 left-0 right-0 h-0.5 bg-blue-300/30"></div>
+
+          {/* Timeline items - horizontal scroll */}
+          <div
+            className="overflow-x-auto pb-2 sm:pb-4 scrollbar-thin scrollbar-thumb-blue-400/30 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-blue-400/50"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(96, 165, 250, 0.3) transparent',
+              // WebKit scrollbar styling
+              WebkitScrollbarWidth: 'thin',
+              WebkitScrollbarColor: 'rgba(96, 165, 250, 0.3) transparent'
+            } as React.CSSProperties}
+          >
+            <div className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8">
+              {organizeEventsByDate(allEvents, adminEvents).map((dateItem) => (
+                <div key={dateItem.dateKey} className="relative flex flex-col items-center min-w-[240px] sm:min-w-[300px]">
+                  {/* Timeline dot */}
+                  <div className="absolute top-4 sm:top-8 w-4 h-4 sm:w-6 sm:h-6 bg-blue-400 rounded-full border-2 sm:border-4 border-[#0A1219] z-10"></div>
+
+                  {/* Timeline content */}
+                  <div className="mt-12 sm:mt-20 bg-[#0F1E2C]/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-6 border border-blue-200/20 w-full max-w-[240px] sm:max-w-[320px]">
+                    {/* Date header */}
+                    <div className="text-center mb-2 sm:mb-4">
+                      <h4 className="text-sm sm:text-lg font-semibold text-white mb-1 sm:mb-2">
+                        {dateItem.dateDisplay}
+                      </h4>
+                      <span className="text-xs sm:text-sm text-blue-300 bg-[#18384D] px-2 sm:px-3 py-1 rounded-full">
+                        {dateItem.events.length} event{dateItem.events.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    {/* Events for this date */}
+                    <div className="space-y-2 sm:space-y-3">
+                      {dateItem.events.map((event, eventIndex) => (
+                        <div
+                          key={eventIndex}
+                          className="flex items-center justify-between p-2 sm:p-3 bg-[#18384D]/50 rounded-md sm:rounded-lg hover:bg-[#18384D]/70 transition duration-200 cursor-pointer"
+                          onClick={() => {
+                            if ('category' in event) {
+                              // Static event
+                              openModal(event);
+                            } else if ('noSignupNeeded' in event && event.noSignupNeeded) {
+                              // Admin event with no signup needed - walk-in event
+                              openModal(event);
+                            } else if ('signupOpen' in event && event.signupOpen) {
+                              // Admin event with signup open and signup needed
+                              window.location.href = `/events/${event.id}`;
+                            } else {
+                              // Admin event with signup closed
+                              openModal(event);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full"></div>
+                            <div className="text-left">
+                              <h5 className="font-medium text-white text-xs sm:text-sm">{event.title}</h5>
+                              <p className="text-xs text-blue-200">
+                                {'category' in event ? event.time : formatTimeRange(event.startTime, event.endTime)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Empty state */}
+            {organizeEventsByDate(allEvents, adminEvents).length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-blue-200">No upcoming events scheduled</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -328,36 +637,45 @@ export default function EventsPage() {
                 : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
             }`}
           >
-            Other Events
+            USIC Events
           </button>
         </div>
 
         {/* Events grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {/* Static events */}
+          {/* Combined events (static and admin) */}
           {filteredEvents.map((event) => (
-            <div 
-              key={event.id} 
+            <div
+              key={event.id}
               className="bg-[#0F1E2C] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-[1.02] cursor-pointer"
-              onClick={() => openModal(event)}
+              onClick={() => {
+                if ('category' in event) {
+                  // Static event - open modal
+                  openModal(event);
+                } else if ('noSignupNeeded' in event && event.noSignupNeeded) {
+                  // Admin event with no signup needed - walk-in event
+                  openModal(event);
+                } else if ('signupOpen' in event && event.signupOpen) {
+                  // Admin event with signup open and signup needed - redirect to event page
+                  window.location.href = `/events/${event.id}`;
+                } else {
+                  // Admin event with signup closed
+                  openModal(event);
+                }
+              }}
             >
               <div className="aspect-video bg-[#102736] relative">
-                {event.image ? (
-                  <Image 
-                    src={event.image} 
-                    alt={event.title} 
-                    width={640} 
-                    height={360} 
-                    className="w-full h-full object-contain"
+                {('image' in event ? event.image : (event as AdminEvent).imageUrl) ? (
+                  <Image
+                    src={'image' in event ? event.image! : (event as AdminEvent).imageUrl!}
+                    alt={event.title}
+                    width={640}
+                    height={360}
+                    className="w-full h-full object-cover"
                     style={{
-                      objectPosition: 
-                        event.title === "Charity Hike" ? 'center 60%' :
-                        event.title === "Annual Retreat" ? 'center 65%' :
-                        event.title === "Annual Dinner" ? 'center 45%' :
+                      objectPosition:
                         event.title === "Roots Academy Classes" ? 'center 55%' :
-                        event.title === "Welfare Wednesdays" ? 'center 50%' :
-                        event.title === "Friday Football" ? 'center 90%' :
-                        event.title === "Sports Socials" ? 'center 50%' :
+                        event.title === "Friday Football" ? 'center center' :
                         'center 65%' // default for any other events
                     }}
                   />
@@ -367,7 +685,7 @@ export default function EventsPage() {
                   </div>
                 )}
                 <div className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
-                  {event.category}
+                  {'category' in event ? event.category : 'USIC Event'}
                 </div>
               </div>
               <div className="p-6">
@@ -384,7 +702,7 @@ export default function EventsPage() {
                     <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
                     </svg>
-                    <span>{event.time}</span>
+                    <span>{'category' in event ? event.time : formatTimeRange(event.startTime, event.endTime)}</span>
                   </div>
                   <div className="flex items-start">
                     <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -392,9 +710,18 @@ export default function EventsPage() {
                     </svg>
                     <span>{event.location}</span>
                   </div>
+                  {'price' in event && event.price && event.price !== 'Free' && (
+                    <div className="flex items-start">
+                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
+                      </svg>
+                      <span>£{event.price}</span>
+                    </div>
+                  )}
                 </div>
-                {event.signupLink && (
-                  <button 
+                {('signupLink' in event && event.signupLink) ? (
+                  // Static event with signup link
+                  <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click when clicking button
                       openModal(event);
@@ -402,6 +729,39 @@ export default function EventsPage() {
                     className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
                     LEARN MORE
+                  </button>
+                ) : ('noSignupNeeded' in event && event.noSignupNeeded) ? (
+                  // Admin event with no signup needed
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking button
+                      openModal(event);
+                    }}
+                    className="block w-full px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
+                  >
+                    WALK-IN EVENT
+                  </button>
+                ) : ('signupOpen' in event && event.signupOpen) ? (
+                  // Admin event with signup open and signup needed
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking button
+                      window.location.href = `/events/${event.id}`;
+                    }}
+                    className="block w-full px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
+                  >
+                    SIGN UP NOW
+                  </button>
+                ) : (
+                  // Admin event with signup closed
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking button
+                      openModal(event);
+                    }}
+                    className="block w-full px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow cursor-not-allowed"
+                  >
+                    INFO ONLY
                   </button>
                 )}
               </div>
@@ -432,11 +792,11 @@ export default function EventsPage() {
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">{selectedEvent.title}</h2>
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
-                    {selectedEvent.category}
+                    {'category' in selectedEvent ? selectedEvent.category : 'USIC Event'}
                   </span>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={closeModal}
                 className="text-white hover:text-blue-200 transition duration-200 p-2"
               >
@@ -449,14 +809,14 @@ export default function EventsPage() {
             {/* Modal Content */}
             <div className="p-6">
               {/* Event Image */}
-              {selectedEvent.image && (
+              {('image' in selectedEvent ? selectedEvent.image : (selectedEvent as AdminEvent).imageUrl) && (
                 <div className="mb-6 rounded-lg overflow-hidden">
-                  <Image 
-                    src={selectedEvent.image} 
-                    alt={selectedEvent.title} 
-                    width={800} 
-                    height={400} 
-                    className="w-full h-64 md:h-80 object-contain"
+                  <Image
+                    src={'image' in selectedEvent ? selectedEvent.image! : (selectedEvent as AdminEvent).imageUrl!}
+                    alt={selectedEvent.title}
+                    width={800}
+                    height={400}
+                    className="w-full h-64 md:h-80 object-cover"
                     style={{
                       objectPosition: 'center 65%'
                     }}
@@ -483,7 +843,9 @@ export default function EventsPage() {
                     </svg>
                     <div>
                       <h4 className="text-white font-semibold mb-1">Time</h4>
-                      <p className="text-blue-200">{selectedEvent.time}</p>
+                      <p className="text-blue-200">
+                        {'category' in selectedEvent ? selectedEvent.time : formatTimeRange(selectedEvent.startTime, selectedEvent.endTime)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -499,15 +861,32 @@ export default function EventsPage() {
                     </div>
                   </div>
                   
-                  <div className="flex items-start">
-                    <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path>
-                    </svg>
-                    <div>
-                      <h4 className="text-white font-semibold mb-1">Category</h4>
-                      <p className="text-blue-200">{selectedEvent.category} Event</p>
+                  {'category' in selectedEvent ? (
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path>
+                      </svg>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">Category</h4>
+                        <p className="text-blue-200">{selectedEvent.category} Event</p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">Registration Status</h4>
+                        <p className="text-blue-200">
+                          {'noSignupNeeded' in selectedEvent && selectedEvent.noSignupNeeded
+                            ? 'Walk-in Event - No Registration Required'
+                            : ('signupOpen' in selectedEvent && selectedEvent.signupOpen ? 'Sign Up Open' : 'Info Only - Registration Closed')
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
