@@ -28,6 +28,8 @@ type AdminEvent = {
   formFields: string[];
   signupOpen: boolean;
   noSignupNeeded: boolean;
+  maxSignups?: number;
+  signupCount?: number;
   createdAt: Date;
 };
 
@@ -35,7 +37,13 @@ export default function EventsPage() {
   const [adminEvents, setAdminEvents] = useState<AdminEvent[]>([]);
   const [, setLoadingAdminEvents] = useState(true);
 
-  // Function to format date like "Sep. 25th, 2025"
+  // Function to get day of the week
+  const getDayOfWeek = (date: Date): string => {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return daysOfWeek[date.getDay()];
+  };
+
+  // Function to format date like "Monday, Sep. 25th, 2025"
   const formatEventDate = (dateString: string) => {
     try {
       // Handle dates with ordinal suffixes like "November 11th, 2025"
@@ -53,6 +61,7 @@ export default function EventsPage() {
           const shortMonthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
                                   'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
 
+          const dayOfWeek = getDayOfWeek(date);
           const month = shortMonthNames[date.getMonth()];
           const day = date.getDate();
           const year = date.getFullYear();
@@ -68,7 +77,7 @@ export default function EventsPage() {
             }
           };
 
-          return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
+          return `${dayOfWeek}, ${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
         }
       }
 
@@ -78,6 +87,7 @@ export default function EventsPage() {
         const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
                            'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
 
+        const dayOfWeek = getDayOfWeek(date);
         const month = monthNames[date.getMonth()];
         const day = date.getDate();
         const year = date.getFullYear();
@@ -93,7 +103,7 @@ export default function EventsPage() {
           }
         };
 
-        return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
+        return `${dayOfWeek}, ${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
       }
 
       return dateString; // Fallback to original format
@@ -169,6 +179,7 @@ export default function EventsPage() {
       const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
                          'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
 
+      const dayOfWeek = getDayOfWeek(date);
       const monthName = monthNames[date.getMonth()];
       const dayNum = date.getDate();
       const yearNum = date.getFullYear();
@@ -184,7 +195,7 @@ export default function EventsPage() {
         }
       };
 
-      return `${monthName} ${dayNum}${getOrdinalSuffix(dayNum)}, ${yearNum}`;
+      return `${dayOfWeek}, ${monthName} ${dayNum}${getOrdinalSuffix(dayNum)}, ${yearNum}`;
     };
 
     // Helper function to calculate recurring event dates
@@ -506,23 +517,95 @@ export default function EventsPage() {
 
           {/* Timeline items - horizontal scroll */}
           <div
-            className="overflow-x-auto pb-2 sm:pb-4 scrollbar-thin scrollbar-thumb-blue-400/30 scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-blue-400/50"
+            className="overflow-x-auto pb-2 sm:pb-4 scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-transparent"
             style={{
               scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(96, 165, 250, 0.3) transparent',
-              // WebKit scrollbar styling
+              scrollbarColor: 'transparent transparent',
+              // WebKit scrollbar styling for complete transparency
               WebkitScrollbarWidth: 'thin',
-              WebkitScrollbarColor: 'rgba(96, 165, 250, 0.3) transparent'
+              WebkitScrollbarColor: 'transparent transparent'
             } as React.CSSProperties}
           >
-            <div className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8">
-              {organizeEventsByDate(allEvents, adminEvents).map((dateItem) => (
-                <div key={dateItem.dateKey} className="relative flex flex-col items-center min-w-[240px] sm:min-w-[300px]">
-                  {/* Timeline dot */}
-                  <div className="absolute top-4 sm:top-8 w-4 h-4 sm:w-6 sm:h-6 bg-blue-400 rounded-full border-2 sm:border-4 border-[#0A1219] z-10"></div>
+            <div className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8 relative">
+              {/* Today's yellow indicator dot - only show when no event on today's date */}
+              {(() => {
+                const organizedDates = organizeEventsByDate(allEvents, adminEvents);
+                const today = new Date();
+                const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
 
-                  {/* Timeline content */}
-                  <div className="mt-12 sm:mt-20 bg-[#0F1E2C]/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-6 border border-blue-200/20 w-full max-w-[240px] sm:max-w-[320px]">
+                // Find today's position in the timeline
+                const todayIndex = organizedDates.findIndex(dateItem => dateItem.dateKey === todayKey);
+
+                // Only show separate indicator if today has NO events (use closest date instead)
+                if (todayIndex !== -1) {
+                  return null; // Don't show separate indicator - the timeline dot will be yellow
+                }
+
+                // Calculate position for closest date when today has no events
+                let todayPosition = 0;
+                if (organizedDates.length > 0) {
+                  const todayTime = today.getTime();
+                  let closestIndex = 0;
+                  let minDiff = Math.abs(todayTime - new Date(organizedDates[0].dateKey).getTime());
+
+                  organizedDates.forEach((dateItem, index) => {
+                    const diff = Math.abs(todayTime - new Date(dateItem.dateKey).getTime());
+                    if (diff < minDiff) {
+                      minDiff = diff;
+                      closestIndex = index;
+                    }
+                  });
+
+                  const itemSpacing = 32; // space-x-8 = 2rem = 32px on larger screens
+                  const itemWidth = 300; // sm:min-w-[300px]
+                  todayPosition = closestIndex * (itemWidth + itemSpacing) + (itemWidth / 2) + 16;
+                }
+
+                return todayPosition > 0 ? (
+                  <div
+                    className="absolute top-4 sm:top-8 z-20"
+                    style={{ left: `${todayPosition}px` }}
+                  >
+                    {/* Today's yellow dot with pulsing animation */}
+                    <div className="relative">
+                      {/* Outer pulsing ring - properly centered */}
+                      <div className="absolute -top-0.5 -left-0.5 w-5 h-5 sm:w-7 sm:h-7 sm:-top-0.5 sm:-left-0.5 bg-yellow-400 rounded-full animate-ping opacity-30"></div>
+                      {/* Main yellow dot */}
+                      <div className="relative w-4 h-4 sm:w-6 sm:h-6 bg-yellow-400 rounded-full border-2 sm:border-4 border-[#0A1219] shadow-lg shadow-yellow-400/50">
+                        {/* Inner white dot for better visibility */}
+                        <div className="absolute inset-1 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                    {/* "Today" label */}
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                      <span className="text-xs font-semibold text-yellow-300 bg-[#0A1219]/80 px-2 py-1 rounded whitespace-nowrap">
+                        Today
+                      </span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {organizeEventsByDate(allEvents, adminEvents).map((dateItem) => {
+                const today = new Date();
+                const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const isToday = dateItem.dateKey === todayKey;
+
+                return (
+                  <div key={dateItem.dateKey} className="relative flex flex-col items-center min-w-[240px] sm:min-w-[300px]">
+                    {/* Timeline dot - yellow for today */}
+                    <div className={`absolute top-4 sm:top-8 w-4 h-4 sm:w-6 sm:h-6 rounded-full border-2 sm:border-4 border-[#0A1219] z-10 ${
+                      isToday
+                        ? 'bg-yellow-400 shadow-lg shadow-yellow-400/50'
+                        : 'bg-blue-400'
+                    }`}></div>
+
+                    {/* Timeline content - yellow border for today */}
+                    <div className={`mt-12 sm:mt-20 bg-[#0F1E2C]/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-6 border w-full max-w-[240px] sm:max-w-[320px] transition-all duration-300 ${
+                      isToday
+                        ? 'border-yellow-400 shadow-lg shadow-yellow-400/20'
+                        : 'border-blue-200/20'
+                    }`}>
                     {/* Date header */}
                     <div className="text-center mb-2 sm:mb-4">
                       <h4 className="text-sm sm:text-lg font-semibold text-white mb-1 sm:mb-2">
@@ -548,7 +631,12 @@ export default function EventsPage() {
                               openModal(event);
                             } else if ('signupOpen' in event && event.signupOpen) {
                               // Admin event with signup open and signup needed
-                              window.location.href = `/events/${event.id}`;
+                              const isSoldOut = event.maxSignups && event.signupCount && event.signupCount >= event.maxSignups;
+                              if (isSoldOut) {
+                                openModal(event);
+                              } else {
+                                window.location.href = `/events/${event.id}`;
+                              }
                             } else {
                               // Admin event with signup closed
                               openModal(event);
@@ -569,7 +657,8 @@ export default function EventsPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Empty state */}
@@ -647,7 +736,7 @@ export default function EventsPage() {
           {filteredEvents.map((event) => (
             <div
               key={event.id}
-              className="bg-[#0F1E2C] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-[1.02] cursor-pointer"
+              className="bg-[#0F1E2C] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-[1.02] cursor-pointer flex flex-col"
               onClick={() => {
                 if ('category' in event) {
                   // Static event - open modal
@@ -664,7 +753,7 @@ export default function EventsPage() {
                 }
               }}
             >
-              <div className="aspect-video bg-[#102736] relative">
+              <div className="aspect-video bg-[#102736] relative flex-shrink-0 h-48">
                 {('image' in event ? event.image : (event as AdminEvent).imageUrl) ? (
                   <Image
                     src={'image' in event ? event.image! : (event as AdminEvent).imageUrl!}
@@ -688,10 +777,10 @@ export default function EventsPage() {
                   {'category' in event ? event.category : 'USIC Event'}
                 </div>
               </div>
-              <div className="p-6">
+              <div className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">{event.title}</h3>
                 <p className="text-blue-200 mb-4 text-sm">{event.description}</p>
-                <div className="space-y-2 text-sm text-blue-200 mb-6">
+                <div className="space-y-2 text-sm text-blue-200 mb-6 flex-grow">
                   <div className="flex items-start">
                     <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
@@ -719,6 +808,7 @@ export default function EventsPage() {
                     </div>
                   )}
                 </div>
+                <div className="mt-auto">
                 {('signupLink' in event && event.signupLink) ? (
                   // Static event with signup link
                   <button
@@ -726,7 +816,7 @@ export default function EventsPage() {
                       e.stopPropagation(); // Prevent card click when clicking button
                       openModal(event);
                     }}
-                    className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-blue-50 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
+                    className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
                     LEARN MORE
                   </button>
@@ -737,21 +827,34 @@ export default function EventsPage() {
                       e.stopPropagation(); // Prevent card click when clicking button
                       openModal(event);
                     }}
-                    className="block w-full px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
+                    className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
-                    WALK-IN EVENT
+                    LEARN MORE
                   </button>
                 ) : ('signupOpen' in event && event.signupOpen) ? (
                   // Admin event with signup open and signup needed
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click when clicking button
-                      window.location.href = `/events/${event.id}`;
-                    }}
-                    className="block w-full px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
-                  >
-                    SIGN UP NOW
-                  </button>
+                  (() => {
+                    const isSoldOut = event.maxSignups && event.signupCount && event.signupCount >= event.maxSignups;
+                    return (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card click when clicking button
+                          if (isSoldOut) {
+                            openModal(event);
+                          } else {
+                            window.location.href = `/events/${event.id}`;
+                          }
+                        }}
+                        className={`block w-full px-4 py-2 text-white hover:opacity-90 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow ${
+                          isSoldOut 
+                            ? 'bg-red-600 hover:bg-red-700' 
+                            : 'bg-green-600 hover:bg-green-700'
+                        }`}
+                      >
+                        {isSoldOut ? 'SOLD OUT' : 'SIGN UP NOW'}
+                      </button>
+                    );
+                  })()
                 ) : (
                   // Admin event with signup closed
                   <button
@@ -759,11 +862,12 @@ export default function EventsPage() {
                       e.stopPropagation(); // Prevent card click when clicking button
                       openModal(event);
                     }}
-                    className="block w-full px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow cursor-not-allowed"
+                    className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
-                    INFO ONLY
+                    LEARN MORE
                   </button>
                 )}
+                </div>
               </div>
             </div>
           ))}

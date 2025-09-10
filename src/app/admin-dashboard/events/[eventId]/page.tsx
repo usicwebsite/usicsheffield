@@ -52,7 +52,8 @@ export default function EventDetailPage() {
     description: '',
     formFields: [] as string[],
     signupOpen: true,
-    noSignupNeeded: false
+    noSignupNeeded: false,
+    maxSignups: 50
   });
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -149,7 +150,8 @@ export default function EventDetailPage() {
           description: foundEvent.description,
           formFields: foundEvent.formFields || [],
           signupOpen: foundEvent.signupOpen || false,
-          noSignupNeeded: foundEvent.noSignupNeeded || false
+          noSignupNeeded: foundEvent.noSignupNeeded || false,
+          maxSignups: foundEvent.maxSignups || 50
         });
       }
     } catch (error) {
@@ -298,6 +300,9 @@ export default function EventDetailPage() {
       }
       formData.append('signupOpen', editForm.signupOpen.toString());
       formData.append('noSignupNeeded', editForm.noSignupNeeded.toString());
+      if (editForm.maxSignups) {
+        formData.append('maxSignups', editForm.maxSignups.toString());
+      }
 
       // Handle image URL
       if (selectedImageFile) {
@@ -366,8 +371,8 @@ export default function EventDetailPage() {
       const result = await response.json();
       alert(result.message);
 
-      // Redirect back to admin dashboard
-      router.push('/admin-dashboard');
+      // Redirect back to admin dashboard events tab
+      router.push('/admin-dashboard?tab=events');
     } catch (error) {
       console.error('Error deleting event:', error);
       alert(error instanceof Error ? error.message : 'Failed to delete event');
@@ -421,7 +426,7 @@ export default function EventDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
           <Link
-            href="/admin-dashboard"
+            href="/admin-dashboard?tab=events"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-300"
           >
             Back to Dashboard
@@ -439,7 +444,7 @@ export default function EventDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href="/admin-dashboard"
+                href="/admin-dashboard?tab=events"
                 className="text-gray-400 hover:text-white transition duration-200"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -647,7 +652,9 @@ export default function EventDetailPage() {
                             // If no signup is needed, signup cannot be open
                             signupOpen: checked ? false : editForm.signupOpen,
                             // Clear form fields if no signup is needed, or set defaults if signup is needed
-                            formFields: checked ? [] : (editForm.formFields.length === 0 ? ['name', 'email'] : editForm.formFields)
+                            formFields: checked ? [] : (editForm.formFields.length === 0 ? ['name', 'email'] : editForm.formFields),
+                            // Clear maxSignups if no signup is needed
+                            maxSignups: checked ? 0 : editForm.maxSignups
                           });
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -660,6 +667,31 @@ export default function EventDetailPage() {
                       </label>
                     </div>
                   </div>
+
+                  {/* Max Sign Ups - Only show if signup is needed */}
+                  {!editForm.noSignupNeeded && (
+                    <div>
+                      <label htmlFor="editMaxSignups" className="block text-sm font-medium text-gray-300 mb-2">
+                        Maximum Sign Ups
+                      </label>
+                      <select
+                        id="editMaxSignups"
+                        value={editForm.maxSignups || 50}
+                        onChange={(e) => setEditForm({
+                          ...editForm,
+                          maxSignups: parseInt(e.target.value)
+                        })}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        {Array.from({ length: 200 }, (_, i) => i + 1).map(num => (
+                          <option key={num} value={num}>
+                            {num}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-400 mt-1">Maximum number of people who can sign up for this event</p>
+                    </div>
+                  )}
 
                   {/* Form Fields Selection - Only show if signup is needed */}
                   {!editForm.noSignupNeeded && (
@@ -755,19 +787,71 @@ export default function EventDetailPage() {
                     <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30">
                       {event.noSignupNeeded ? 0 : event.formFields.length} FORM FIELDS
                     </span>
-                    <span className={`px-3 py-1 text-xs font-bold rounded-full border ${
-                      event.signupOpen && !event.noSignupNeeded
-                        ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                        : event.noSignupNeeded
-                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                        : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-                    }`}>
-                      {event.noSignupNeeded
-                        ? 'WALK-IN EVENT'
-                        : event.signupOpen
-                        ? 'SIGN UP OPEN'
-                        : 'SIGN UP CLOSED'}
-                    </span>
+                    {!event.noSignupNeeded && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const token = await getIdToken();
+                            if (!token) throw new Error('No authentication token');
+
+                            // Optimistically update the UI first
+                            const newStatus = !event.signupOpen;
+                            setEvent({...event, signupOpen: newStatus});
+
+                            const response = await fetch(`/api/admin/events/${eventId}`, {
+                              method: 'PATCH',
+                              headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                signupOpen: newStatus
+                              }),
+                            });
+
+                            if (!response.ok) {
+                              // Revert the optimistic update on error
+                              setEvent({...event, signupOpen: !newStatus});
+                              const errorData = await response.json();
+                              throw new Error(errorData.error || 'Failed to update signup status');
+                            }
+                          } catch (error) {
+                            console.error('Error toggling signup status:', error);
+                            alert(error instanceof Error ? error.message : 'Failed to update signup status');
+                          }
+                        }}
+                        className="relative inline-flex items-center cursor-pointer group"
+                        title={event.signupOpen ? 'Click to close signups' : 'Click to open signups'}
+                      >
+                        {/* Toggle Track */}
+                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                          event.signupOpen
+                            ? 'bg-green-500'
+                            : 'bg-gray-400'
+                        }`}>
+                          {/* Toggle Knob */}
+                          <div className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                            event.signupOpen
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
+                          }`} />
+                        </div>
+
+                        {/* Status Label */}
+                        <span className={`ml-3 text-xs font-bold transition-colors duration-200 ${
+                          event.signupOpen
+                            ? 'text-green-300'
+                            : 'text-gray-400'
+                        }`}>
+                          {event.signupOpen ? 'SIGN UP OPEN' : 'SIGN UP CLOSED'}
+                        </span>
+                      </button>
+                    )}
+                    {event.noSignupNeeded && (
+                      <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30">
+                        WALK-IN EVENT
+                      </span>
+                    )}
                   </div>
 
                   <h2 className="text-2xl font-bold mb-4">{event.title}</h2>

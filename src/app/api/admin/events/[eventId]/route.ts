@@ -164,6 +164,57 @@ export async function PUT(
   }
 }
 
+// PATCH /api/admin/events/[eventId] - Partially update a specific event (e.g., toggle signup status)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
+) {
+  try {
+    // Verify admin authentication
+    const authResult = await verifyAdminToken(request);
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
+    }
+
+    if (!adminDb) {
+      return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
+    }
+
+    const { eventId } = await params;
+
+    // Parse JSON body for partial updates
+    const updateData = await request.json();
+
+    // Validate that we have update data
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No update data provided' }, { status: 400 });
+    }
+
+    // Check if event exists
+    const eventDoc = await adminDb.collection('events').doc(eventId).get();
+    if (!eventDoc.exists) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    // Add updatedAt timestamp
+    const finalUpdateData = {
+      ...updateData,
+      updatedAt: new Date()
+    };
+
+    // Update the event in Firestore
+    await adminDb.collection('events').doc(eventId).update(finalUpdateData);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Event updated successfully!'
+    });
+  } catch (error) {
+    console.error('Error updating event:', error);
+    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
+  }
+}
+
 // DELETE /api/admin/events/[eventId] - Delete a specific event
 export async function DELETE(
   request: NextRequest,

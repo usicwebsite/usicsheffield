@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
@@ -9,6 +9,7 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { getFirestoreDb } from '@/lib/firebase';
 import { getSubmittedPosts, approvePost, rejectPost, getApprovedPosts, updatePost, getComments, getCommentCount, deleteComment, ForumPost, ForumComment } from '@/lib/firebase-utils';
 import { categoryUtils } from '@/lib/static-data';
+import AdminTimeoutStatus from '@/components/AdminTimeoutStatus';
 
 // Helper function to get Firebase ID token
 const getIdToken = async (): Promise<string | null> => {
@@ -50,6 +51,7 @@ interface Event {
   formFields: string[];
   signupOpen: boolean;
   noSignupNeeded: boolean;
+  maxSignups?: number;
   createdAt: Date;
   createdBy: string;
 }
@@ -66,11 +68,13 @@ interface EventFormData {
   formFields: string[];
   signupOpen: boolean;
   noSignupNeeded: boolean;
+  maxSignups?: number;
 }
 
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -82,7 +86,14 @@ export default function AdminDashboard() {
     rejectedPosts: 0,
     totalUsers: 0
   });
-  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'events'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'events'>(() => {
+    // Read the tab parameter from URL to set initial state
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'posts' || tabParam === 'events') {
+      return tabParam;
+    }
+    return 'overview';
+  });
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedPostForRejection, setSelectedPostForRejection] = useState<ForumPost | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -109,7 +120,8 @@ export default function AdminDashboard() {
     description: '',
     formFields: [],
     signupOpen: true, // Default to open for signups
-    noSignupNeeded: false // Default to requiring signup
+    noSignupNeeded: false, // Default to requiring signup
+    maxSignups: 50 // Default to 50 signups
   });
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -218,6 +230,16 @@ export default function AdminDashboard() {
       loadEvents();
     }
   }, [activeTab, isAuthenticated, isAdmin, events.length]);
+
+  // Update activeTab when URL search params change
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'posts' || tabParam === 'events') {
+      setActiveTab(tabParam);
+    } else if (tabParam === 'overview' || !tabParam) {
+      setActiveTab('overview');
+    }
+  }, [searchParams]);
 
   const loadDashboardData = async () => {
     try {
@@ -556,6 +578,9 @@ export default function AdminDashboard() {
       }
       formData.append('signupOpen', eventFormData.signupOpen.toString());
       formData.append('noSignupNeeded', eventFormData.noSignupNeeded.toString());
+      if (eventFormData.maxSignups) {
+        formData.append('maxSignups', eventFormData.maxSignups.toString());
+      }
       formData.append('createdBy', user.uid);
       
       if (eventFormData.imageFile) {
@@ -598,6 +623,7 @@ export default function AdminDashboard() {
         formFields: eventFormData.formFields,
         signupOpen: eventFormData.signupOpen,
         noSignupNeeded: eventFormData.noSignupNeeded,
+        maxSignups: eventFormData.maxSignups,
         createdAt: new Date(),
         createdBy: user.uid
       };
@@ -615,7 +641,8 @@ export default function AdminDashboard() {
         description: '',
         formFields: [],
         signupOpen: true,
-        noSignupNeeded: false
+        noSignupNeeded: false,
+        maxSignups: 50
       });
       setImagePreview(null);
       setShowEventForm(false);
@@ -706,6 +733,7 @@ export default function AdminDashboard() {
             formFields: ['name', 'email'], // Default form fields
             signupOpen: true,
             noSignupNeeded: false,
+            maxSignups: 50, // Default to 50 signups
             imageFile: undefined
           });
 
@@ -868,6 +896,7 @@ export default function AdminDashboard() {
     }
   };
 
+
   const formatDate = (timestamp: Date | { toDate(): Date }) => {
     if (!timestamp) return "Unknown date";
 
@@ -982,6 +1011,7 @@ export default function AdminDashboard() {
               <h1 className="text-white text-2xl font-bold">USIC Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <AdminTimeoutStatus />
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-300"
@@ -1526,6 +1556,14 @@ export default function AdminDashboard() {
                           </svg>
                           {event.formFields.length} FIELD{event.formFields.length !== 1 ? 'S' : ''}
                         </span>
+                        {event.maxSignups && !event.noSignupNeeded && (
+                          <span className="bg-green-500/20 text-green-300 px-3 py-1 text-xs font-bold rounded-full border border-green-500/30 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            MAX {event.maxSignups}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-white font-bold text-lg mb-2 leading-tight group-hover:text-blue-200 transition-colors duration-200">{event.title}</h3>
                     </div>
@@ -1866,7 +1904,9 @@ export default function AdminDashboard() {
                             // If no signup is needed, signup cannot be open
                             signupOpen: checked ? false : eventFormData.signupOpen,
                             // Clear form fields if no signup is needed, or set defaults if signup is needed
-                            formFields: checked ? [] : (eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields)
+                            formFields: checked ? [] : (eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields),
+                            // Clear maxSignups if no signup is needed
+                            maxSignups: checked ? undefined : eventFormData.maxSignups
                           });
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -1879,6 +1919,31 @@ export default function AdminDashboard() {
                       </label>
                     </div>
                   </div>
+
+                  {/* Max Sign Ups - Only show if signup is needed */}
+                  {!eventFormData.noSignupNeeded && (
+                    <div>
+                      <label htmlFor="maxSignups" className="block text-sm font-medium text-gray-700 mb-2">
+                        Maximum Sign Ups
+                      </label>
+                      <select
+                        id="maxSignups"
+                        value={eventFormData.maxSignups || 50}
+                        onChange={(e) => setEventFormData({
+                          ...eventFormData,
+                          maxSignups: parseInt(e.target.value)
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        {Array.from({ length: 200 }, (_, i) => i + 1).map(num => (
+                          <option key={num} value={num}>
+                            {num}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">Maximum number of people who can sign up for this event</p>
+                    </div>
+                  )}
 
                   {/* Image Upload */}
                   <div>
@@ -2004,7 +2069,7 @@ export default function AdminDashboard() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isCreatingEvent || eventFormData.formFields.length === 0}
+                      disabled={isCreatingEvent || (!eventFormData.noSignupNeeded && eventFormData.formFields.length === 0)}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isCreatingEvent ? (

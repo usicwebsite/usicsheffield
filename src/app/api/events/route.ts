@@ -10,10 +10,25 @@ export async function GET() {
     }
 
     // Get all events from Firestore (public access)
-    const eventsSnapshot = await adminDb.collection('events').orderBy('createdAt', 'desc').get();
+    const eventsSnapshot = await adminDb!.collection('events').orderBy('createdAt', 'desc').get();
 
-    const events = eventsSnapshot.docs.map(doc => {
+    const events = await Promise.all(eventsSnapshot.docs.map(async doc => {
       const data = doc.data();
+      
+      // Get signup count for this event
+      let signupCount = 0;
+      if (data.signupOpen && !data.noSignupNeeded) {
+        try {
+          const signupsSnapshot = await adminDb!
+            .collection('event_signups')
+            .where('eventId', '==', doc.id)
+            .get();
+          signupCount = signupsSnapshot.size;
+        } catch (error) {
+          console.error(`Error getting signup count for event ${doc.id}:`, error);
+        }
+      }
+
       return {
         id: doc.id,
         title: data.title,
@@ -26,9 +41,12 @@ export async function GET() {
         imageUrl: data.imageUrl,
         formFields: data.formFields,
         signupOpen: data.signupOpen || false, // Default to false for backwards compatibility
+        noSignupNeeded: data.noSignupNeeded || false,
+        maxSignups: data.maxSignups,
+        signupCount,
         createdAt: data.createdAt?.toDate?.() || new Date()
       };
-    });
+    }));
 
     return NextResponse.json({ events });
   } catch (error) {
