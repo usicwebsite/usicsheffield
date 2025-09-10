@@ -59,46 +59,72 @@ export default function ResourcesPage() {
       <div className="container mx-auto px-4 pt-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-4xl mx-auto">
           {resourceCards.map((resource) => (
-            <div key={resource.id} className="relative group overflow-hidden rounded-lg shadow-lg bg-[#0F1E2C] transition-all duration-300 hover:shadow-xl">
-              {/* Resource image */}
-              <div className="relative h-[300px] overflow-hidden">
-                <Image 
-                  src={resource.imagePath}
-                  alt={resource.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/30"></div>
-                
-                {/* Category tag */}
-                <div className="absolute top-4 left-4 bg-white text-[#18384D] px-3 py-1 text-sm font-bold rounded">
-                  {resource.category}
-                </div>
-              </div>
-              
-              {/* Resource content */}
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-3 uppercase tracking-wide">{resource.title}</h2>
-                <p className="text-blue-100 mb-4">{resource.description}</p>
-                {resource.isModal ? (
-                  <button
-                    onClick={() => setShowContactsModal(true)}
-                    className="inline-block text-white border-b-2 border-white pb-1 transition-all duration-300 hover:text-blue-200 hover:border-blue-200"
-                  >
-                    {resource.linkText}
-                  </button>
-                ) : (
-                  <a
-                    href={resource.link}
-                    target={resource.isExternal ? "_blank" : undefined}
-                    rel={resource.isExternal ? "noopener noreferrer" : undefined}
-                    className="inline-block text-white border-b-2 border-white pb-1 transition-all duration-300 hover:text-blue-200 hover:border-blue-200"
-                  >
-                    {resource.linkText}
-                  </a>
-                )}
-              </div>
+            <div key={resource.id} className="relative group overflow-hidden rounded-lg shadow-lg bg-[#0F1E2C] transition-all duration-300 hover:shadow-xl cursor-pointer">
+              {resource.isModal ? (
+                <button
+                  onClick={() => setShowContactsModal(true)}
+                  className="w-full h-full text-left"
+                >
+                  {/* Resource image */}
+                  <div className="relative h-[300px] overflow-hidden">
+                    <Image 
+                      src={resource.imagePath}
+                      alt={resource.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/30"></div>
+                    
+                    {/* Category tag */}
+                    <div className="absolute top-4 left-4 bg-white text-[#18384D] px-3 py-1 text-sm font-bold rounded">
+                      {resource.category}
+                    </div>
+                  </div>
+                  
+                  {/* Resource content */}
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold mb-3 uppercase tracking-wide">{resource.title}</h2>
+                    <p className="text-blue-100 mb-4">{resource.description}</p>
+                    <div className="inline-block text-white border-b-2 border-white pb-1 transition-all duration-300 group-hover:text-blue-200 group-hover:border-blue-200">
+                      {resource.linkText}
+                    </div>
+                  </div>
+                </button>
+              ) : (
+                <a
+                  href={resource.link}
+                  target={resource.isExternal ? "_blank" : undefined}
+                  rel={resource.isExternal ? "noopener noreferrer" : undefined}
+                  className="block w-full h-full"
+                >
+                  {/* Resource image */}
+                  <div className="relative h-[300px] overflow-hidden">
+                    <Image 
+                      src={resource.imagePath}
+                      alt={resource.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/30"></div>
+                    
+                    {/* Category tag */}
+                    <div className="absolute top-4 left-4 bg-white text-[#18384D] px-3 py-1 text-sm font-bold rounded">
+                      {resource.category}
+                    </div>
+                  </div>
+                  
+                  {/* Resource content */}
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold mb-3 uppercase tracking-wide">{resource.title}</h2>
+                    <p className="text-blue-100 mb-4">{resource.description}</p>
+                    <div className="inline-block text-white border-b-2 border-white pb-1 transition-all duration-300 group-hover:text-blue-200 group-hover:border-blue-200">
+                      {resource.linkText}
+                    </div>
+                  </div>
+                </a>
+              )}
             </div>
           ))}
         </div>
@@ -133,7 +159,7 @@ export default function ResourcesPage() {
               <div className="space-y-6">
                 {/* Contact Chaplaincy */}
                 <div className="border-b border-gray-200 pb-4">
-                  <h4 className="text-xl font-bold text-[#18384D] mb-3">Contact Chaplaincy</h4>
+                  <h4 className="text-xl font-bold text-[#18384D] mb-3">University Chaplaincy</h4>
                   <div className="space-y-2 text-gray-700">
                     <div className="flex items-start">
                       <span className="font-medium mr-2">Location:</span>
@@ -150,7 +176,7 @@ export default function ResourcesPage() {
 
                 {/* Contact Sheffield SU */}
                 <div className="border-b border-gray-200 pb-4">
-                  <h4 className="text-xl font-bold text-[#18384D] mb-3">Contact Sheffield SU</h4>
+                  <h4 className="text-xl font-bold text-[#18384D] mb-3">Sheffield SU</h4>
                   <div className="space-y-2 text-gray-700">
                     <div className="flex items-start">
                       <span className="font-medium mr-2">Website:</span>

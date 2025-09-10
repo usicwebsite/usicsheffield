@@ -18,6 +18,8 @@ interface Event {
   formFields: string[];
   signupOpen: boolean;
   noSignupNeeded: boolean;
+  maxSignups?: number;
+  tags: string[];
   createdAt: Date;
   createdBy: string;
 }
@@ -53,18 +55,20 @@ export default function EventDetailPage() {
     formFields: [] as string[],
     signupOpen: true,
     noSignupNeeded: false,
-    maxSignups: 50
+    maxSignups: 50,
+    tags: [] as string[]
   });
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [showEventsSidebar, setShowEventsSidebar] = useState(false);
 
   const [availableFormFields] = useState([
     'name',
     'email',
-    'phone',
-    'whatsapp',
+    'whatsapp_number',
     'student_id',
     'dietary_requirements',
     'emergency_contact',
@@ -72,6 +76,35 @@ export default function EventDetailPage() {
     'accommodation_needs',
     'special_requests'
   ]);
+
+  const [customFormFields, setCustomFormFields] = useState<string[]>([]);
+  const [newCustomField, setNewCustomField] = useState('');
+
+  // Navigation helpers
+  const getCurrentEventIndex = useCallback(() => {
+    return allEvents.findIndex(e => e.id === eventId);
+  }, [allEvents, eventId]);
+
+  const getPreviousEvent = useCallback(() => {
+    const currentIndex = getCurrentEventIndex();
+    if (currentIndex > 0) {
+      return allEvents[currentIndex - 1];
+    }
+    return null;
+  }, [allEvents, getCurrentEventIndex]);
+
+  const getNextEvent = useCallback(() => {
+    const currentIndex = getCurrentEventIndex();
+    if (currentIndex < allEvents.length - 1) {
+      return allEvents[currentIndex + 1];
+    }
+    return null;
+  }, [allEvents, getCurrentEventIndex]);
+
+  // Navigate to event
+  const navigateToEvent = useCallback((targetEventId: string) => {
+    router.push(`/admin-dashboard/events/${targetEventId}`);
+  }, [router]);
 
   // Function to format date like "Sep. 25th, 2025"
   const formatEventDate = (dateString: string) => {
@@ -123,7 +156,7 @@ export default function EventDetailPage() {
     return formattedStart;
   };
 
-  // Load event data
+  // Load event data and all events for navigation
   const loadEvent = useCallback(async () => {
     try {
       const token = await getIdToken();
@@ -136,7 +169,10 @@ export default function EventDetailPage() {
       if (!response.ok) throw new Error('Failed to load events');
 
       const data = await response.json();
-      const foundEvent = data.events.find((e: Event) => e.id === eventId);
+      const eventsList = data.events || [];
+      setAllEvents(eventsList);
+
+      const foundEvent = eventsList.find((e: Event) => e.id === eventId);
 
       if (foundEvent) {
         setEvent(foundEvent);
@@ -151,7 +187,8 @@ export default function EventDetailPage() {
           formFields: foundEvent.formFields || [],
           signupOpen: foundEvent.signupOpen || false,
           noSignupNeeded: foundEvent.noSignupNeeded || false,
-          maxSignups: foundEvent.maxSignups || 50
+          maxSignups: foundEvent.maxSignups || 50,
+          tags: foundEvent.tags || []
         });
       }
     } catch (error) {
@@ -190,6 +227,32 @@ export default function EventDetailPage() {
       loadSignups();
     }
   }, [eventId, loadEvent, loadSignups]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle navigation if not typing in an input/textarea
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
+        return;
+      }
+
+      if (event.key === 'ArrowLeft') {
+        const prevEvent = getPreviousEvent();
+        if (prevEvent) {
+          navigateToEvent(prevEvent.id);
+        }
+      } else if (event.key === 'ArrowRight') {
+        const nextEvent = getNextEvent();
+        if (nextEvent) {
+          navigateToEvent(nextEvent.id);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [getPreviousEvent, getNextEvent, navigateToEvent]);
 
   // Initialize auth loading
   useEffect(() => {
@@ -300,9 +363,8 @@ export default function EventDetailPage() {
       }
       formData.append('signupOpen', editForm.signupOpen.toString());
       formData.append('noSignupNeeded', editForm.noSignupNeeded.toString());
-      if (editForm.maxSignups) {
-        formData.append('maxSignups', editForm.maxSignups.toString());
-      }
+      formData.append('tags', JSON.stringify(editForm.tags));
+      formData.append('maxSignups', (editForm.maxSignups || 50).toString());
 
       // Handle image URL
       if (selectedImageFile) {
@@ -438,50 +500,226 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-6 py-6">
+      {/* Redesigned Header */}
+      <div className="bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 shadow-2xl">
+        <div className="container mx-auto px-6 py-4">
+          {/* Main Header Row */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin-dashboard?tab=events"
-                className="text-gray-400 hover:text-white transition duration-200"
+            {/* Left Section - Navigation & Title */}
+            <div className="flex items-center gap-6">
+              {/* Back Button */}
+              <button
+                onClick={() => {
+                  const prevEvent = getPreviousEvent();
+                  if (prevEvent) {
+                    navigateToEvent(prevEvent.id);
+                  } else {
+                    router.push('/admin-dashboard?tab=events');
+                  }
+                }}
+                className="group flex items-center gap-2 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 border border-slate-600/30 hover:border-slate-500/50"
+                title={getPreviousEvent() ? 'Previous Event' : 'Back to Dashboard'}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold">{event.title}</h1>
-                <p className="text-gray-400">Event Management</p>
+                <span className="text-sm font-medium">Back</span>
+              </button>
+
+              {/* Event Title & Counter */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-2xl font-bold text-white truncate max-w-md">{event.title}</h1>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-700/50 rounded-full border border-slate-600/50">
+                    <span className="text-xs font-medium text-slate-300">
+                      {getCurrentEventIndex() + 1} of {allEvents.length}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-400">Event Management</span>
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-green-400 font-medium">Live</span>
+                </div>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300 flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                {isEditing ? 'Cancel Edit' : 'Edit Event'}
-              </button>
-              <button
-                onClick={handleDeleteEvent}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-300 flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Delete Event
-              </button>
+
+            {/* Right Section - Controls */}
+            <div className="flex items-center gap-4">
+              {/* Navigation Controls */}
+              <div className="flex items-center gap-1 p-1 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                <button
+                  onClick={() => {
+                    const prevEvent = getPreviousEvent();
+                    if (prevEvent) navigateToEvent(prevEvent.id);
+                  }}
+                  disabled={!getPreviousEvent()}
+                  className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent hover:bg-slate-700/70 rounded-lg transition-all duration-200"
+                  title="Previous Event (←)"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="text-sm font-medium">Prev</span>
+                </button>
+
+                <div className="w-px h-6 bg-slate-600/50"></div>
+
+                <button
+                  onClick={() => setShowEventsSidebar(!showEventsSidebar)}
+                  className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all duration-200"
+                  title="Show All Events"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  </svg>
+                  <span className="text-sm font-medium hidden sm:inline">Events</span>
+                </button>
+
+                <div className="w-px h-6 bg-slate-600/50"></div>
+
+                <button
+                  onClick={() => {
+                    const nextEvent = getNextEvent();
+                    if (nextEvent) navigateToEvent(nextEvent.id);
+                  }}
+                  disabled={!getNextEvent()}
+                  className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent hover:bg-slate-700/70 rounded-lg transition-all duration-200"
+                  title="Next Event (→)"
+                >
+                  <span className="text-sm font-medium">Next</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 font-medium shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
+                >
+                  <svg className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  {isEditing ? 'Cancel' : 'Edit'}
+                </button>
+
+                <button
+                  onClick={handleDeleteEvent}
+                  className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg transition-all duration-300 font-medium shadow-lg hover:shadow-red-500/25 transform hover:scale-105"
+                >
+                  <svg className="w-4 h-4 group-hover:shake transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span className="hidden sm:inline">Delete</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-6 py-8">
+        {/* Events Sidebar */}
+        {showEventsSidebar && (
+          <div className="fixed inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-[#0A1219] to-[#18384D] border-r border-white/20 shadow-xl transform transition-transform duration-300 ease-in-out">
+            <div className="flex flex-col h-full">
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/20">
+                <h2 className="text-xl font-bold">All Events</h2>
+                <button
+                  onClick={() => setShowEventsSidebar(false)}
+                  className="p-2 text-gray-400 hover:text-white transition duration-200"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Events List */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-2">
+                  {allEvents.map((sidebarEvent, index) => (
+                    <div
+                      key={sidebarEvent.id}
+                      onClick={() => {
+                        navigateToEvent(sidebarEvent.id);
+                        setShowEventsSidebar(false);
+                      }}
+                      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                        sidebarEvent.id === eventId
+                          ? 'bg-blue-500/20 border border-blue-500/30'
+                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                          sidebarEvent.id === eventId
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-600 text-gray-300'
+                        }`}>
+                          {index + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <h3 className={`font-medium text-sm truncate ${
+                            sidebarEvent.id === eventId ? 'text-blue-200' : 'text-white'
+                          }`}>
+                            {sidebarEvent.title}
+                          </h3>
+                          <p className="text-xs text-gray-400 truncate">
+                            {sidebarEvent.date} • {sidebarEvent.location}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {sidebarEvent.signupOpen ? (
+                              <span className="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full">
+                                Signups Open
+                              </span>
+                            ) : (
+                              <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">
+                                Signups Closed
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-500">
+                              {sidebarEvent.formFields.length} fields
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Overlay for sidebar */}
+        {showEventsSidebar && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowEventsSidebar(false)}
+          />
+        )}
+
         <div className="space-y-8">
+          {/* Navigation Help */}
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h4 className="text-blue-200 font-medium text-sm">Quick Navigation</h4>
+                <p className="text-blue-300 text-xs">
+                  Use arrow keys (← →) to navigate between events, or click the list icon to see all events
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Event Details */}
           <div className="space-y-6">
             {/* Event Info Card */}
@@ -613,6 +851,74 @@ export default function EventDetailPage() {
                     />
                   </div>
 
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Tags
+                      <span className="text-gray-500 text-xs ml-2">
+                        (Select relevant tags for this event - optional)
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {[
+                        'annual',
+                        'weekly',
+                        'brothers only',
+                        'sisters only',
+                        'both brothers and sisters',
+                        'education',
+                        'welfare',
+                        'social responsibility'
+                      ].map((tag) => (
+                        <label key={tag} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={editForm.tags.includes(tag)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEditForm({
+                                  ...editForm,
+                                  tags: [...editForm.tags, tag]
+                                });
+                              } else {
+                                setEditForm({
+                                  ...editForm,
+                                  tags: editForm.tags.filter(t => t !== tag)
+                                });
+                              }
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 block text-sm text-gray-300 capitalize">
+                            {tag}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {editForm.tags.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-gray-300 mb-2">Selected Tags:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {editForm.tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => setEditForm({
+                                  ...editForm,
+                                  tags: editForm.tags.filter(t => t !== tag)
+                                })}
+                                className="ml-2 text-blue-300 hover:text-blue-100"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Signup Options */}
                   <div className="space-y-3">
                     <div className="flex items-center">
@@ -703,7 +1009,7 @@ export default function EventDetailPage() {
                         </span>
                       </label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-                        {availableFormFields.map((field) => (
+                        {[...availableFormFields, ...customFormFields].map((field) => (
                           <label key={field} className="flex items-center">
                             <input
                               type="checkbox"
@@ -728,6 +1034,65 @@ export default function EventDetailPage() {
                             </span>
                           </label>
                         ))}
+                      </div>
+
+                      {/* Custom Form Fields */}
+                      <div className="mt-4 border-t border-white/20 pt-4">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Add Custom Form Field
+                        </label>
+                        <p className="text-xs text-gray-400 mb-3">Create your own custom field for specific event requirements</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newCustomField}
+                            onChange={(e) => setNewCustomField(e.target.value)}
+                            placeholder="e.g., Allergies, Dietary Restrictions, etc."
+                            className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (newCustomField.trim() && !availableFormFields.includes(newCustomField.trim()) && !customFormFields.includes(newCustomField.trim())) {
+                                setCustomFormFields([...customFormFields, newCustomField.trim()]);
+                                setEditForm({
+                                  ...editForm,
+                                  formFields: [...editForm.formFields, newCustomField.trim()]
+                                });
+                                setNewCustomField('');
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-300"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        {customFormFields.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-sm font-medium text-gray-300 mb-2">Custom Fields Added:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {customFormFields.map((field, index) => (
+                                <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                                  {field.replace(/_/g, ' ')}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedCustomFields = customFormFields.filter(f => f !== field);
+                                      setCustomFormFields(updatedCustomFields);
+                                      setEditForm({
+                                        ...editForm,
+                                        formFields: editForm.formFields.filter(f => f !== field)
+                                      });
+                                    }}
+                                    className="ml-2 text-blue-300 hover:text-blue-100"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       {editForm.formFields.length === 0 && (
                         <p className="text-red-400 text-xs">Please select at least one form field</p>

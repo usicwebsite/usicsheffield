@@ -26,11 +26,41 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all events from Firestore
-    const eventsSnapshot = await adminDb.collection('events').orderBy('createdAt', 'desc').get();
-    const events = eventsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.() || new Date()
+    const eventsSnapshot = await adminDb!.collection('events').orderBy('createdAt', 'desc').get();
+
+    const events = await Promise.all(eventsSnapshot.docs.map(async doc => {
+      const data = doc.data();
+
+      // Get signup count for this event
+      let signupCount = 0;
+      if (data.signupOpen && !data.noSignupNeeded) {
+        try {
+          const signupsSnapshot = await adminDb!
+            .collection('event_signups')
+            .where('eventId', '==', doc.id)
+            .get();
+          signupCount = signupsSnapshot.size;
+
+          // Automatically close signups if max capacity reached
+          if (data.maxSignups && data.maxSignups > 0 && signupCount >= data.maxSignups && data.signupOpen) {
+            await adminDb!.collection('events').doc(doc.id).update({
+              signupOpen: false,
+              updatedAt: new Date()
+            });
+            // Update the data object to reflect the change
+            data.signupOpen = false;
+          }
+        } catch (error) {
+          console.error(`Error getting signup count for event ${doc.id}:`, error);
+        }
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        signupCount,
+        createdAt: data.createdAt?.toDate?.() || new Date()
+      };
     }));
 
     return NextResponse.json({ events });
@@ -65,6 +95,8 @@ export async function POST(request: NextRequest) {
     const formFields = JSON.parse(formData.get('formFields') as string);
     const signupOpen = formData.get('signupOpen') === 'true';
     const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
+    const tags = JSON.parse(formData.get('tags') as string || '[]');
+    const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
     const createdBy = formData.get('createdBy') as string;
     const imageFile = formData.get('image') as File;
 
@@ -141,13 +173,15 @@ export async function POST(request: NextRequest) {
       formFields: processedFormFields,
       signupOpen,
       noSignupNeeded,
+      tags: tags || [],
+      maxSignups: noSignupNeeded ? 0 : maxSignups,
       createdBy,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
     // Save to Firestore
-    const eventRef = await adminDb.collection('events').add(eventData);
+    const eventRef = await adminDb!.collection('events').add(eventData);
 
     return NextResponse.json({
       success: true,

@@ -52,6 +52,7 @@ interface Event {
   signupOpen: boolean;
   noSignupNeeded: boolean;
   maxSignups?: number;
+  tags: string[];
   createdAt: Date;
   createdBy: string;
 }
@@ -69,6 +70,7 @@ interface EventFormData {
   signupOpen: boolean;
   noSignupNeeded: boolean;
   maxSignups?: number;
+  tags: string[];
 }
 
 
@@ -121,7 +123,8 @@ export default function AdminDashboard() {
     formFields: [],
     signupOpen: true, // Default to open for signups
     noSignupNeeded: false, // Default to requiring signup
-    maxSignups: 50 // Default to 50 signups
+    maxSignups: 50, // Default to 50 signups
+    tags: [] // Default to empty array
   });
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -141,8 +144,7 @@ export default function AdminDashboard() {
   const [availableFormFields] = useState([
     'name',
     'email',
-    'phone',
-    'whatsapp',
+    'whatsapp_number',
     'student_id',
     'dietary_requirements',
     'emergency_contact',
@@ -150,6 +152,9 @@ export default function AdminDashboard() {
     'accommodation_needs',
     'special_requests'
   ]);
+
+  const [customFormFields, setCustomFormFields] = useState<string[]>([]);
+  const [newCustomField, setNewCustomField] = useState('');
 
   const checkAdminStatus = async (uid: string): Promise<boolean> => {
     try {
@@ -578,9 +583,8 @@ export default function AdminDashboard() {
       }
       formData.append('signupOpen', eventFormData.signupOpen.toString());
       formData.append('noSignupNeeded', eventFormData.noSignupNeeded.toString());
-      if (eventFormData.maxSignups) {
-        formData.append('maxSignups', eventFormData.maxSignups.toString());
-      }
+      formData.append('tags', JSON.stringify(eventFormData.tags));
+      formData.append('maxSignups', (eventFormData.maxSignups || 50).toString());
       formData.append('createdBy', user.uid);
       
       if (eventFormData.imageFile) {
@@ -624,6 +628,7 @@ export default function AdminDashboard() {
         signupOpen: eventFormData.signupOpen,
         noSignupNeeded: eventFormData.noSignupNeeded,
         maxSignups: eventFormData.maxSignups,
+        tags: eventFormData.tags,
         createdAt: new Date(),
         createdBy: user.uid
       };
@@ -631,19 +636,20 @@ export default function AdminDashboard() {
       setEvents(prev => [newEvent, ...prev]);
       
       // Reset form and close modal
-      setEventFormData({
-        title: '',
-        date: '',
-        startTime: '',
-        endTime: '',
-        location: '',
-        price: '',
-        description: '',
-        formFields: [],
-        signupOpen: true,
-        noSignupNeeded: false,
-        maxSignups: 50
-      });
+                    setEventFormData({
+                      title: '',
+                      date: '',
+                      startTime: '',
+                      endTime: '',
+                      location: '',
+                      price: '',
+                      description: '',
+                      formFields: [],
+                      signupOpen: true,
+                      noSignupNeeded: false,
+                      maxSignups: 50,
+                      tags: []
+                    });
       setImagePreview(null);
       setShowEventForm(false);
     } catch (error) {
@@ -734,7 +740,8 @@ export default function AdminDashboard() {
             signupOpen: true,
             noSignupNeeded: false,
             maxSignups: 50, // Default to 50 signups
-            imageFile: undefined
+            imageFile: undefined,
+            tags: [] // Default to empty array
           });
 
           // Set missing fields for visual indication
@@ -848,6 +855,8 @@ export default function AdminDashboard() {
             formFields: event.noSignupNeeded ? [] : (event.formFields || ['name', 'email']),
             signupOpen: true,
             noSignupNeeded: event.noSignupNeeded || false,
+            maxSignups: event.maxSignups || 50,
+            tags: event.tags || [],
             createdAt: new Date(),
             createdBy: user.uid
           };
@@ -1865,6 +1874,74 @@ export default function AdminDashboard() {
                     />
                   </div>
 
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tags
+                      <span className="text-gray-500 text-xs ml-2">
+                        (Select relevant tags for this event - optional)
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {[
+                        'annual',
+                        'weekly',
+                        'brothers only',
+                        'sisters only',
+                        'both brothers and sisters',
+                        'education',
+                        'welfare',
+                        'social responsibility'
+                      ].map((tag) => (
+                        <label key={tag} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={eventFormData.tags.includes(tag)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEventFormData({
+                                  ...eventFormData,
+                                  tags: [...eventFormData.tags, tag]
+                                });
+                              } else {
+                                setEventFormData({
+                                  ...eventFormData,
+                                  tags: eventFormData.tags.filter(t => t !== tag)
+                                });
+                              }
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 block text-sm text-gray-700 capitalize">
+                            {tag}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {eventFormData.tags.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Selected Tags:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {eventFormData.tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center px-2 py-1 bg-blue-500/20 text-blue-700 text-xs rounded-full border border-blue-500/30">
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => setEventFormData({
+                                  ...eventFormData,
+                                  tags: eventFormData.tags.filter(t => t !== tag)
+                                })}
+                                className="ml-2 text-blue-700 hover:text-blue-900"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Sign Up Options */}
                   <div className="space-y-3">
                   <div className="flex items-center">
@@ -2005,7 +2082,7 @@ export default function AdminDashboard() {
                       </label>
                       <p className="text-xs text-gray-500 mb-3">Select which information to collect from attendees</p>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {availableFormFields.map((field) => (
+                        {[...availableFormFields, ...customFormFields].map((field) => (
                           <label key={field} className="flex items-center">
                             <input
                               type="checkbox"
@@ -2034,6 +2111,65 @@ export default function AdminDashboard() {
                       {eventFormData.formFields.length === 0 && (
                         <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
                       )}
+
+                      {/* Custom Form Fields */}
+                      <div className="mt-4 border-t pt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Add Custom Form Field
+                        </label>
+                        <p className="text-xs text-gray-500 mb-3">Create your own custom field for specific event requirements</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newCustomField}
+                            onChange={(e) => setNewCustomField(e.target.value)}
+                            placeholder="e.g., Allergies, Dietary Restrictions, etc."
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (newCustomField.trim() && !availableFormFields.includes(newCustomField.trim()) && !customFormFields.includes(newCustomField.trim())) {
+                                setCustomFormFields([...customFormFields, newCustomField.trim()]);
+                                setEventFormData({
+                                  ...eventFormData,
+                                  formFields: [...eventFormData.formFields, newCustomField.trim()]
+                                });
+                                setNewCustomField('');
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-300"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        {customFormFields.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-sm font-medium text-gray-700 mb-2">Custom Fields Added:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {customFormFields.map((field, index) => (
+                                <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                  {field.replace(/_/g, ' ')}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedCustomFields = customFormFields.filter(f => f !== field);
+                                      setCustomFormFields(updatedCustomFields);
+                                      setEventFormData({
+                                        ...eventFormData,
+                                        formFields: eventFormData.formFields.filter(f => f !== field)
+                                      });
+                                    }}
+                                    className="ml-2 text-blue-600 hover:text-blue-800"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 

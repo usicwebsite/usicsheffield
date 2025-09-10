@@ -42,6 +42,7 @@ export async function GET() {
         formFields: data.formFields,
         signupOpen: data.signupOpen || false, // Default to false for backwards compatibility
         noSignupNeeded: data.noSignupNeeded || false,
+        tags: data.tags || [],
         maxSignups: data.maxSignups,
         signupCount,
         createdAt: data.createdAt?.toDate?.() || new Date()

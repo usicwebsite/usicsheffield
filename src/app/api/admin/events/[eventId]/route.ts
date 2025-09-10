@@ -80,6 +80,8 @@ export async function PUT(
     const formFields = JSON.parse(formData.get('formFields') as string);
     const signupOpen = formData.get('signupOpen') === 'true';
     const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
+    const tags = JSON.parse(formData.get('tags') as string || '[]');
+    const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
     const existingImageUrl = formData.get('existingImageUrl') as string;
     const newImageUrl = formData.get('imageUrl') as string;
 
@@ -127,6 +129,8 @@ export async function PUT(
       formFields: string[];
       signupOpen: boolean;
       noSignupNeeded: boolean;
+      tags: string[];
+      maxSignups: number;
       updatedAt: Date;
       endTime?: string;
       imageUrl?: string | null;
@@ -140,6 +144,8 @@ export async function PUT(
       formFields: processedFormFields,
       signupOpen,
       noSignupNeeded,
+      tags: tags || [],
+      maxSignups: noSignupNeeded ? 0 : maxSignups,
       updatedAt: new Date(),
       ...(endTime && { endTime })
     };

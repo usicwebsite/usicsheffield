@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { faqData } from '@/lib/faq-data';
 
 type StaticEvent = {
   id: number;
@@ -9,10 +10,11 @@ type StaticEvent = {
   date: string;
   time: string;
   location: string;
-  category: 'Weekly' | 'Annual' | 'Other';
+  category: 'Other';
   description: string;
   image?: string;
   signupLink?: string;
+  tags: string[];
 };
 
 type AdminEvent = {
@@ -30,6 +32,7 @@ type AdminEvent = {
   noSignupNeeded: boolean;
   maxSignups?: number;
   signupCount?: number;
+  tags: string[];
   createdAt: Date;
 };
 
@@ -235,26 +238,46 @@ export default function EventsPage() {
         });
       }
 
-      // Define start dates for other recurring events
-      const eventStartDates: { [key: string]: Date } = {
-        'Friday Football': new Date(2025, 9, 1)       // October 1st, 2025 - will find first Friday
-      };
+      // Special handling for Friday Football - use specific dates
+      if (eventTitle === 'Friday Football') {
+        const specificFridayFootballDates = [
+          '2025-09-26', '2025-10-03', '2025-10-10', '2025-10-17', '2025-10-24', '2025-10-31',
+          '2025-11-07', '2025-11-14', '2025-11-21', '2025-11-28',
+          '2025-12-05', '2025-12-12', '2025-12-19'
+        ];
 
-      const startDate = eventStartDates[eventTitle] || new Date();
+        // Filter to only include future dates
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-      // Find the first occurrence of the specified day on or after the start date
-      let firstOccurrence = new Date(startDate);
-      const startDay = startDate.getDay();
-      const diff = dayOfWeek - startDay;
-
-      if (diff < 0) {
-        firstOccurrence.setDate(startDate.getDate() + diff + 7);
-      } else if (diff > 0) {
-        firstOccurrence.setDate(startDate.getDate() + diff);
-      } else {
-        // If start date is already the correct day, use it
-        firstOccurrence = new Date(startDate);
+        return specificFridayFootballDates.filter(dateStr => {
+          const eventDate = new Date(dateStr);
+          return eventDate >= today;
+        });
       }
+
+      // Fallback to original logic for events without specific ranges
+      const startDate = new Date();
+
+      // Find the next occurrence of the specified day (more reliable method)
+      const firstOccurrence = new Date(startDate);
+      const startDay = startDate.getDay();
+      let daysToAdd = 0;
+
+      if (startDay <= dayOfWeek) {
+        // If start day is before or equal to target day, add the difference
+        daysToAdd = dayOfWeek - startDay;
+      } else {
+        // If start day is after target day, add days to reach next occurrence
+        daysToAdd = (7 - startDay) + dayOfWeek;
+      }
+
+      // If we're already on the target day and it's not today, or if daysToAdd is 0, add 7 days
+      if (daysToAdd === 0) {
+        daysToAdd = 7;
+      }
+
+      firstOccurrence.setDate(startDate.getDate() + daysToAdd);
 
       // Generate the specified number of occurrences
       for (let i = 0; i < numOccurrences; i++) {
@@ -379,17 +402,18 @@ export default function EventsPage() {
 
   // Events data from events.txt
   const allEvents: StaticEvent[] = [
-    // Weekly Events
+    // Other Events
     {
       id: 1,
       title: "Roots Academy Classes",
       date: "Every Tuesday",
       time: "7:00 PM - 8:30 PM",
       location: "Lecture Theatre 4, Arts Tower",
-      category: "Weekly",
+      category: "Other",
       description: "Our Tuesday evening classes cover different themes each semester, such as Qur'anic Tafsir/exegesis, Prophetic Seerah/biography, and methods of spiritual purification.",
       image: "/images/WEB/brothers/roots.png",
-      signupLink: "https://forms.google.com/roots-academy-signup"
+      signupLink: "https://forms.google.com/roots-academy-signup",
+      tags: ["both brothers and sisters", "weekly", "education"],
     },
     {
       id: 22,
@@ -397,20 +421,43 @@ export default function EventsPage() {
       date: "Every Friday",
       time: "7:00 PM",
       location: "The Wave Pitches",
-      category: "Weekly",
+      category: "Other",
       description: "Brothers' special football sessions. A great way to end the week with physical activity and brotherhood. 14 spots open each week - don't miss out!",
       image: "/images/WEB/brothers/brother3.jpeg",
-      signupLink: "https://forms.google.com/friday-football-signup"
+      signupLink: "https://forms.google.com/friday-football-signup",
+      tags: ["brothers only", "weekly", "welfare"],
     }
   ];
 
   // State for category filter and modal
-  const [categoryFilter, setCategoryFilter] = useState<'All' | 'Weekly' | 'Annual' | 'Other'>('All');
+  const [categoryFilter, setCategoryFilter] = useState<'All'>('All');
+  const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<StaticEvent | AdminEvent | null>(null);
 
   // State for FAQ modal
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [currentFAQ, setCurrentFAQ] = useState(0);
+
+  // State for mobile filter dropdown
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.filter-dropdown-container')) {
+        setIsFilterDropdownOpen(false);
+      }
+    };
+
+    if (isFilterDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterDropdownOpen]);
 
   // Fetch admin-created events
   useEffect(() => {
@@ -431,46 +478,27 @@ export default function EventsPage() {
     fetchAdminEvents();
   }, []);
 
-  // FAQ data for the slideshow
-  const faqData = [
-    {
-      question: "How do I register for USIC events?",
-      answer: "Click the signup links provided for each event or contact our events team directly for registration assistance."
-    },
-    {
-      question: "Are USIC events open to non-Muslim students?",
-      answer: "Yes, many of our events are open to all students who want to learn about Islamic culture and community."
-    },
-    {
-      question: "What types of events does USIC organize?",
-      answer: "We host weekly Islamic lessons, sports activities, charity events, annual retreats, and social gatherings."
-    },
-    {
-      question: "Do I need to be a USIC member to attend events?",
-      answer: "Most events are open to all students, but members get priority access and exclusive discounts."
-    },
-    {
-      question: "Where are USIC events held on campus?",
-      answer: "Events are held in various campus locations including lecture theatres, sports facilities, and prayer rooms."
-    },
-    {
-      question: "How can I stay updated about upcoming events?",
-      answer: "Follow our social media accounts, check this events page regularly, or join our WhatsApp groups."
-    },
-    {
-      question: "Are there separate events for brothers and sisters?",
-      answer: "Some events like football and welfare sessions are gender-specific, while others are open to all members."
-    }
-  ];
+  // Use centralized FAQ data for events
+  const eventsFAQData = faqData.events;
 
-  // Filter events based on selected category
-  const filteredStaticEvents = categoryFilter === 'All'
-    ? allEvents
-    : allEvents.filter(event => event.category === categoryFilter);
+  // Filter static events based on tags
+  let filteredStaticEvents = allEvents;
+
+  // Filter admin events based on tags only
+  let filteredAdminEvents = adminEvents;
+
+  // Apply tag filters to both static and admin events
+  if (tagsFilter.length > 0) {
+    filteredStaticEvents = filteredStaticEvents.filter(event =>
+      tagsFilter.some(tag => event.tags.includes(tag))
+    );
+    filteredAdminEvents = filteredAdminEvents.filter(event =>
+      tagsFilter.some(tag => event.tags.includes(tag))
+    );
+  }
 
   // Combine static events and admin events for display
-  // Admin events don't have categories, so they're always included
-  const combinedEvents = [...filteredStaticEvents, ...adminEvents];
+  const combinedEvents = [...filteredStaticEvents, ...filteredAdminEvents];
 
   // Filter combined events for display
   const filteredEvents = combinedEvents;
@@ -498,6 +526,9 @@ export default function EventsPage() {
     setShowFAQModal(false);
     setCurrentFAQ(0); // Reset to first question
   };
+
+  const nextFAQ = () => setCurrentFAQ(currentFAQ < eventsFAQData.length - 1 ? currentFAQ + 1 : 0);
+  const prevFAQ = () => setCurrentFAQ(currentFAQ > 0 ? currentFAQ - 1 : eventsFAQData.length - 1);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
@@ -686,48 +717,145 @@ export default function EventsPage() {
           </p>
         </div>
         
-        {/* Category filter buttons */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          <button
-            onClick={() => setCategoryFilter('All')}
-            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-              categoryFilter === 'All'
-                ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
-            }`}
-          >
-            All Events
-          </button>
-          <button
-            onClick={() => setCategoryFilter('Weekly')}
-            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-              categoryFilter === 'Weekly'
-                ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
-            }`}
-          >
-            Weekly Events
-          </button>
-          <button
-            onClick={() => setCategoryFilter('Annual')}
-            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-              categoryFilter === 'Annual'
-                ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
-            }`}
-          >
-            Annual Events
-          </button>
-          <button
-            onClick={() => setCategoryFilter('Other')}
-            className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
-              categoryFilter === 'Other'
-                ? 'bg-white text-[#18384D] shadow-lg'
-                : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
-            }`}
-          >
-            USIC Events
-          </button>
+        {/* Unified Filter Buttons */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-white mb-6 text-center">Filter Events</h3>
+
+          {/* Mobile Filter Dropdown */}
+          <div className="filter-dropdown-container md:hidden">
+            <button
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className="w-full px-6 py-3 bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30 rounded-full font-medium transition duration-300 flex items-center justify-between"
+            >
+              <span>
+                All Events
+                {tagsFilter.length > 0 && (
+                  <span className="ml-2 text-sm text-blue-300">
+                    ({tagsFilter.length} selected)
+                  </span>
+                )}
+              </span>
+              <svg
+                className={`w-5 h-5 transition-transform duration-200 ${isFilterDropdownOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {isFilterDropdownOpen && (
+              <div className="mt-4 bg-[#0F1E2C] rounded-xl border border-blue-200/20 p-4">
+                <div className="space-y-3">
+                  {/* Tag Filters in Dropdown */}
+                  {[
+                    { key: 'annual', display: 'Annual Events' },
+                    { key: 'weekly', display: 'Weekly Events' },
+                    { key: 'brothers only', display: 'Brothers Only' },
+                    { key: 'sisters only', display: 'Sisters Only' },
+                    { key: 'both brothers and sisters', display: 'Both Brothers & Sisters' },
+                    { key: 'education', display: 'Education' },
+                    { key: 'welfare', display: 'Welfare' },
+                    { key: 'social responsibility', display: 'Social Responsibility' },
+                    { key: 'sports', display: 'Sports' },
+                  ].map((tag) => (
+                    <button
+                      key={tag.key}
+                      onClick={() => {
+                        if (tagsFilter.includes(tag.key)) {
+                          const newTagsFilter = tagsFilter.filter(t => t !== tag.key);
+                          setTagsFilter(newTagsFilter);
+                        } else {
+                          setTagsFilter([...tagsFilter, tag.key]);
+                        }
+                      }}
+                      className={`w-full text-left px-4 py-2 rounded-lg font-medium transition duration-300 ${
+                        tagsFilter.includes(tag.key)
+                          ? 'bg-white text-[#18384D] shadow-lg'
+                          : 'bg-[#18384D] text-blue-100 hover:bg-[#1a4a6d]'
+                      }`}
+                    >
+                      {tag.display}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Clear Tags Button */}
+                {tagsFilter.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-blue-200/20">
+                    <button
+                      onClick={() => setTagsFilter([])}
+                      className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition duration-300"
+                    >
+                      Clear All Tags
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Filter Layout */}
+          <div className="hidden md:flex flex-wrap justify-center gap-3 mb-4">
+            {/* All Events Button */}
+            <button
+              onClick={() => {
+                setCategoryFilter('All');
+              }}
+              className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
+                categoryFilter === 'All'
+                  ? 'bg-white text-[#18384D] shadow-lg'
+                  : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
+              }`}
+            >
+              All Events
+            </button>
+
+            {/* Tag Filters */}
+            {[
+              { key: 'annual', display: 'Annual Events' },
+              { key: 'weekly', display: 'Weekly Events' },
+              { key: 'brothers only', display: 'Brothers Only' },
+              { key: 'sisters only', display: 'Sisters Only' },
+              { key: 'both brothers and sisters', display: 'Both Brothers & Sisters' },
+              { key: 'education', display: 'Education' },
+              { key: 'welfare', display: 'Welfare' },
+              { key: 'social responsibility', display: 'Social Responsibility' },
+              { key: 'sports', display: 'Sports' },
+            ].map((tag) => (
+              <button
+                key={tag.key}
+                onClick={() => {
+                  if (tagsFilter.includes(tag.key)) {
+                    const newTagsFilter = tagsFilter.filter(t => t !== tag.key);
+                    setTagsFilter(newTagsFilter);
+                  } else {
+                    setTagsFilter([...tagsFilter, tag.key]);
+                  }
+                }}
+                className={`px-6 py-2 rounded-full font-medium transition duration-300 ${
+                  tagsFilter.includes(tag.key)
+                    ? 'bg-white text-[#18384D] shadow-lg'
+                    : 'bg-[#0F1E2C] text-blue-100 hover:bg-[#18384D] border border-blue-200/30'
+                }`}
+              >
+                {tag.display}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop Clear Filters */}
+          <div className="hidden md:flex justify-center gap-3">
+            {tagsFilter.length > 0 && (
+              <button
+                onClick={() => setTagsFilter([])}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium text-sm transition duration-300"
+              >
+                Clear Tags
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Events grid */}
@@ -773,9 +901,6 @@ export default function EventsPage() {
                     <span className="text-blue-300">No image</span>
                   </div>
                 )}
-                <div className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
-                  {'category' in event ? event.category : 'USIC Event'}
-                </div>
               </div>
               <div className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">{event.title}</h3>
@@ -893,12 +1018,7 @@ export default function EventsPage() {
             {/* Modal Header */}
             <div className="sticky top-0 bg-[#18384D] p-6 border-b border-blue-200/20 flex justify-between items-center">
               <div className="flex-1">
-                <div className="flex items-center gap-3">
                   <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">{selectedEvent.title}</h2>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-white text-[#18384D] shadow-md">
-                    {'category' in selectedEvent ? selectedEvent.category : 'USIC Event'}
-                  </span>
-                </div>
               </div>
               <button
                 onClick={closeModal}
@@ -1041,21 +1161,21 @@ export default function EventsPage() {
             {/* FAQ Slideshow */}
             <div className="p-6">
               <div className="mb-6 flex justify-between items-center">
-                <button 
-                  onClick={() => setCurrentFAQ(currentFAQ > 0 ? currentFAQ - 1 : faqData.length - 1)}
+                <button
+                  onClick={prevFAQ}
                   className="text-white hover:text-blue-200 transition duration-200 p-2"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                
+
                 <span className="text-blue-200 font-medium">
-                  {currentFAQ + 1} of {faqData.length}
+                  {currentFAQ + 1} of {eventsFAQData.length}
                 </span>
-                
-                <button 
-                  onClick={() => setCurrentFAQ(currentFAQ < faqData.length - 1 ? currentFAQ + 1 : 0)}
+
+                <button
+                  onClick={nextFAQ}
                   className="text-white hover:text-blue-200 transition duration-200 p-2"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1063,15 +1183,26 @@ export default function EventsPage() {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="bg-[#18384D] rounded-lg p-6 mb-6">
-                <h3 className="text-xl font-semibold text-white mb-4">{faqData[currentFAQ].question}</h3>
-                <p className="text-blue-100 leading-relaxed">{faqData[currentFAQ].answer}</p>
+                <h3 className="text-xl font-semibold text-white mb-4">{eventsFAQData[currentFAQ].question}</h3>
+                {eventsFAQData[currentFAQ].button ? (
+                  <a
+                    href={eventsFAQData[currentFAQ].button!.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    {eventsFAQData[currentFAQ].button!.text}
+                  </a>
+                ) : (
+                  <p className="text-blue-100 leading-relaxed">{eventsFAQData[currentFAQ].answer}</p>
+                )}
               </div>
-              
+
               {/* Dots indicator */}
               <div className="flex justify-center space-x-2">
-                {faqData.map((_, index) => (
+                {eventsFAQData.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentFAQ(index)}

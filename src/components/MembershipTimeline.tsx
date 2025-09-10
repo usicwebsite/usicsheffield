@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { faqData } from '@/lib/faq-data';
 
 interface TimelineItem {
   id: string;
@@ -59,43 +60,17 @@ export default function MembershipTimeline() {
   const [showFAQModal, setShowFAQModal] = useState(false);
   const [currentFAQ, setCurrentFAQ] = useState(0);
 
-  // FAQ data for the slideshow
-  const faqData = [
-    {
-      question: "How much does USIC membership cost?",
-      answer: "USIC membership is free for all University of Sheffield students through the Students' Union."
-    },
-    {
-      question: "What benefits do USIC members receive?",
-      answer: "Members get exclusive discounts on events, priority ticket access, member-only socials, and a personal membership card."
-    },
-    {
-      question: "Do I need to be Muslim to join USIC?",
-      answer: "No, USIC welcomes all students interested in learning about Islamic culture and community, regardless of faith."
-    },
-    {
-      question: "How do I become a USIC member?",
-      answer: "Simply visit the Students' Union website and sign up for the Islamic Circle Society through the activities section."
-    },
-    {
-      question: "Can postgraduate students join USIC?",
-      answer: "Yes, USIC membership is open to all University of Sheffield students including undergraduates and postgraduates."
-    },
-    {
-      question: "What happens after I join USIC?",
-      answer: "You'll receive your membership card, access to member benefits, and invitations to exclusive events and socials."
-    },
-    {
-      question: "Is USIC membership valid for the entire academic year?",
-      answer: "Yes, your USIC membership is valid for the full academic year and can be renewed annually."
-    }
-  ];
+  // Use centralized FAQ data for membership
+  const membershipFAQData = faqData.membership;
 
   // FAQ modal handlers
   const closeFAQModal = () => {
     setShowFAQModal(false);
     setCurrentFAQ(0); // Reset to first question
   };
+
+  const nextFAQ = () => setCurrentFAQ(currentFAQ < membershipFAQData.length - 1 ? currentFAQ + 1 : 0);
+  const prevFAQ = () => setCurrentFAQ(currentFAQ > 0 ? currentFAQ - 1 : membershipFAQData.length - 1);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -291,21 +266,21 @@ export default function MembershipTimeline() {
             {/* FAQ Slideshow */}
             <div className="p-6">
               <div className="mb-6 flex justify-between items-center">
-                <button 
-                  onClick={() => setCurrentFAQ(currentFAQ > 0 ? currentFAQ - 1 : faqData.length - 1)}
+                <button
+                  onClick={prevFAQ}
                   className="text-white hover:text-blue-200 transition duration-200 p-2"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                
+
                 <span className="text-blue-200 font-medium">
-                  {currentFAQ + 1} of {faqData.length}
+                  {currentFAQ + 1} of {membershipFAQData.length}
                 </span>
-                
-                <button 
-                  onClick={() => setCurrentFAQ(currentFAQ < faqData.length - 1 ? currentFAQ + 1 : 0)}
+
+                <button
+                  onClick={nextFAQ}
                   className="text-white hover:text-blue-200 transition duration-200 p-2"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -313,15 +288,26 @@ export default function MembershipTimeline() {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="bg-[#18384D] rounded-lg p-6 mb-6">
-                <h3 className="text-xl font-semibold text-white mb-4">{faqData[currentFAQ].question}</h3>
-                <p className="text-blue-100 leading-relaxed">{faqData[currentFAQ].answer}</p>
+                <h3 className="text-xl font-semibold text-white mb-4">{membershipFAQData[currentFAQ].question}</h3>
+                {membershipFAQData[currentFAQ].button ? (
+                  <a
+                    href={membershipFAQData[currentFAQ].button!.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    {membershipFAQData[currentFAQ].button!.text}
+                  </a>
+                ) : (
+                  <p className="text-blue-100 leading-relaxed">{membershipFAQData[currentFAQ].answer}</p>
+                )}
               </div>
-              
+
               {/* Dots indicator */}
               <div className="flex justify-center space-x-2">
-                {faqData.map((_, index) => (
+                {membershipFAQData.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentFAQ(index)}
