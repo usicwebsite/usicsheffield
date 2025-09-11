@@ -70,11 +70,13 @@ export default async function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="csrf-token" content={csrfToken} />
+        <meta httpEquiv="Content-Security-Policy" content="frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://open.spotify.com https://www.youtube.com https://www.instagram.com https://player.vimeo.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; media-src 'self' https:;" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               // Ensure CSRF token is available globally
               window.__CSRF_TOKEN__ = "${csrfToken}";
+              
             `,
           }}
         />

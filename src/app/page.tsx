@@ -1,25 +1,20 @@
 import Hero from "@/components/Hero";
-import AboutSection from "@/components/AboutSection";
+import SwiperSlideshow from "@/components/SwiperSlideshow";
 import EventsSection from "@/components/EventsSection";
 import MembershipSection from "@/components/MembershipSection";
-import { getAboutSections } from "@/lib/about-data";
 
 export default function Home() {
-  const aboutSections = getAboutSections();
-  
   return (
     <div className="flex flex-col">
       <Hero />
       
-      {/* White divider between Hero and AboutSection */}
+      {/* White divider between Hero and SwiperSlideshow */}
       <div className="h-px bg-white/30 w-full"></div>
       
       <div className="mt-0"> {/* No margin needed since Hero is full screen */}
-        {aboutSections.map((section, index) => (
-          <AboutSection key={index} section={section} />
-        ))}
+        <SwiperSlideshow />
         
-        {/* White divider between AboutSection and EventsSection */}
+        {/* White divider between SwiperSlideshow and EventsSection */}
         <div className="h-px bg-white/30 w-full"></div>
         
         <EventsSection />

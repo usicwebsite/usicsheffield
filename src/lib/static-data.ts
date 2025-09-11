@@ -9,25 +9,82 @@ export const staticData = {
       subtitle: "The Islamic Circle at the University of Sheffield",
       description: "Your university experience doesn't have to mean compromising your faith. Join our community of Muslim students.",
       ctaText: "Join USIC Today",
-      ctaLink: "/membership"
+      ctaLink: "/membership",
+      images: [
+        '/images/WEB/brothers/IMG_9262.JPG',
+        '/images/WEB/brothers/IMG_9980.JPG',
+        '/images/WEB/sisters/sister3.jpeg',
+        '/images/WEB/brothers/brother1.jpeg',
+        '/images/WEB/brothers/brother2.jpeg',
+        '/images/WEB/sisters/sister6.jpeg',
+        '/images/WEB/brothers/brother3.jpeg',
+        '/images/WEB/sisters/sister7.jpeg',
+        '/images/WEB/brothers/brother4.jpeg',
+        '/images/WEB/sisters/sister8.jpeg',
+        '/images/WEB/brothers/brother5.jpeg',
+        '/images/WEB/sisters/sister9.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-2.jpg',
+        '/images/WEB/sisters/sister10.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-6.jpg',
+        '/images/WEB/sisters/sister11.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg',
+        '/images/WEB/sisters/sister12.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-21.jpg',
+        '/images/WEB/sisters/sister24.jpeg',
+        '/images/WEB/sisters/sister25.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-25.jpg',
+        '/images/WEB/sisters/sister26.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-45.jpg',
+        '/images/WEB/sisters/sister27.jpeg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg',
+        '/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg',
+        '/images/WEB/brothers/IMG_0006.JPG',
+        '/images/WEB/brothers/IMG_0028.JPG',
+      ]
     },
-    features: [
-      {
-        title: "Faith & Community",
-        description: "Connect with fellow Muslim students in a supportive environment",
-        icon: "🕌"
-      },
-      {
-        title: "Events & Activities",
-        description: "Participate in Islamic events, social activities, and educational programs",
-        icon: "🎉"
-      },
-      {
-        title: "Support & Welfare",
-        description: "Get support for your academic and personal journey",
-        icon: "🤝"
-      }
-    ]
+    slideshow: {
+      title: "USIC",
+      subtitle: "Socials",
+      slides: [
+        {
+          id: "podcast",
+          title: "Latest Podcast",
+          description: "Listen to our latest Islamic discussions and community insights",
+          type: "spotify",
+          thumbnailImage: "/images/WEB/slideshow/podcast.jpg",
+          externalUrl: "https://open.spotify.com/episode/6rHLkFmkyRW02yzF0Ne70D",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        {
+          id: "youtube",
+          title: "Latest Video",
+          description: "Watch our latest events and community highlights",
+          type: "youtube",
+          thumbnailImage: "/images/WEB/slideshow/youtube.jpg",
+          externalUrl: "https://www.youtube.com/watch?v=HDlh7AM22YA",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        {
+          id: "instagram",
+          title: "Latest Post",
+          description: "Follow our journey on Instagram for daily updates",
+          type: "instagram",
+          thumbnailImage: "/images/WEB/committee.jpeg",
+          externalUrl: "https://www.instagram.com/p/DORUV3lCDAg/",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        {
+          id: "newsletter",
+          title: "Weekly Newsletter",
+          description: "Sign up for all things USIC - every Sunday!",
+          type: "newsletter",
+          thumbnailImage: "/images/WEB/slideshow/newsletter.jpg",
+          externalUrl: "https://mailchi.mp/f0da36dbc07a/usic-updates",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        }
+      ]
+    }
   },
 
   // Events data
