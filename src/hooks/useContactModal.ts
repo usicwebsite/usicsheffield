@@ -16,8 +16,6 @@ export function useContactModal() {
   const handleContactClick = useCallback((email: string) => {
     // Try to detect if user has an email client
     const isAppleDevice = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent);
-    const isWindows = /Windows/.test(navigator.userAgent);
-    const isAndroid = /Android/.test(navigator.userAgent);
     
     // For Apple devices, mailto usually works well
     if (isAppleDevice) {
@@ -39,7 +37,7 @@ export function useContactModal() {
       
       // If we get here, mailto worked
       return;
-    } catch (error) {
+    } catch {
       // If mailto fails, show the modal
       openModal();
     }

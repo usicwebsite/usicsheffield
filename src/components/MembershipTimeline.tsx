@@ -10,7 +10,7 @@ import TimelineItem from '@/components/TimelineItem';
 
 export default function MembershipTimeline() {
   const [showFAQModal, setShowFAQModal] = useState(false);
-  const { activeStep, progressHeight, timelineRef, itemRefs } = useTimelineScroll({ 
+  const { activeStep, timelineRef, itemRefs } = useTimelineScroll({ 
     itemCount: timelineData.length 
   });
 

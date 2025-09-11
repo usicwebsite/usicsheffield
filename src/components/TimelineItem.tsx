@@ -8,7 +8,7 @@ interface TimelineItemProps {
   ref: (el: HTMLDivElement | null) => void;
 }
 
-export default function TimelineItem({ item, index, isActive, ref }: TimelineItemProps) {
+export default function TimelineItem({ item, isActive, ref }: TimelineItemProps) {
   return (
     <div 
       ref={ref}

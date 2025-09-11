@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { staticData } from '@/lib/static-data';
 
 interface ContactModalProps {
@@ -115,7 +114,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-white/10">
           <p className="text-gray-400 text-sm text-center">
-            We'd love to hear from you! 💙
+            We&apos;d love to hear from you! 💙
           </p>
         </div>
       </div>
