@@ -1,229 +1,87 @@
-"use client";
+import Image from 'next/image';
+import { AboutSectionData } from '@/lib/about-data';
 
-import { useState } from 'react';
+interface AboutSectionProps {
+  section: AboutSectionData;
+}
 
-export default function AboutSection() {
-  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+export default function AboutSection({ section }: AboutSectionProps) {
+  const { title, subtitle, imageSrc, imageAlt, imagePosition = 'center', paragraphs, highlights, events } = section;
 
-  // Card content data
-  const cards = [
-    {
-      id: 0,
-      title: "Our Aspirations",
-      icon: (
-        <svg className="w-5 h-5 md:w-14 md:h-14" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      modalIcon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      content: (
-        <ul className="space-y-3 text-gray-700 font-body">
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span>Provide a forum for Muslim students to meet and form bonds of brotherhood & sisterhood</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span>Organize events for both Muslims and non-Muslims to gain deeper knowledge of Islam</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span>Look out for the welfare of Muslim students on campus</span>
-          </li>
-        </ul>
-      )
-    },
-    {
-      id: 1,
-      title: "Our Values",
-      icon: (
-        <svg className="w-5 h-5 md:w-14 md:h-14" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      modalIcon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      content: (
-        <ul className="space-y-3 text-gray-700 font-body">
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span><strong>Faith:</strong> Unwavering connection with our Creator</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span><strong>Brotherhood & Sisterhood:</strong> Fostering familial bonds</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span><strong>Knowledge:</strong> Commitment to intellectual growth</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-[#18384D] mr-2 text-xl">•</span>
-            <span><strong>Service:</strong> Uplifting the broader community</span>
-          </li>
-        </ul>
-      )
-    },
-    {
-      id: 2,
-      title: "Our Vision",
-      icon: (
-        <svg className="w-5 h-5 md:w-14 md:h-14" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
-        </svg>
-      ),
-      modalIcon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
-        </svg>
-      ),
-      content: (
-        <>
-          <p className="text-gray-700 mb-4 font-body">
-            To foster an Islamic environment that promotes:
-          </p>
-          <ul className="space-y-3 text-gray-700 font-body">
-            <li className="flex items-start">
-              <span className="text-[#18384D] mr-2 text-xl">•</span>
-              <span>Personal Development</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-[#18384D] mr-2 text-xl">•</span>
-              <span>Brotherhood and Sisterhood</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-[#18384D] mr-2 text-xl">•</span>
-              <span>Unity</span>
-            </li>
-          </ul>
-        </>
-      )
+  const renderContent = () => {
+    if (highlights) {
+      return (
+        <div className="space-y-4 mb-8">
+          {highlights.map((highlight: string, index: number) => {
+            const [boldText, ...restText] = highlight.split(' - ');
+            return (
+              <p key={index} className="text-lg md:text-xl text-blue-100">
+                <span className="text-white font-semibold">{boldText}</span> - {restText.join(' - ')}
+              </p>
+            );
+          })}
+        </div>
+      );
     }
-  ];
+
+    if (events) {
+      return (
+        <>
+          {paragraphs?.map((paragraph: string, index: number) => (
+            <p key={index} className="text-lg md:text-xl mb-6 text-blue-100">
+              {paragraph}
+            </p>
+          ))}
+          <div className="space-y-4 mb-8">
+            {events.map((event: { title: string; items: string }, index: number) => (
+              <div key={index}>
+                <h4 className="text-lg md:text-xl font-semibold mb-2 text-white">{event.title}</h4>
+                <p className="text-lg md:text-xl text-blue-100">{event.items}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        {paragraphs?.map((paragraph: string, index: number) => (
+          <p key={index} className="text-lg md:text-xl mb-6 text-blue-100">
+            {paragraph}
+          </p>
+        ))}
+      </>
+    );
+  };
 
   return (
-    <section className="py-16 bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16 relative">
-          {/* Background outline text */}
-          <div className="absolute w-full text-center opacity-10 pointer-events-none overflow-hidden">
-            <h2 className="font-bold text-[4.1rem] sm:text-[5rem] md:text-[7rem] lg:text-[10rem] tracking-tight uppercase px-4">WHO WE ARE</h2>
-          </div>
-          
-          {/* Foreground text */}
-          <h2 className="section-title text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight relative z-10 px-4">
-            WHO WE ARE
-          </h2>
-          
-          <p className="section-description text-blue-100 max-w-3xl mx-auto mt-8 text-xl md:text-2xl font-light">
-            Founded in 1964, USIC represents Muslim students on campus and beyond by providing social and welfare support.
-          </p>
+    <section className="mb-20">
+      <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12 text-center">{title}</h2>
+      
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 mb-16">
+        {/* Image */}
+        <div className="relative aspect-[4/3] md:aspect-[4/5] bg-[#0F1E2C] overflow-hidden rounded-lg shadow-md max-w-md mx-auto md:max-w-none w-full">
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            style={{ objectPosition: imagePosition }}
+            priority={false}
+          />
+          <div className="absolute inset-0 bg-black/20"></div>
         </div>
-
-        {/* Cards Grid - Hidden on mobile, shown on desktop */}
-        <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-          {cards.map((card) => (
-            <div key={card.id} className="relative rounded-xl p-0 overflow-hidden bg-white shadow-2xl transform transition-all duration-500 hover:scale-105 hover:shadow-3xl">
-              {/* Card top gradient bar */}
-              <div className="h-2 w-full bg-white"></div>
-              
-              {/* Card content */}
-              <div className="bg-white p-8">
-                {/* Icon with gradient background */}
-                <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-[#18384D] text-white transform transition-all duration-500">
-                  {card.icon}
-                </div>
-                
-                {/* Title with underline accent */}
-                <div className="mb-6">
-                  <h3 className="font-subheading text-2xl font-bold mb-2 transition-all duration-500 text-[#18384D]">
-                    {card.title}
-                  </h3>
-                  <div className="h-1 w-16 bg-[#18384D] rounded-full transition-all duration-500"></div>
-                </div>
-                
-                {/* Content - Hidden on mobile, shown on desktop */}
-                <div className="hidden md:block transition-all duration-500">
-                  {card.content}
-                </div>
-                
-                {/* Mobile click button - shown only on mobile */}
-                <button 
-                  onClick={() => setSelectedCard(card.id)}
-                  className="md:hidden w-full mt-4 bg-[#18384D] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#234b64] transition-all duration-300"
-                >
-                  Learn More
-                </button>
-              </div>
-              
-              {/* Card bottom decoration */}
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-[#18384D]"></div>
-            </div>
-          ))}
+        
+        {/* Content */}
+        <div>
+          <h3 className="font-heading text-2xl md:text-3xl font-bold mb-6 text-white">
+            {subtitle}
+          </h3>
+          {renderContent()}
         </div>
-
-        {/* Mobile horizontal cards - shown only on mobile */}
-        <div className="md:hidden flex justify-between pb-4 mt-8 px-4">
-          {cards.map((card) => (
-            <div 
-              key={card.id} 
-              onClick={() => setSelectedCard(card.id)}
-              className="flex-1 mx-2 h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
-            >
-              {/* Small icon */}
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#18384D] text-white mb-2">
-                {card.icon}
-              </div>
-              
-              {/* Title */}
-              <h3 className="font-subheading text-xs font-bold text-[#18384D] text-center leading-tight">
-                {card.title}
-              </h3>
-            </div>
-          ))}
-        </div>
-
-        {/* Modal for mobile */}
-        {selectedCard !== null && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 md:hidden">
-            <div className="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
-              <div className="p-6">
-                {/* Modal header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#18384D] text-white">
-                      {cards[selectedCard].modalIcon}
-                    </div>
-                    <h3 className="font-subheading text-xl font-bold text-[#18384D]">
-                      {cards[selectedCard].title}
-                    </h3>
-                  </div>
-                  <button 
-                    onClick={() => setSelectedCard(null)}
-                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-                  >
-                    ×
-                  </button>
-                </div>
-                
-                {/* Modal content */}
-                <div className="text-gray-700">
-                  {cards[selectedCard].content}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );
-} 
+}

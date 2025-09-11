@@ -2,8 +2,11 @@ import Hero from "@/components/Hero";
 import AboutSection from "@/components/AboutSection";
 import EventsSection from "@/components/EventsSection";
 import MembershipSection from "@/components/MembershipSection";
+import { getAboutSections } from "@/lib/about-data";
 
 export default function Home() {
+  const aboutSections = getAboutSections();
+  
   return (
     <div className="flex flex-col">
       <Hero />
@@ -12,7 +15,9 @@ export default function Home() {
       <div className="h-px bg-white/30 w-full"></div>
       
       <div className="mt-0"> {/* No margin needed since Hero is full screen */}
-        <AboutSection />
+        {aboutSections.map((section, index) => (
+          <AboutSection key={index} section={section} />
+        ))}
         
         {/* White divider between AboutSection and EventsSection */}
         <div className="h-px bg-white/30 w-full"></div>

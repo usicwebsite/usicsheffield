@@ -133,25 +133,11 @@ export const staticData = {
     description: "We are grateful for the support of our sponsors who help make our activities possible.",
     sponsors: [
       {
-        name: "Iqra Store",
-        logo: "/images/sponsors/iqrastore.jpg",
-        description: "Islamic bookstore and gift shop",
-        website: "https://iqrastore.co.uk",
+        name: "UNIT Sheffield",
+        logo: "/images/sponsors/unitlogo.png",
+        description: "Sheffield halal gourmet burger Urban diner specialising in gourmet burgers, Philly cheese-steaks, freakshakes and much more.",
+        website: "https://www.unitsheffield.com/",
         tier: "gold"
-      },
-      {
-        name: "Rockingham House",
-        logo: "/images/sponsors/rockinghamhouse.jpg",
-        description: "Student accommodation provider",
-        website: "#",
-        tier: "silver"
-      },
-      {
-        name: "University of Sheffield",
-        logo: "/images/sponsors/unitsheffield.jpg",
-        description: "Our host institution",
-        website: "https://sheffield.ac.uk",
-        tier: "platinum"
       }
     ],
     tiers: {
