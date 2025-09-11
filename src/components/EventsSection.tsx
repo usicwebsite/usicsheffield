@@ -409,8 +409,14 @@ export default function EventsSection() {
     const bottomRow = bottomRowRef.current;
     
     if (!topRow || !bottomRow) {
+      console.log('🔍 [DEBUG] Slider refs not available');
       return;
     }
+
+    // Browser detection for debugging
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isChrome = /chrome/i.test(navigator.userAgent);
+    console.log('🔍 [DEBUG] Browser detected:', { isSafari, isChrome, userAgent: navigator.userAgent });
     
     // Speed in pixels per frame
     const SCROLL_SPEED = 0.3;
@@ -421,15 +427,28 @@ export default function EventsSection() {
     let isBottomPaused = false;
     let isInitialized = false;
     let retryCount = 0;
+    let topFrameCount = 0;
+    let bottomFrameCount = 0;
     
     // Function to check if DOM is ready and has proper dimensions
     const isDOMReady = () => {
-      return topRow.scrollWidth > 0 && bottomRow.scrollWidth > 0;
+      const topWidth = topRow.scrollWidth;
+      const bottomWidth = bottomRow.scrollWidth;
+      const ready = topWidth > 0 && bottomWidth > 0;
+      console.log('🔍 [DEBUG] DOM Ready Check:', { 
+        topWidth, 
+        bottomWidth, 
+        ready,
+        topClientWidth: topRow.clientWidth,
+        bottomClientWidth: bottomRow.clientWidth
+      });
+      return ready;
     };
     
     // Top row animation (left to right)
     const animateTopRow = () => {
       if (!topRow || !isInitialized) {
+        console.log('🔍 [DEBUG] Top animation skipped:', { topRow: !!topRow, isInitialized });
         return;
       }
       
@@ -439,14 +458,32 @@ export default function EventsSection() {
       }
       
       try {
+        const beforeScroll = topRow.scrollLeft;
         topRow.scrollLeft += SCROLL_SPEED;
+        const afterScroll = topRow.scrollLeft;
+        topFrameCount++;
+        
+        // Log every 60 frames (roughly 1 second at 60fps)
+        if (topFrameCount % 60 === 0) {
+          console.log('🔍 [DEBUG] Top slider frame:', {
+            frame: topFrameCount,
+            beforeScroll,
+            afterScroll,
+            scrollWidth: topRow.scrollWidth,
+            maxScroll: topRow.scrollWidth / 3,
+            isSafari,
+            actualChange: afterScroll - beforeScroll
+          });
+        }
         
         // Reset when reaching the end (accounting for the tripled content)
         const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
         if (topRow.scrollLeft >= maxScroll) {
+          console.log('🔍 [DEBUG] Top slider reset triggered');
           topRow.scrollLeft = 0;
         }
-      } catch {
+      } catch (error) {
+        console.error('🔍 [DEBUG] Top slider error:', error);
         return;
       }
       
@@ -456,6 +493,7 @@ export default function EventsSection() {
     // Bottom row animation (right to left)
     const animateBottomRow = () => {
       if (!bottomRow || !isInitialized) {
+        console.log('🔍 [DEBUG] Bottom animation skipped:', { bottomRow: !!bottomRow, isInitialized });
         return;
       }
       
@@ -465,14 +503,32 @@ export default function EventsSection() {
       }
       
       try {
+        const beforeScroll = bottomRow.scrollLeft;
         bottomRow.scrollLeft -= SCROLL_SPEED;
+        const afterScroll = bottomRow.scrollLeft;
+        bottomFrameCount++;
+        
+        // Log every 60 frames (roughly 1 second at 60fps)
+        if (bottomFrameCount % 60 === 0) {
+          console.log('🔍 [DEBUG] Bottom slider frame:', {
+            frame: bottomFrameCount,
+            beforeScroll,
+            afterScroll,
+            scrollWidth: bottomRow.scrollWidth,
+            maxScroll: bottomRow.scrollWidth / 3,
+            isSafari,
+            actualChange: afterScroll - beforeScroll
+          });
+        }
         
         // Reset when reaching the beginning
         if (bottomRow.scrollLeft <= 0) {
+          console.log('🔍 [DEBUG] Bottom slider reset triggered');
           const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
           bottomRow.scrollLeft = maxScroll;
         }
-      } catch {
+      } catch (error) {
+        console.error('🔍 [DEBUG] Bottom slider error:', error);
         return;
       }
       
@@ -481,22 +537,35 @@ export default function EventsSection() {
     
     // Initialize animations with proper DOM readiness check
     const initializeAnimations = () => {
+      console.log('🔍 [DEBUG] Initialization attempt:', { retryCount });
+      
       if (!isDOMReady()) {
         // Retry after a short delay if DOM isn't ready (max 10 retries)
         if (retryCount < 10) {
           retryCount++;
+          console.log('🔍 [DEBUG] DOM not ready, retrying:', { retryCount });
           setTimeout(initializeAnimations, 50);
           return;
         } else {
+          console.log('🔍 [DEBUG] Max retries reached, giving up');
           return;
         }
       }
       
       try {
+        console.log('🔍 [DEBUG] DOM ready, initializing positions');
+        
         // Initialize positions
         topRow.scrollLeft = 0;
         const maxScroll = bottomRow.scrollWidth / 3;
         bottomRow.scrollLeft = maxScroll;
+        
+        console.log('🔍 [DEBUG] Initial positions set:', {
+          topScrollLeft: topRow.scrollLeft,
+          bottomScrollLeft: bottomRow.scrollLeft,
+          bottomMaxScroll: maxScroll,
+          isSafari
+        });
         
         // Mark as initialized
         isInitialized = true;
@@ -504,10 +573,14 @@ export default function EventsSection() {
         // Start animations
         topAnimationFrame = requestAnimationFrame(animateTopRow);
         bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
-      } catch {
+        
+        console.log('🔍 [DEBUG] Animations started successfully');
+      } catch (error) {
+        console.error('🔍 [DEBUG] Initialization error:', error);
         // Try to recover by reinitializing after a delay
         setTimeout(() => {
           if (!isInitialized) {
+            console.log('🔍 [DEBUG] Attempting recovery...');
             initializeAnimations();
           }
         }, 1000);
@@ -520,19 +593,23 @@ export default function EventsSection() {
     // Pause/resume functions for top row
     const pauseTopScrolling = () => {
       isTopPaused = true;
+      console.log('🔍 [DEBUG] Top slider paused');
     };
     
     const resumeTopScrolling = () => {
       isTopPaused = false;
+      console.log('🔍 [DEBUG] Top slider resumed');
     };
     
     // Pause/resume functions for bottom row
     const pauseBottomScrolling = () => {
       isBottomPaused = true;
+      console.log('🔍 [DEBUG] Bottom slider paused');
     };
     
     const resumeBottomScrolling = () => {
       isBottomPaused = false;
+      console.log('🔍 [DEBUG] Bottom slider resumed');
     };
     
     // Add event listeners
@@ -562,6 +639,8 @@ export default function EventsSection() {
         bottomRow.removeEventListener('mouseenter', pauseBottomScrolling);
         bottomRow.removeEventListener('mouseleave', resumeBottomScrolling);
       }
+      
+      console.log('🔍 [DEBUG] Sliders cleaned up');
     };
   }, []);
 
