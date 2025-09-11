@@ -69,60 +69,103 @@ export const staticData = {
 
   // Resources data
   resources: {
-    categories: [
+    title: "RESOURCES",
+    description: "Materials to aid your spiritual and academic journey",
+    cards: [
       {
+        id: 1,
+        title: "USIC Map",
+        description: "Interactive map showing key locations for USIC members including prayer rooms, halal food spots, and important campus buildings.",
+        imagePath: "/images/WEB/usicmap.png",
+        category: "NAVIGATION",
+        link: "https://www.google.com/maps/d/u/0/viewer?mid=1sf6ignGjx9yqlVM-XgAoRiVtWUjk2KE&hl=en&ll=53.381545854028566%2C-1.4872821811864867&z=16",
+        isExternal: true,
+        linkText: "OPEN MAP"
+      },
+      {
+        id: 2,
+        title: "Committee Members",
+        description: "Meet the current USIC committee members and learn more about their roles.",
+        imagePath: "/images/WEB/committee.jpeg",
+        category: "COMMUNITY",
+        link: "https://www.instagram.com/p/DORUV3lCDAg/?igsh=cWM0MGExNWkzcnZt",
+        isExternal: true,
+        linkText: "VIEW MEMBERS"
+      },
+      {
+        id: 3,
+        title: "University Contacts",
+        description: "Important contact information for university services including chaplaincy, student union, and mental health support.",
+        imagePath: "/images/WEB/usic-logo.png",
+        category: "SUPPORT",
+        isModal: true,
+        linkText: "VIEW CONTACTS"
+      },
+      {
+        id: 4,
         title: "Islamic Knowledge",
-        description: "Books, articles, and resources for Islamic learning",
-        items: [
-          {
-            title: "Quran Study Guide",
-            description: "Comprehensive guide for Quran study",
-            link: "#",
-            type: "PDF"
-          },
-          {
-            title: "Hadith Collection",
-            description: "Essential hadiths for daily life",
-            link: "#",
-            type: "Book"
-          }
+        description: "Access to trusted Islamic educational platforms, courses, and resources for deepening your understanding of Islam.",
+        imagePath: "/images/WEB/usic-logo.png",
+        category: "EDUCATION",
+        isModal: true,
+        linkText: "VIEW RESOURCES"
+      }
+    ],
+    universityContacts: [
+      {
+        title: "University Chaplaincy",
+        details: [
+          { label: "Location", value: "205 Brook Hill, S3 7HG" },
+          { label: "Email", value: "bnbr-life@sheffield.ac.uk", type: "email" }
         ]
       },
       {
-        title: "Academic Support",
-        description: "Resources for academic success",
-        items: [
-          {
-            title: "Study Tips for Muslim Students",
-            description: "Balancing faith and academics",
-            link: "#",
-            type: "Article"
-          },
-          {
-            title: "Prayer Times App",
-            description: "Never miss a prayer",
-            link: "#",
-            type: "App"
-          }
+        title: "Sheffield SU",
+        details: [
+          { label: "Website", value: "https://su.sheffield.ac.uk/welcome", type: "url" },
+          { label: "Phone", value: "0114 222 8500", type: "phone" },
+          { label: "Email", value: "studentsunion@sheffield.ac.uk", type: "email" }
         ]
       },
       {
-        title: "Community Resources",
-        description: "Local Islamic services and contacts",
-        items: [
-          {
-            title: "Halal Restaurants",
-            description: "Halal dining options in Sheffield",
-            link: "#",
-            type: "Directory"
-          },
-          {
-            title: "Islamic Centers",
-            description: "Mosques and Islamic centers nearby",
-            link: "#",
-            type: "Directory"
-          }
+        title: "Mental Health Support",
+        details: [
+          { label: "Website", value: "https://students.sheffield.ac.uk/mental-health", type: "url" },
+          { label: "Email", value: "mentalhealthcounselling@sheffield.ac.uk", type: "email" },
+          { label: "Phone", value: "+44 114 222 4134", type: "phone" }
         ]
+      }
+    ],
+    islamicKnowledgeResources: [
+      {
+        title: "Roots Academy",
+        description: "Comprehensive Islamic education platform",
+        url: "https://rootsacademy.co.uk/",
+      },
+      {
+        title: "Al-Maghrib Institute",
+        description: "Islamic education and courses",
+        url: "https://www.almaghrib.org/"
+      },
+      {
+        title: "Bayyinah TV",
+        description: "Quranic Arabic and Islamic studies",
+        url: "https://bayyinahtv.com/"
+      },
+      {
+        title: "SeekersGuidance",
+        description: "Traditional Islamic knowledge and guidance",
+        url: "https://seekersguidance.org/"
+      },
+      {
+        title: "Arabic Gems Institute",
+        description: "Arabic language and Islamic studies",
+        url: "https://arabicgemsinstitute.com/"
+      },
+      {
+        title: "Al-Salam Institute",
+        description: "Islamic education and community resources",
+        url: "https://linktr.ee/alsalaminstitute?fbclid=PAdGRleAMuftpleHRuA2FlbQIxMQABpwmS54DJb-Qh2GYXO90PhOETj6-X0BfqM3ClvBcPfkVHeE5h9mNVNdaX4LEs_aem_tRVYUVPENDYlNxq_rpeRZA"
       }
     ]
   },
