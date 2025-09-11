@@ -473,7 +473,8 @@ export default function EventsSection() {
             topTransformX = 0;
           }
           
-          topRow.style.transform = `translateX(-${topTransformX}px)`;
+          // Use margin-left instead of transform to avoid clipping issues
+          topRow.style.marginLeft = `-${topTransformX}px`;
         } else {
           // Standard approach for other browsers
           const beforeScrollLeft = topRow.scrollLeft;
@@ -481,10 +482,10 @@ export default function EventsSection() {
           
           // Chrome fallback: If scrollLeft didn't change, switch to transform
           if (topRow.scrollLeft === beforeScrollLeft && topFrameCount > 60) {
-            console.log('🔍 [DEBUG] Chrome fallback: scrollLeft not working, switching to transform');
+            console.log('🔍 [DEBUG] Chrome fallback: scrollLeft not working, switching to margin-left');
             useTransformForTop = true;
             topTransformX = beforeScrollLeft;
-            topRow.style.transform = `translateX(-${topTransformX}px)`;
+            topRow.style.marginLeft = `-${topTransformX}px`;
           }
         }
         
@@ -590,10 +591,10 @@ export default function EventsSection() {
         
         // Initialize positions
         if (useTransformForTop) {
-          // Transform approach: Initialize transform for top row
+          // Margin approach: Initialize margin for top row
           topTransformX = 0;
-          topRow.style.transform = 'translateX(0px)';
-          console.log('🔍 [DEBUG] Top row initialized with transform');
+          topRow.style.marginLeft = '0px';
+          console.log('🔍 [DEBUG] Top row initialized with margin-left');
         } else {
           // Standard approach for other browsers
           topRow.scrollLeft = 0;
@@ -712,7 +713,7 @@ export default function EventsSection() {
       </div>
 
       {/* Full-width image rows with no container constraints */}
-      <div className="w-full overflow-hidden mb-8">
+      <div className="w-full mb-8">
         {/* Top row - scrolls right */}
         <div 
           ref={topRowRef}
@@ -764,7 +765,10 @@ export default function EventsSection() {
         <div 
           ref={bottomRowRef}
           className="flex overflow-x-auto whitespace-nowrap"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none'
+          }}
         >
           {/* Triple the images for continuous scrolling effect */}
           {[...bottomSliderImages, ...bottomSliderImages, ...bottomSliderImages].map((image, index) => {
