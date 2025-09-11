@@ -429,6 +429,8 @@ export default function EventsSection() {
     let retryCount = 0;
     let topFrameCount = 0;
     let bottomFrameCount = 0;
+    let topTransformX = 0; // For Safari workaround
+    let useTransformForTop = isSafari; // Start with Safari detection, may change for Chrome fallback
     
     // Function to check if DOM is ready and has proper dimensions
     const isDOMReady = () => {
@@ -459,8 +461,35 @@ export default function EventsSection() {
       
       try {
         const beforeScroll = topRow.scrollLeft;
-        topRow.scrollLeft += SCROLL_SPEED;
+        const beforeTransform = topTransformX;
+        
+        if (useTransformForTop) {
+          // Transform approach for Safari and Chrome fallback
+          topTransformX += SCROLL_SPEED;
+          const maxScroll = topRow.scrollWidth / 3;
+          
+          if (topTransformX >= maxScroll) {
+            console.log('🔍 [DEBUG] Top slider reset triggered (transform)');
+            topTransformX = 0;
+          }
+          
+          topRow.style.transform = `translateX(-${topTransformX}px)`;
+        } else {
+          // Standard approach for other browsers
+          const beforeScrollLeft = topRow.scrollLeft;
+          topRow.scrollLeft += SCROLL_SPEED;
+          
+          // Chrome fallback: If scrollLeft didn't change, switch to transform
+          if (topRow.scrollLeft === beforeScrollLeft && topFrameCount > 60) {
+            console.log('🔍 [DEBUG] Chrome fallback: scrollLeft not working, switching to transform');
+            useTransformForTop = true;
+            topTransformX = beforeScrollLeft;
+            topRow.style.transform = `translateX(-${topTransformX}px)`;
+          }
+        }
+        
         const afterScroll = topRow.scrollLeft;
+        const afterTransform = topTransformX;
         topFrameCount++;
         
         // Log every 60 frames (roughly 1 second at 60fps)
@@ -469,18 +498,22 @@ export default function EventsSection() {
             frame: topFrameCount,
             beforeScroll,
             afterScroll,
+            beforeTransform,
+            afterTransform,
             scrollWidth: topRow.scrollWidth,
             maxScroll: topRow.scrollWidth / 3,
             isSafari,
-            actualChange: afterScroll - beforeScroll
+            actualChange: isSafari ? afterTransform - beforeTransform : afterScroll - beforeScroll
           });
         }
         
-        // Reset when reaching the end (accounting for the tripled content)
-        const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
-        if (topRow.scrollLeft >= maxScroll) {
-          console.log('🔍 [DEBUG] Top slider reset triggered');
-          topRow.scrollLeft = 0;
+        // Reset when reaching the end (accounting for the tripled content) - Chrome/other browsers
+        if (!useTransformForTop) {
+          const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
+          if (topRow.scrollLeft >= maxScroll) {
+            console.log('🔍 [DEBUG] Top slider reset triggered (scrollLeft)');
+            topRow.scrollLeft = 0;
+          }
         }
       } catch (error) {
         console.error('🔍 [DEBUG] Top slider error:', error);
@@ -556,12 +589,22 @@ export default function EventsSection() {
         console.log('🔍 [DEBUG] DOM ready, initializing positions');
         
         // Initialize positions
-        topRow.scrollLeft = 0;
+        if (useTransformForTop) {
+          // Transform approach: Initialize transform for top row
+          topTransformX = 0;
+          topRow.style.transform = 'translateX(0px)';
+          console.log('🔍 [DEBUG] Top row initialized with transform');
+        } else {
+          // Standard approach for other browsers
+          topRow.scrollLeft = 0;
+        }
+        
         const maxScroll = bottomRow.scrollWidth / 3;
         bottomRow.scrollLeft = maxScroll;
         
         console.log('🔍 [DEBUG] Initial positions set:', {
           topScrollLeft: topRow.scrollLeft,
+          topTransformX: topTransformX,
           bottomScrollLeft: bottomRow.scrollLeft,
           bottomMaxScroll: maxScroll,
           isSafari
@@ -588,7 +631,9 @@ export default function EventsSection() {
     };
     
     // Start initialization with a small delay to ensure DOM is ready
-    const initTimeout = setTimeout(initializeAnimations, 150);
+    // Use longer delay for Chrome to avoid race conditions
+    const initDelay = isChrome ? 300 : 150;
+    const initTimeout = setTimeout(initializeAnimations, initDelay);
     
     // Pause/resume functions for top row
     const pauseTopScrolling = () => {
@@ -672,7 +717,11 @@ export default function EventsSection() {
         <div 
           ref={topRowRef}
           className="flex overflow-x-auto whitespace-nowrap mb-1"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            willChange: 'transform' // Optimize for Safari transform animations
+          }}
         >
           {/* Triple the images for continuous scrolling effect */}
           {[...eventImages, ...eventImages, ...eventImages].map((image, index) => {
