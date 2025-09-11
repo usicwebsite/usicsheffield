@@ -409,14 +409,12 @@ export default function EventsSection() {
     const bottomRow = bottomRowRef.current;
     
     if (!topRow || !bottomRow) {
-      console.log('🔍 [DEBUG] Slider refs not available');
       return;
     }
 
     // Browser detection for debugging
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isChrome = /chrome/i.test(navigator.userAgent);
-    console.log('🔍 [DEBUG] Browser detected:', { isSafari, isChrome, userAgent: navigator.userAgent });
     
     // Speed in pixels per frame
     const SCROLL_SPEED = 0.3;
@@ -430,27 +428,21 @@ export default function EventsSection() {
     let topFrameCount = 0;
     let bottomFrameCount = 0;
     let topTransformX = 0; // For Safari workaround
+    let bottomTransformX = 0; // For Safari workaround
     let useTransformForTop = isSafari; // Start with Safari detection, may change for Chrome fallback
+    let useTransformForBottom = isSafari; // Use same approach for both sliders
     
     // Function to check if DOM is ready and has proper dimensions
     const isDOMReady = () => {
       const topWidth = topRow.scrollWidth;
       const bottomWidth = bottomRow.scrollWidth;
       const ready = topWidth > 0 && bottomWidth > 0;
-      console.log('🔍 [DEBUG] DOM Ready Check:', { 
-        topWidth, 
-        bottomWidth, 
-        ready,
-        topClientWidth: topRow.clientWidth,
-        bottomClientWidth: bottomRow.clientWidth
-      });
       return ready;
     };
     
     // Top row animation (left to right)
     const animateTopRow = () => {
       if (!topRow || !isInitialized) {
-        console.log('🔍 [DEBUG] Top animation skipped:', { topRow: !!topRow, isInitialized });
         return;
       }
       
@@ -460,16 +452,12 @@ export default function EventsSection() {
       }
       
       try {
-        const beforeScroll = topRow.scrollLeft;
-        const beforeTransform = topTransformX;
-        
         if (useTransformForTop) {
           // Transform approach for Safari and Chrome fallback
           topTransformX += SCROLL_SPEED;
           const maxScroll = topRow.scrollWidth / 3;
           
           if (topTransformX >= maxScroll) {
-            console.log('🔍 [DEBUG] Top slider reset triggered (transform)');
             topTransformX = 0;
           }
           
@@ -480,44 +468,25 @@ export default function EventsSection() {
           const beforeScrollLeft = topRow.scrollLeft;
           topRow.scrollLeft += SCROLL_SPEED;
           
-          // Chrome fallback: If scrollLeft didn't change, switch to transform
+          // Chrome fallback: If scrollLeft didn't change, switch to margin-left
           if (topRow.scrollLeft === beforeScrollLeft && topFrameCount > 60) {
-            console.log('🔍 [DEBUG] Chrome fallback: scrollLeft not working, switching to margin-left');
             useTransformForTop = true;
             topTransformX = beforeScrollLeft;
             topRow.style.marginLeft = `-${topTransformX}px`;
           }
         }
         
-        const afterScroll = topRow.scrollLeft;
-        const afterTransform = topTransformX;
         topFrameCount++;
         
-        // Log every 60 frames (roughly 1 second at 60fps)
-        if (topFrameCount % 60 === 0) {
-          console.log('🔍 [DEBUG] Top slider frame:', {
-            frame: topFrameCount,
-            beforeScroll,
-            afterScroll,
-            beforeTransform,
-            afterTransform,
-            scrollWidth: topRow.scrollWidth,
-            maxScroll: topRow.scrollWidth / 3,
-            isSafari,
-            actualChange: isSafari ? afterTransform - beforeTransform : afterScroll - beforeScroll
-          });
-        }
         
         // Reset when reaching the end (accounting for the tripled content) - Chrome/other browsers
         if (!useTransformForTop) {
           const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
           if (topRow.scrollLeft >= maxScroll) {
-            console.log('🔍 [DEBUG] Top slider reset triggered (scrollLeft)');
             topRow.scrollLeft = 0;
           }
         }
-      } catch (error) {
-        console.error('🔍 [DEBUG] Top slider error:', error);
+      } catch {
         return;
       }
       
@@ -527,7 +496,6 @@ export default function EventsSection() {
     // Bottom row animation (right to left)
     const animateBottomRow = () => {
       if (!bottomRow || !isInitialized) {
-        console.log('🔍 [DEBUG] Bottom animation skipped:', { bottomRow: !!bottomRow, isInitialized });
         return;
       }
       
@@ -537,32 +505,41 @@ export default function EventsSection() {
       }
       
       try {
-        const beforeScroll = bottomRow.scrollLeft;
-        bottomRow.scrollLeft -= SCROLL_SPEED;
-        const afterScroll = bottomRow.scrollLeft;
+        if (useTransformForBottom) {
+          // Transform approach for Safari and Chrome fallback
+          bottomTransformX -= SCROLL_SPEED;
+          const maxScroll = bottomRow.scrollWidth / 3;
+          
+          if (bottomTransformX <= 0) {
+            bottomTransformX = maxScroll;
+          }
+          
+          // Use margin-left instead of transform to avoid clipping issues
+          bottomRow.style.marginLeft = `-${bottomTransformX}px`;
+        } else {
+          // Standard approach for other browsers
+          const beforeScrollLeft = bottomRow.scrollLeft;
+          bottomRow.scrollLeft -= SCROLL_SPEED;
+          
+          // Chrome fallback: If scrollLeft didn't change, switch to margin-left
+          if (bottomRow.scrollLeft === beforeScrollLeft && bottomFrameCount > 60) {
+            useTransformForBottom = true;
+            bottomTransformX = beforeScrollLeft;
+            bottomRow.style.marginLeft = `-${bottomTransformX}px`;
+          }
+        }
+        
         bottomFrameCount++;
         
-        // Log every 60 frames (roughly 1 second at 60fps)
-        if (bottomFrameCount % 60 === 0) {
-          console.log('🔍 [DEBUG] Bottom slider frame:', {
-            frame: bottomFrameCount,
-            beforeScroll,
-            afterScroll,
-            scrollWidth: bottomRow.scrollWidth,
-            maxScroll: bottomRow.scrollWidth / 3,
-            isSafari,
-            actualChange: afterScroll - beforeScroll
-          });
-        }
         
-        // Reset when reaching the beginning
-        if (bottomRow.scrollLeft <= 0) {
-          console.log('🔍 [DEBUG] Bottom slider reset triggered');
-          const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
-          bottomRow.scrollLeft = maxScroll;
+        // Reset when reaching the beginning - Chrome/other browsers
+        if (!useTransformForBottom) {
+          if (bottomRow.scrollLeft <= 0) {
+            const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
+            bottomRow.scrollLeft = maxScroll;
+          }
         }
-      } catch (error) {
-        console.error('🔍 [DEBUG] Bottom slider error:', error);
+      } catch {
         return;
       }
       
@@ -571,45 +548,37 @@ export default function EventsSection() {
     
     // Initialize animations with proper DOM readiness check
     const initializeAnimations = () => {
-      console.log('🔍 [DEBUG] Initialization attempt:', { retryCount });
-      
       if (!isDOMReady()) {
         // Retry after a short delay if DOM isn't ready (max 10 retries)
         if (retryCount < 10) {
           retryCount++;
-          console.log('🔍 [DEBUG] DOM not ready, retrying:', { retryCount });
           setTimeout(initializeAnimations, 50);
           return;
         } else {
-          console.log('🔍 [DEBUG] Max retries reached, giving up');
           return;
         }
       }
       
       try {
-        console.log('🔍 [DEBUG] DOM ready, initializing positions');
-        
         // Initialize positions
         if (useTransformForTop) {
           // Margin approach: Initialize margin for top row
           topTransformX = 0;
           topRow.style.marginLeft = '0px';
-          console.log('🔍 [DEBUG] Top row initialized with margin-left');
         } else {
           // Standard approach for other browsers
           topRow.scrollLeft = 0;
         }
         
         const maxScroll = bottomRow.scrollWidth / 3;
-        bottomRow.scrollLeft = maxScroll;
-        
-        console.log('🔍 [DEBUG] Initial positions set:', {
-          topScrollLeft: topRow.scrollLeft,
-          topTransformX: topTransformX,
-          bottomScrollLeft: bottomRow.scrollLeft,
-          bottomMaxScroll: maxScroll,
-          isSafari
-        });
+        if (useTransformForBottom) {
+          // Margin approach: Initialize margin for bottom row
+          bottomTransformX = maxScroll;
+          bottomRow.style.marginLeft = `-${bottomTransformX}px`;
+        } else {
+          // Standard approach for other browsers
+          bottomRow.scrollLeft = maxScroll;
+        }
         
         // Mark as initialized
         isInitialized = true;
@@ -617,14 +586,10 @@ export default function EventsSection() {
         // Start animations
         topAnimationFrame = requestAnimationFrame(animateTopRow);
         bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
-        
-        console.log('🔍 [DEBUG] Animations started successfully');
-      } catch (error) {
-        console.error('🔍 [DEBUG] Initialization error:', error);
+      } catch {
         // Try to recover by reinitializing after a delay
         setTimeout(() => {
           if (!isInitialized) {
-            console.log('🔍 [DEBUG] Attempting recovery...');
             initializeAnimations();
           }
         }, 1000);
@@ -639,23 +604,19 @@ export default function EventsSection() {
     // Pause/resume functions for top row
     const pauseTopScrolling = () => {
       isTopPaused = true;
-      console.log('🔍 [DEBUG] Top slider paused');
     };
     
     const resumeTopScrolling = () => {
       isTopPaused = false;
-      console.log('🔍 [DEBUG] Top slider resumed');
     };
     
     // Pause/resume functions for bottom row
     const pauseBottomScrolling = () => {
       isBottomPaused = true;
-      console.log('🔍 [DEBUG] Bottom slider paused');
     };
     
     const resumeBottomScrolling = () => {
       isBottomPaused = false;
-      console.log('🔍 [DEBUG] Bottom slider resumed');
     };
     
     // Add event listeners
@@ -685,8 +646,6 @@ export default function EventsSection() {
         bottomRow.removeEventListener('mouseenter', pauseBottomScrolling);
         bottomRow.removeEventListener('mouseleave', resumeBottomScrolling);
       }
-      
-      console.log('🔍 [DEBUG] Sliders cleaned up');
     };
   }, []);
 
