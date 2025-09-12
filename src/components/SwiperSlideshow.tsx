@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 import { staticData } from '@/lib/static-data';
 import Image from 'next/image';
 
@@ -14,7 +15,11 @@ import 'swiper/css/pagination';
 
 export default function SwiperSlideshow() {
   const { slideshow } = staticData.homepage;
-  
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const handleSlideChange = (swiper: SwiperType) => {
+    setCurrentSlideIndex(swiper.realIndex);
+  };
 
   const renderSlideContent = (slide: typeof slideshow.slides[0]) => {
     switch (slide.type) {
@@ -218,6 +223,7 @@ export default function SwiperSlideshow() {
             }}
             modules={[EffectCoverflow, Navigation, Pagination]}
             className="mySwiper"
+            onSlideChange={handleSlideChange}
             style={{
               paddingBottom: '45px',
               paddingLeft: '60px',
@@ -236,6 +242,13 @@ export default function SwiperSlideshow() {
           {/* Custom Pagination */}
           <div className="swiper-pagination"></div>
         </div>
+      </div>
+
+      {/* Mobile Slide Title - Only visible on small screens */}
+      <div className="block md:hidden text-center mt-4 px-4">
+        <h3 className="text-white text-lg font-semibold">
+          {slideshow.slides[currentSlideIndex]?.title}
+        </h3>
       </div>
 
       <style jsx global>{`

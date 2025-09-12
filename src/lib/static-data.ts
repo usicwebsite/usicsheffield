@@ -62,7 +62,7 @@ export const staticData = {
           description: "Watch our latest events and community highlights",
           type: "youtube",
           thumbnailImage: "/images/WEB/slideshow/youtube.jpg",
-          externalUrl: "https://www.youtube.com/watch?v=HDlh7AM22YA",
+          externalUrl: "https://youtu.be/X_EiFOr168o?si=1damg0KSBXm04U-R",
           fallbackImage: "/images/WEB/usic-logo.png"
         },
         {
