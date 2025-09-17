@@ -44,3 +44,7 @@ next-env.d.ts
 /docs/
 /fasal/
 /scripts/
+
+# large media files
+public/usichighlights.mp4
+*.mp4
