@@ -6,15 +6,11 @@ import { categoryUtils } from '@/lib/static-data';
 
 export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
   try {
-    console.log('[Posts API] Creating new post...');
-
     // Rate limiting: Admin users get 10 posts per hour, regular users get 1 post per hour
     if (process.env.NODE_ENV === 'production') {
       const rateLimitResult = await checkPostRateLimit(request, request.user.uid);
 
       if (!rateLimitResult.success) {
-        console.log('[Posts API] Rate limit exceeded for user:', request.user.uid);
-
         const isAdminLimit = rateLimitResult.limit === 10; // Admin limit is 10 posts per hour
         const message = isAdminLimit
           ? 'You can only submit 10 posts per hour. Please try again later.'
@@ -92,9 +88,6 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
       }, { status: 400 });
     }
 
-    console.log('[Posts API] Creating post for user:', request.user.uid);
-    console.log('[Posts API] Post data:', { title: title.substring(0, 50) + '...', category });
-
     // Create the post
     const postId = await createPost({
       title: title.trim(),
@@ -103,8 +96,6 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
       authorId: authorId.trim(),
       category
     });
-
-    console.log('[Posts API] Post created successfully with ID:', postId);
 
     return NextResponse.json({
       success: true,

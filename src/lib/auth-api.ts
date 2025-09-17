@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { doc, getDoc, getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
@@ -40,12 +40,9 @@ export function withAdminAuth<T extends unknown[]>(
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {
     try {
-      console.log('[Auth API] Starting admin authentication check...');
-
       // Get Firebase ID token from Authorization header
       const authHeader = request.headers.get('authorization');
       if (!authHeader?.startsWith('Bearer ')) {
-        console.log('[Auth API] No Firebase ID token provided');
         return NextResponse.json(
           { error: 'Unauthorized - Firebase ID token required' },
           { status: 401 }
@@ -55,17 +52,11 @@ export function withAdminAuth<T extends unknown[]>(
       const idToken = authHeader.substring(7);
 
       // Verify Firebase ID token
-      console.log('[Auth API] Verifying Firebase ID token...');
       const adminAuth = getAuth();
       let decodedToken;
 
       try {
         decodedToken = await adminAuth.verifyIdToken(idToken);
-        console.log('[Auth API] ✅ Firebase ID token verified successfully');
-        console.log('[Auth API] 🔍 Decoded token UID:', decodedToken.uid);
-        console.log('[Auth API] 🔍 Decoded token email:', decodedToken.email);
-        console.log('[Auth API] 🔍 Decoded token iss:', decodedToken.iss);
-        console.log('[Auth API] 🔍 Decoded token aud:', decodedToken.aud);
       } catch (error) {
         console.error('[Auth API] ❌ Firebase ID token verification failed:', error);
         console.error('[Auth API] ❌ Error details:', {
@@ -80,41 +71,21 @@ export function withAdminAuth<T extends unknown[]>(
       }
 
           // Check if user is admin in Firestore
-    console.log('[Auth API] 🔍 Checking admin status for UID:', decodedToken.uid);
-    console.log('[Auth API] 🔍 UID type:', typeof decodedToken.uid);
-    console.log('[Auth API] 🔍 UID length:', decodedToken.uid?.length);
-    console.log('[Auth API] 🔍 Decoded token email:', decodedToken.email);
-
     const db = getFirestore();
-    console.log('[Auth API] 🔍 Looking for admin document at path: admins/' + decodedToken.uid);
-    const adminDocRef = doc(db, 'admins', decodedToken.uid);
-    console.log('[Auth API] 🔍 Admin document reference created');
+    const adminDocRef = db.collection('admins').doc(decodedToken.uid);
 
-    const adminDocSnap = await getDoc(adminDocRef);
-    console.log('[Auth API] 🔍 Admin document snapshot received');
-    console.log('[Auth API] 🔍 Document exists:', adminDocSnap.exists());
-    console.log('[Auth API] 🔍 Document data:', adminDocSnap.data());
+    const adminDocSnap = await adminDocRef.get();
 
-    if (!adminDocSnap.exists()) {
-      console.log('[Auth API] ❌ User is not an admin');
-
-      // Let's also check what documents exist in the admins collection
-      console.log('[Auth API] 🔍 Checking all documents in admins collection...');
+    if (!adminDocSnap.exists) {
+      // Check if any admin documents exist
       try {
-        const adminsCollection = collection(db, 'admins');
-        const adminsSnapshot = await getDocs(adminsCollection);
-        console.log('[Auth API] 🔍 Total documents in admins collection:', adminsSnapshot.size);
-
-        if (adminsSnapshot.size > 0) {
-          console.log('[Auth API] 🔍 Existing admin UIDs:');
-          adminsSnapshot.forEach((doc) => {
-            console.log('  - UID:', doc.id, 'Data:', doc.data());
-          });
-        } else {
-          console.log('[Auth API] ❌ No documents found in admins collection');
+        const adminsCollection = db.collection('admins');
+        const adminsSnapshot = await adminsCollection.get();
+        if (adminsSnapshot.size === 0) {
+          console.error('[Auth API] ❌ No admin documents found in collection');
         }
       } catch (collectionError) {
-        console.error('[Auth API] ❌ Error listing admins collection:', collectionError);
+        console.error('[Auth API] ❌ Error checking admins collection:', collectionError);
       }
 
       return NextResponse.json(
@@ -123,10 +94,7 @@ export function withAdminAuth<T extends unknown[]>(
       );
     }
 
-    console.log('[Auth API] ✅ Admin document found - user is admin');
-
       const adminData = adminDocSnap.data();
-      console.log('[Auth API] Admin authentication successful');
 
       // Add admin info to request object
       const authenticatedRequest = request as AuthenticatedRequest;
@@ -171,12 +139,9 @@ export function withAuth<T extends unknown[]>(
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {
     try {
-      console.log('[User Auth API] Starting user authentication check...');
-
       // Get Firebase ID token from Authorization header
       const authHeader = request.headers.get('authorization');
       if (!authHeader?.startsWith('Bearer ')) {
-        console.log('[User Auth API] No Firebase ID token provided');
         return NextResponse.json(
           { error: 'Unauthorized - Firebase ID token required' },
           { status: 401 }
@@ -186,15 +151,11 @@ export function withAuth<T extends unknown[]>(
       const idToken = authHeader.substring(7);
 
       // Verify Firebase ID token
-      console.log('[User Auth API] Verifying Firebase ID token...');
       const adminAuth = getAuth();
       let decodedToken;
 
       try {
         decodedToken = await adminAuth.verifyIdToken(idToken);
-        console.log('[User Auth API] ✅ Firebase ID token verified successfully');
-        console.log('[User Auth API] 🔍 Decoded token UID:', decodedToken.uid);
-        console.log('[User Auth API] 🔍 Decoded token email:', decodedToken.email);
       } catch (error) {
         console.error('[User Auth API] ❌ Firebase ID token verification failed:', error);
         console.error('[User Auth API] ❌ Error details:', {
@@ -208,7 +169,6 @@ export function withAuth<T extends unknown[]>(
         );
       }
 
-      console.log('[User Auth API] ✅ User authentication successful');
 
       // Add user info to request object
       const authenticatedRequest = request as UserAuthenticatedRequest;

@@ -36,49 +36,27 @@ export default function AdminLogin() {
   
   const checkAdminStatus = async (uid: string): Promise<boolean> => {
     try {
-      console.log('[AdminLogin] 🔍 Checking admin status for UID:', uid);
-      console.log('[AdminLogin] 🔍 UID type:', typeof uid);
-      console.log('[AdminLogin] 🔍 UID length:', uid?.length);
-
       const db = getFirestoreDb();
       if (!db) {
         console.error('[AdminLogin] ❌ Firestore not initialized');
         return false;
       }
-      console.log('[AdminLogin] ✅ Firestore initialized successfully');
 
-      console.log('[AdminLogin] 🔍 Looking for admin document at path: admins/' + uid);
       const adminDocRef = doc(db, 'admins', uid);
-      console.log('[AdminLogin] 🔍 Admin document reference created');
-
       const adminDocSnap = await getDoc(adminDocRef);
-      console.log('[AdminLogin] 🔍 Admin document snapshot received');
-      console.log('[AdminLogin] 🔍 Document exists:', adminDocSnap.exists());
-      console.log('[AdminLogin] 🔍 Document data:', adminDocSnap.data());
 
       if (adminDocSnap.exists()) {
-        console.log('[AdminLogin] ✅ Admin document found - user is admin');
         return true;
       } else {
-        console.log('[AdminLogin] ❌ Admin document not found - user is not admin');
-
-        // Let's also check what documents exist in the admins collection
-        console.log('[AdminLogin] 🔍 Checking all documents in admins collection...');
+        // Check if any admin documents exist
         try {
           const adminsCollection = collection(db, 'admins');
           const adminsSnapshot = await getDocs(adminsCollection);
-          console.log('[AdminLogin] 🔍 Total documents in admins collection:', adminsSnapshot.size);
-
-          if (adminsSnapshot.size > 0) {
-            console.log('[AdminLogin] 🔍 Existing admin UIDs:');
-            adminsSnapshot.forEach((doc) => {
-              console.log('  - UID:', doc.id, 'Data:', doc.data());
-            });
-          } else {
-            console.log('[AdminLogin] ❌ No documents found in admins collection');
+          if (adminsSnapshot.size === 0) {
+            console.error('[AdminLogin] ❌ No admin documents found in collection');
           }
         } catch (collectionError) {
-          console.error('[AdminLogin] ❌ Error listing admins collection:', collectionError);
+          console.error('[AdminLogin] ❌ Error checking admins collection:', collectionError);
         }
 
         return false;
@@ -96,31 +74,21 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[AdminLogin] Form submitted with email:', email);
     setIsLoading(true);
     setError('');
 
     try {
-      console.log('[AdminLogin] Attempting Firebase Auth sign-in...');
-
       // Sign in with Firebase Auth
       const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      console.log('[AdminLogin] ✅ Firebase Auth successful');
-      console.log('[AdminLogin] 🔍 User UID from Firebase:', user.uid);
-      console.log('[AdminLogin] 🔍 User email from Firebase:', user.email);
-      console.log('[AdminLogin] 🔍 User display name:', user.displayName);
-
       // Check if user is admin in Firestore
       const isAdmin = await checkAdminStatus(user.uid);
 
       if (isAdmin) {
-        console.log('[AdminLogin] Admin verification successful, redirecting to dashboard...');
         router.push('/admin-dashboard');
       } else {
-        console.log('[AdminLogin] User is not an admin, signing out...');
         await auth.signOut();
         setError('Access denied. Admin privileges not found.');
       }

@@ -3,8 +3,6 @@ import { cookies } from 'next/headers';
 
 export async function POST() {
   try {
-    console.log('[Refresh API] Starting token refresh...');
-
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
@@ -19,7 +17,6 @@ export async function POST() {
     try {
       sessionData = JSON.parse(sessionCookie.value);
     } catch {
-      console.log('[Refresh API] Invalid session cookie');
       return NextResponse.json(
         { error: 'Invalid session' },
         { status: 401 }
@@ -28,7 +25,6 @@ export async function POST() {
 
     // Verify the session is still valid (you might want to add more sophisticated checks)
     if (!sessionData.uid || !sessionData.email) {
-      console.log('[Refresh API] Invalid session data');
       return NextResponse.json(
         { error: 'Invalid session data' },
         { status: 401 }
@@ -49,8 +45,6 @@ export async function POST() {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
-
-    console.log('[Refresh API] ✅ Session refreshed for user:', sessionData.email);
 
     return NextResponse.json({
       success: true,

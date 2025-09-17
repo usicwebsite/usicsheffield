@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
     const formFields = JSON.parse(formData.get('formFields') as string);
     const signupOpen = formData.get('signupOpen') === 'true';
     const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
+    const isPublic = formData.get('isPublic') === 'true';
     const tags = JSON.parse(formData.get('tags') as string || '[]');
     const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
     const createdBy = formData.get('createdBy') as string;
@@ -173,6 +174,7 @@ export async function POST(request: NextRequest) {
       formFields: processedFormFields,
       signupOpen,
       noSignupNeeded,
+      isPublic,
       tags: tags || [],
       maxSignups: noSignupNeeded ? 0 : maxSignups,
       createdBy,

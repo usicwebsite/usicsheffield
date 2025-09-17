@@ -201,7 +201,7 @@ export const staticData = {
       },
       {
         title: "Al-Maghrib Institute",
-        description: "Islamic education and courses",
+        description: "Islamic education and courses. Faith Essentials are 40% off for USIC members!",
         url: "https://www.almaghrib.org/"
       },
       {

@@ -55,6 +55,7 @@ interface Event {
   tags: string[];
   createdAt: Date;
   createdBy: string;
+  isPublic: boolean;
 }
 
 interface EventFormData {
@@ -71,6 +72,7 @@ interface EventFormData {
   noSignupNeeded: boolean;
   maxSignups?: number;
   tags: string[];
+  isPublic: boolean;
 }
 
 
@@ -123,6 +125,7 @@ export default function AdminDashboard() {
     formFields: [],
     signupOpen: true, // Default to open for signups
     noSignupNeeded: false, // Default to requiring signup
+    isPublic: true, // Default to public
     maxSignups: 50, // Default to 50 signups
     tags: [] // Default to empty array
   });
@@ -182,11 +185,6 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('[AdminDashboard] ❌ Error checking admin status:', error);
-      console.error('[AdminDashboard] ❌ Error details:', {
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        name: error instanceof Error ? error.name : undefined
-      });
       return false;
     }
   };
@@ -583,6 +581,7 @@ export default function AdminDashboard() {
       }
       formData.append('signupOpen', eventFormData.signupOpen.toString());
       formData.append('noSignupNeeded', eventFormData.noSignupNeeded.toString());
+      formData.append('isPublic', eventFormData.isPublic.toString());
       formData.append('tags', JSON.stringify(eventFormData.tags));
       formData.append('maxSignups', (eventFormData.maxSignups || 50).toString());
       formData.append('createdBy', user.uid);
@@ -627,6 +626,7 @@ export default function AdminDashboard() {
         formFields: eventFormData.formFields,
         signupOpen: eventFormData.signupOpen,
         noSignupNeeded: eventFormData.noSignupNeeded,
+        isPublic: eventFormData.isPublic,
         maxSignups: eventFormData.maxSignups,
         tags: eventFormData.tags,
         createdAt: new Date(),
@@ -647,6 +647,7 @@ export default function AdminDashboard() {
                       formFields: [],
                       signupOpen: true,
                       noSignupNeeded: false,
+                      isPublic: true,
                       maxSignups: 50,
                       tags: []
                     });
@@ -739,6 +740,7 @@ export default function AdminDashboard() {
             formFields: ['name', 'email'], // Default form fields
             signupOpen: true,
             noSignupNeeded: false,
+            isPublic: true, // Default to public
             maxSignups: 50, // Default to 50 signups
             imageFile: undefined,
             tags: [] // Default to empty array
@@ -855,6 +857,7 @@ export default function AdminDashboard() {
             formFields: event.noSignupNeeded ? [] : (event.formFields || ['name', 'email']),
             signupOpen: true,
             noSignupNeeded: event.noSignupNeeded || false,
+            isPublic: event.isPublic !== false, // Default to true for backwards compatibility
             maxSignups: event.maxSignups || 50,
             tags: event.tags || [],
             createdAt: new Date(),
@@ -1938,6 +1941,48 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Event Visibility Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="isPublic" className="block text-sm font-medium text-gray-700">
+                        Public
+                      </label>
+                      <div
+                        className="relative inline-flex items-center cursor-pointer group"
+                        onClick={() => setEventFormData({
+                          ...eventFormData,
+                          isPublic: !eventFormData.isPublic
+                        })}
+                      >
+                        {/* Toggle Track */}
+                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                          eventFormData.isPublic
+                            ? 'bg-blue-600'
+                            : 'bg-gray-400'
+                        }`}>
+                          {/* Toggle Knob */}
+                          <div className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                            eventFormData.isPublic
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
+                          }`} />
+                        </div>
+
+                        {/* Hidden checkbox for form handling */}
+                        <input
+                          type="checkbox"
+                          id="isPublic"
+                          checked={eventFormData.isPublic}
+                          onChange={(e) => setEventFormData({
+                            ...eventFormData,
+                            isPublic: e.target.checked
+                          })}
+                          className="sr-only"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Sign Up Options */}

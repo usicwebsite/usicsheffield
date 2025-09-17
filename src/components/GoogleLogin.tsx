@@ -17,57 +17,35 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
 
   const handleGoogleLogin = async () => {
     try {
-      console.log('[DEBUG] 🚀 Starting Google login process...');
       setIsLoading(true);
       setError(null);
 
       // Get Firebase auth instance
-      console.log('[DEBUG] 🔧 Getting Firebase auth instance...');
       const auth = getFirebaseAuth();
       if (!auth) {
         console.error('[DEBUG] ❌ Firebase auth not initialized');
         throw new Error('Firebase auth not initialized');
       }
-      console.log('[DEBUG] ✅ Firebase auth instance obtained');
 
       // Create Google provider
-      console.log('[DEBUG] 🔧 Creating Google provider...');
       const provider = new GoogleAuthProvider();
       provider.addScope('email');
       provider.addScope('profile');
-      console.log('[DEBUG] ✅ Google provider configured with scopes: email, profile');
 
       // Check if popup will be blocked
-      console.log('[DEBUG] 🔍 Checking popup blocker status...');
       const testPopup = window.open('', '_blank', 'width=1,height=1');
       if (!testPopup || testPopup.closed) {
-        console.warn('[DEBUG] ⚠️ Popup appears to be blocked by browser');
         throw new Error('Popup was blocked. Please allow popups for this site.');
       } else {
         testPopup.close();
-        console.log('[DEBUG] ✅ Popup test successful');
       }
 
-      // Log current page URL and referrer
-      console.log('[DEBUG] 🔍 Current page URL:', window.location.href);
-      console.log('[DEBUG] 🔍 Document referrer:', document.referrer);
-      console.log('[DEBUG] 🔍 Window opener:', window.opener);
-
       // Sign in with popup
-      console.log('[DEBUG] 🚀 Initiating Firebase signInWithPopup...');
       const result = await signInWithPopup(auth, provider);
-      console.log('[DEBUG] ✅ signInWithPopup successful');
-      console.log('[DEBUG] 🔍 User UID:', result.user?.uid);
-      console.log('[DEBUG] 🔍 User email:', result.user?.email);
-      
       const user = result.user;
 
       // Get the ID token
-      console.log('[DEBUG] 🔧 Getting ID token...');
       const idToken = await user.getIdToken();
-      console.log('[DEBUG] ✅ ID token obtained, length:', idToken?.length);
-      
-      console.log('[DEBUG] 🚀 Sending ID token to backend...');
 
       // Send ID token to our backend
       const response = await fetch('/api/auth/login', {
@@ -85,7 +63,6 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
         throw new Error(data.error || 'Login failed');
       }
 
-      console.log('[GoogleLogin] Login successful:', data);
 
       // Call success callback
       if (onSuccess) {
@@ -117,16 +94,12 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
       if (error instanceof Error) {
         if (error.message.includes('popup-closed-by-user')) {
           errorMessage = 'Login was cancelled.';
-          console.log('[DEBUG] 🔍 User cancelled the popup');
         } else if (error.message.includes('popup-blocked')) {
           errorMessage = 'Popup was blocked. Please allow popups for this site.';
-          console.log('[DEBUG] 🔍 Popup was blocked by browser');
         } else if (error.message.includes('unauthorized-domain')) {
           errorMessage = 'This domain is not authorized for Google login.';
-          console.log('[DEBUG] 🔍 Domain not authorized');
         } else if (error.message.includes('Cross-Origin-Opener-Policy')) {
           errorMessage = 'Authentication popup blocked by security policy. Please try again.';
-          console.log('[DEBUG] 🔍 COOP policy blocking popup');
         } else {
           errorMessage = error.message;
         }

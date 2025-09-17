@@ -34,6 +34,7 @@ type AdminEvent = {
   signupCount?: number;
   tags: string[];
   createdAt: Date;
+  isPublic: boolean;
 };
 
 export default function EventsPage() {
@@ -500,8 +501,11 @@ export default function EventsPage() {
   // Combine static events and admin events for display
   const combinedEvents = [...filteredStaticEvents, ...filteredAdminEvents];
 
-  // Filter combined events for display
-  const filteredEvents = combinedEvents;
+  // Filter combined events for cards display - only show public events
+  const filteredEvents = combinedEvents.filter(event =>
+    // Static events are always considered public
+    'category' in event || (event as AdminEvent).isPublic !== false
+  );
 
   // Modal handlers
   const openModal = (event: StaticEvent | AdminEvent) => {

@@ -45,7 +45,8 @@ export async function GET() {
         tags: data.tags || [],
         maxSignups: data.maxSignups,
         signupCount,
-        createdAt: data.createdAt?.toDate?.() || new Date()
+        createdAt: data.createdAt?.toDate?.() || new Date(),
+        isPublic: data.isPublic !== false // Default to true for backwards compatibility
       };
     }));
 

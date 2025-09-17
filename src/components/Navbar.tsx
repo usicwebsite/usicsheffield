@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AuthStatus from './AuthStatus';
@@ -8,6 +8,8 @@ import AuthStatus from './AuthStatus';
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMembershipDropdownOpen, setIsMembershipDropdownOpen] = useState(false);
+  const membershipDropdownRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll event to change navbar style when scrolled
   useEffect(() => {
@@ -21,6 +23,20 @@ export default function Navbar() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Handle click outside to close membership dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (membershipDropdownRef.current && !membershipDropdownRef.current.contains(event.target as Node)) {
+        setIsMembershipDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const toggleMenu = () => {
@@ -63,9 +79,45 @@ export default function Navbar() {
             <Link href="/events" className="text-white hover:text-blue-200 transition duration-300">
               Events
             </Link>
-            <Link href="/membership" className="text-white hover:text-blue-200 transition duration-300">
-              Membership
-            </Link>
+            
+            {/* Membership Dropdown */}
+            <div className="relative" ref={membershipDropdownRef}>
+              <button
+                onClick={() => setIsMembershipDropdownOpen(!isMembershipDropdownOpen)}
+                className="flex items-center space-x-1 text-white hover:text-blue-200 transition duration-300"
+              >
+                <span>Membership</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform duration-200 ${isMembershipDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isMembershipDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg z-50">
+                  <div className="py-2">
+                    <Link
+                      href="/membership"
+                      className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors duration-200"
+                      onClick={() => setIsMembershipDropdownOpen(false)}
+                    >
+                      Journey
+                    </Link>
+                    <div className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                      Benefits
+                      <span className="ml-2 text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                        Coming Soon
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <Link href="/resources" className="text-white hover:text-blue-200 transition duration-300">
               Resources
             </Link>
@@ -130,13 +182,25 @@ export default function Navbar() {
             >
               Events
             </Link>
-            <Link 
-              href="/membership" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#234b64] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Membership
-            </Link>
+            {/* Membership Section - Mobile */}
+            <div className="px-3 py-2">
+              <div className="text-base font-medium text-white mb-2">Membership</div>
+              <div className="ml-4 space-y-1">
+                <Link 
+                  href="/membership" 
+                  className="block px-3 py-2 rounded-md text-sm text-blue-200 hover:bg-[#234b64] hover:text-white"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Journey
+                </Link>
+                <div className="block px-3 py-2 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                  Benefits
+                  <span className="ml-2 text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
+            </div>
             <Link 
               href="/resources" 
               className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#234b64] hover:text-white"

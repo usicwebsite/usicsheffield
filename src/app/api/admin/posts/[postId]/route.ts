@@ -7,8 +7,6 @@ export const DELETE = withAdminAuth(async (
   { params }: { params: Promise<{ postId: string }> }
 ) => {
   try {
-    console.log('[Delete Post API] Starting post deletion...');
-
     const { postId } = await params;
 
     if (!postId) {
@@ -22,12 +20,7 @@ export const DELETE = withAdminAuth(async (
       );
     }
 
-    console.log('[Delete Post API] Deleting post:', postId);
-    console.log('[Delete Post API] Admin UID:', request.admin.uid);
-
     const result = await deletePost(postId, request.admin.uid);
-
-    console.log('[Delete Post API] Post deleted successfully:', result);
 
     return NextResponse.json({
       success: true,

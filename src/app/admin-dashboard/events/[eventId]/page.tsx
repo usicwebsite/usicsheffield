@@ -22,6 +22,7 @@ interface Event {
   tags: string[];
   createdAt: Date;
   createdBy: string;
+  isPublic: boolean;
 }
 
 interface EventSignup {
@@ -55,6 +56,7 @@ export default function EventDetailPage() {
     formFields: [] as string[],
     signupOpen: true,
     noSignupNeeded: false,
+    isPublic: true,
     maxSignups: 50,
     tags: [] as string[]
   });
@@ -187,6 +189,7 @@ export default function EventDetailPage() {
           formFields: foundEvent.formFields || [],
           signupOpen: foundEvent.signupOpen || false,
           noSignupNeeded: foundEvent.noSignupNeeded || false,
+          isPublic: foundEvent.isPublic !== false, // Default to true for backwards compatibility
           maxSignups: foundEvent.maxSignups || 50,
           tags: foundEvent.tags || []
         });
@@ -363,6 +366,7 @@ export default function EventDetailPage() {
       }
       formData.append('signupOpen', editForm.signupOpen.toString());
       formData.append('noSignupNeeded', editForm.noSignupNeeded.toString());
+      formData.append('isPublic', editForm.isPublic.toString());
       formData.append('tags', JSON.stringify(editForm.tags));
       formData.append('maxSignups', (editForm.maxSignups || 50).toString());
 
@@ -510,15 +514,10 @@ export default function EventDetailPage() {
               {/* Back Button */}
               <button
                 onClick={() => {
-                  const prevEvent = getPreviousEvent();
-                  if (prevEvent) {
-                    navigateToEvent(prevEvent.id);
-                  } else {
-                    router.push('/admin-dashboard?tab=events');
-                  }
+                  router.push('/admin-dashboard?tab=events');
                 }}
                 className="group flex items-center gap-2 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 border border-slate-600/30 hover:border-slate-500/50"
-                title={getPreviousEvent() ? 'Previous Event' : 'Back to Dashboard'}
+                title="Back to Events"
               >
                 <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -915,6 +914,48 @@ export default function EventDetailPage() {
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  {/* Event Visibility Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="editIsPublic" className="block text-sm font-medium text-gray-300">
+                        Public
+                      </label>
+                      <div
+                        className="relative inline-flex items-center cursor-pointer group"
+                        onClick={() => setEditForm({
+                          ...editForm,
+                          isPublic: !editForm.isPublic
+                        })}
+                      >
+                        {/* Toggle Track */}
+                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                          editForm.isPublic
+                            ? 'bg-blue-600'
+                            : 'bg-gray-400'
+                        }`}>
+                          {/* Toggle Knob */}
+                          <div className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                            editForm.isPublic
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
+                          }`} />
+                        </div>
+
+                        {/* Hidden checkbox for form handling */}
+                        <input
+                          type="checkbox"
+                          id="editIsPublic"
+                          checked={editForm.isPublic}
+                          onChange={(e) => setEditForm({
+                            ...editForm,
+                            isPublic: e.target.checked
+                          })}
+                          className="sr-only"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Signup Options */}
