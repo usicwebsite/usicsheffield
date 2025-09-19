@@ -17,6 +17,7 @@ interface Event {
   formFields: string[];
   signupOpen: boolean;
   createdAt: Date;
+  signupFormUrl?: string;
 }
 
 interface EventSignupForm {
@@ -338,7 +339,18 @@ export default function EventPage() {
           </div>
 
           {/* Conditional Signup Form or Info Message */}
-          {event.signupOpen ? (
+          {event.signupFormUrl ? (
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-6">Sign Up</h2>
+              <p className="text-gray-300 mb-4">Click the button below to sign up for this event using our external registration form.</p>
+              <button
+                onClick={() => window.open(event.signupFormUrl, '_blank')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300"
+              >
+                Sign Up for Event
+              </button>
+            </div>
+          ) : event.signupOpen ? (
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
               <h2 className="text-2xl font-bold text-white mb-6">Sign Up</h2>
 

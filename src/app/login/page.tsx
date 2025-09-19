@@ -59,6 +59,7 @@ export default function LoginPage() {
               height={120}
               className="w-auto h-20"
               style={{ filter: 'invert(1)' }}
+              priority
             />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Welcome to USIC</h1>

@@ -3,7 +3,6 @@ import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET() {
   try {
-    console.log('[Test Admin SDK] Testing admin SDK functionality...');
     
     if (!adminDb) {
       console.error('[Test Admin SDK] Admin DB is null');
@@ -14,16 +13,13 @@ export async function GET() {
       }, { status: 500 });
     }
 
-    console.log('[Test Admin SDK] Admin DB is available');
     
     // Test basic collection access
     try {
       const testCollection = adminDb.collection('admins');
-      console.log('[Test Admin SDK] Successfully created collection reference');
       
       // Try to get a document (this will fail if permissions are wrong, but won't crash)
       testCollection.doc('test');
-      console.log('[Test Admin SDK] Successfully created document reference');
       
       return NextResponse.json({
         success: true,

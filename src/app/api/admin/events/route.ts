@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
     const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
     const createdBy = formData.get('createdBy') as string;
     const imageFile = formData.get('image') as File;
+    const signupFormUrl = formData.get('signupFormUrl') as string;
 
     // Validate required fields
     if (!title || !date || !startTime || !location || !description || !createdBy) {
@@ -179,7 +180,8 @@ export async function POST(request: NextRequest) {
       maxSignups: noSignupNeeded ? 0 : maxSignups,
       createdBy,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      ...(signupFormUrl && { signupFormUrl })
     };
 
     // Save to Firestore

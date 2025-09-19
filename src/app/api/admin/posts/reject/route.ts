@@ -4,7 +4,6 @@ import { rejectPost } from '@/lib/firebase-admin-utils';
 
 export async function POST(request: AuthenticatedRequest) {
   try {
-    console.log('[Reject Post API] Starting post rejection...');
 
     const body = await request.json();
     const { postId, rejectionReason } = body;
@@ -31,13 +30,9 @@ export async function POST(request: AuthenticatedRequest) {
       );
     }
 
-    console.log('[Reject Post API] Rejecting post:', postId);
-    console.log('[Reject Post API] Rejection reason:', rejectionReason);
-    console.log('[Reject Post API] Admin UID:', request.admin.uid);
 
     const newPostId = await rejectPost(postId, request.admin.uid, rejectionReason.trim());
 
-    console.log('[Reject Post API] Post rejected successfully, new ID:', newPostId);
 
     return NextResponse.json({
       success: true,

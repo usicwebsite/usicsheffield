@@ -160,7 +160,6 @@ export function validateCSRFTokenForAPI(request: NextRequest): boolean {
  */
 export function getCSRFTokenForClient(): string | null {
   if (typeof document === 'undefined') {
-    console.log('[CSRF] Document not available (server-side)');
     return null;
   }
   
@@ -169,7 +168,6 @@ export function getCSRFTokenForClient(): string | null {
   const csrfCookie = cookies.find(cookie => cookie.trim().startsWith('csrf_token='));
   if (csrfCookie) {
     const token = csrfCookie.split('=')[1];
-    console.log('[CSRF] Token found in cookie');
     return token;
   }
   
@@ -177,7 +175,6 @@ export function getCSRFTokenForClient(): string | null {
   if (typeof window !== 'undefined') {
     const globalToken = (window as { __CSRF_TOKEN__?: string }).__CSRF_TOKEN__;
     if (globalToken) {
-      console.log('[CSRF] Token found in window variable');
       return globalToken;
     }
   }
@@ -187,11 +184,9 @@ export function getCSRFTokenForClient(): string | null {
   const token = metaTag?.getAttribute('content');
   
   if (token && token.trim().length > 0) {
-    console.log('[CSRF] Token found in meta tag');
     return token;
   }
   
-  console.log('[CSRF] No token found in any source');
   return null;
 }
 

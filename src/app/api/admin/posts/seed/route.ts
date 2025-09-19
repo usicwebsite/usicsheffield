@@ -4,7 +4,6 @@ import { createPost } from '@/lib/firebase-utils';
 
 export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
   try {
-    console.log('[Seed Posts API] Starting post seeding...');
     
     const body = await request.json();
     const { title, content, author, authorId, category } = body;
@@ -20,7 +19,6 @@ export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
       );
     }
     
-    console.log('[Seed Posts API] Creating post:', title);
     
     await createPost({
       title,
@@ -30,7 +28,6 @@ export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
       category,
     });
     
-    console.log('[Seed Posts API] Post created successfully');
     
     return NextResponse.json({
       success: true,

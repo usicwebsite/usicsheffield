@@ -46,7 +46,8 @@ export async function GET() {
         maxSignups: data.maxSignups,
         signupCount,
         createdAt: data.createdAt?.toDate?.() || new Date(),
-        isPublic: data.isPublic !== false // Default to true for backwards compatibility
+        isPublic: data.isPublic !== false, // Default to true for backwards compatibility
+        signupFormUrl: data.signupFormUrl
       };
     }));
 

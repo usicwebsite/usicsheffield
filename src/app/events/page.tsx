@@ -35,6 +35,7 @@ type AdminEvent = {
   tags: string[];
   createdAt: Date;
   isPublic: boolean;
+  signupFormUrl?: string;
 };
 
 export default function EventsPage() {
@@ -938,11 +939,22 @@ export default function EventsPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click when clicking button
-                      openModal(event);
+                      window.open(event.signupLink, '_blank');
                     }}
                     className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
-                    LEARN MORE
+                    SIGN UP NOW
+                  </button>
+                ) : ('signupFormUrl' in event && event.signupFormUrl) ? (
+                  // Admin event with external signup form URL
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking button
+                      window.open(event.signupFormUrl, '_blank');
+                    }}
+                    className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
+                  >
+                    SIGN UP NOW
                   </button>
                 ) : ('noSignupNeeded' in event && event.noSignupNeeded) ? (
                   // Admin event with no signup needed
@@ -970,8 +982,8 @@ export default function EventsPage() {
                           }
                         }}
                         className={`block w-full px-4 py-2 text-white hover:opacity-90 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow ${
-                          isSoldOut 
-                            ? 'bg-red-600 hover:bg-red-700' 
+                          isSoldOut
+                            ? 'bg-red-600 hover:bg-red-700'
                             : 'bg-green-600 hover:bg-green-700'
                         }`}
                       >

@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 
 export async function POST() {
   try {
-    console.log('[Logout API] Starting logout process...');
 
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
@@ -11,9 +10,7 @@ export async function POST() {
     if (sessionCookie) {
       // Clear the session cookie
       cookieStore.delete('session');
-      console.log('[Logout API] ✅ Session cookie cleared');
     } else {
-      console.log('[Logout API] No session cookie found');
     }
 
     return NextResponse.json({

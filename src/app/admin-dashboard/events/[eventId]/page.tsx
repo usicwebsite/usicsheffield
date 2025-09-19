@@ -23,6 +23,7 @@ interface Event {
   createdAt: Date;
   createdBy: string;
   isPublic: boolean;
+  signupFormUrl?: string;
 }
 
 interface EventSignup {
@@ -58,7 +59,8 @@ export default function EventDetailPage() {
     noSignupNeeded: false,
     isPublic: true,
     maxSignups: 50,
-    tags: [] as string[]
+    tags: [] as string[],
+    signupFormUrl: ''
   });
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -191,7 +193,8 @@ export default function EventDetailPage() {
           noSignupNeeded: foundEvent.noSignupNeeded || false,
           isPublic: foundEvent.isPublic !== false, // Default to true for backwards compatibility
           maxSignups: foundEvent.maxSignups || 50,
-          tags: foundEvent.tags || []
+          tags: foundEvent.tags || [],
+          signupFormUrl: foundEvent.signupFormUrl || ''
         });
       }
     } catch (error) {
@@ -369,6 +372,9 @@ export default function EventDetailPage() {
       formData.append('isPublic', editForm.isPublic.toString());
       formData.append('tags', JSON.stringify(editForm.tags));
       formData.append('maxSignups', (editForm.maxSignups || 50).toString());
+      if (editForm.signupFormUrl) {
+        formData.append('signupFormUrl', editForm.signupFormUrl);
+      }
 
       // Handle image URL
       if (selectedImageFile) {
@@ -847,6 +853,23 @@ export default function EventDetailPage() {
                       onChange={(e) => setEditForm({...editForm, description: e.target.value})}
                       rows={4}
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                    />
+                  </div>
+
+                  {/* Signup Form URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Signup Form URL
+                      <span className="text-gray-500 text-xs ml-2">
+                        (Optional - external signup form link like Google Forms, Eventbrite, etc.)
+                      </span>
+                    </label>
+                    <input
+                      type="url"
+                      value={editForm.signupFormUrl}
+                      onChange={(e) => setEditForm({...editForm, signupFormUrl: e.target.value})}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                      placeholder="https://forms.google.com/your-form-link"
                     />
                   </div>
 

@@ -17,21 +17,18 @@ const initializeFirebaseAdmin = () => {
           credential: cert(serviceAccountJson),
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
         });
-        console.log('[Firebase Admin] Initialized with service account credentials');
       } else if (credentialsPath) {
         // Use credentials file path
         initializeApp({
           credential: applicationDefault(),
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
         });
-        console.log('[Firebase Admin] Initialized with application default credentials');
       } else {
         // Use default credentials for development
         initializeApp({
           credential: applicationDefault(),
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
         });
-        console.log('[Firebase Admin] Initialized with default credentials');
       }
     } catch (error) {
       console.error('[Firebase Admin] Failed to initialize:', error);
@@ -41,7 +38,6 @@ const initializeFirebaseAdmin = () => {
           initializeApp({
             projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'usic-website'
           });
-          console.log('[Firebase Admin] Initialized minimal app for development');
         } catch (fallbackError) {
           console.error('[Firebase Admin] Failed to initialize even minimal app:', fallbackError);
         }
@@ -62,13 +58,11 @@ let adminAuth: ReturnType<typeof getAuth> | null = null;
 try {
   adminDb = getFirestore(adminApp);
   adminAuth = getAuth(adminApp);
-  console.log('[Firebase Admin] Services initialized successfully');
   
   // Test basic functionality (but don't fail if it doesn't work)
   if (adminDb) {
     try {
       adminDb.collection('test');
-      console.log('[Firebase Admin] Database connection test successful');
     } catch (testError) {
       console.warn('[Firebase Admin] Database connection test failed (this is normal in development):', testError);
     }
@@ -77,7 +71,6 @@ try {
   console.error('[Firebase Admin] Failed to initialize services:', error);
   // In development, we can still export null values and handle them in the auth functions
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Firebase Admin] Services will be null in development mode');
   }
 }
 

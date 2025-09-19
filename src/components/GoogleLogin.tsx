@@ -23,7 +23,7 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
       // Get Firebase auth instance
       const auth = getFirebaseAuth();
       if (!auth) {
-        console.error('[DEBUG] ❌ Firebase auth not initialized');
+        console.error('Firebase auth not initialized');
         throw new Error('Firebase auth not initialized');
       }
 
@@ -72,20 +72,15 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
       // Don't redirect here - let the parent component handle it
 
     } catch (error: unknown) {
-      console.error('[DEBUG] ❌ Login error occurred:', error);
-      console.error('[DEBUG] 🔍 Error type:', typeof error);
-      console.error('[DEBUG] 🔍 Error constructor:', error?.constructor?.name);
-      
-      // Log detailed error information
+      console.error('Login error occurred:', error);
+
+      // Log detailed error information for debugging
       if (error instanceof Error) {
-        console.error('[DEBUG] 🔍 Error message:', error.message);
-        console.error('[DEBUG] 🔍 Error stack:', error.stack);
-        console.error('[DEBUG] 🔍 Error name:', error.name);
-      }
-      
-      // Check for Cross-Origin-Opener-Policy specific errors
-      if (error instanceof Error && error.message.includes('Cross-Origin-Opener-Policy')) {
-        console.error('[DEBUG] ❌ COOP Policy Error detected!');
+        console.error('Error details:', {
+          message: error.message,
+          name: error.name,
+          code: 'code' in error ? (error as { code?: string }).code : undefined
+        });
       }
       
       // Handle specific Firebase errors

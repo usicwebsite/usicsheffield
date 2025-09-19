@@ -71,47 +71,26 @@ const getCommentsCollection = () => collection(getDb(), 'comments');
 // Get all posts for admin view (client-side)
 export const getAllPosts = async (limitCount: number = 100) => {
   try {
-    console.log('[Firebase Utils] getAllPosts: Starting...');
-    
-    const db = getDb();
-    console.log('[Firebase Utils] getAllPosts: Database instance:', !!db);
-    
     const postsCollection = getPostsCollection();
-    console.log('[Firebase Utils] getAllPosts: Posts collection reference:', !!postsCollection);
-    
-    console.log('[Firebase Utils] getAllPosts: Building query...');
+
     const q = query(
-      postsCollection, 
+      postsCollection,
       orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
-    console.log('[Firebase Utils] getAllPosts: Query built successfully');
-    
-    console.log('[Firebase Utils] getAllPosts: Executing query...');
+
     const querySnapshot = await getDocs(q);
-    console.log('[Firebase Utils] getAllPosts: Query executed successfully');
-    console.log('[Firebase Utils] getAllPosts: Query snapshot size:', querySnapshot.size);
-    
     const posts: ForumPost[] = [];
-    
+
     querySnapshot.forEach((doc) => {
-      console.log('[Firebase Utils] getAllPosts: Processing document:', doc.id);
       const data = doc.data();
-      console.log('[Firebase Utils] getAllPosts: Document data:', {
-        id: doc.id,
-        title: data.title,
-        author: data.author,
-        isApproved: data.isApproved,
-        createdAt: data.createdAt
-      });
-      
+
       posts.push({
         id: doc.id,
         ...data
       } as ForumPost);
     });
-    
-    console.log('[Firebase Utils] getAllPosts: Total posts found:', posts.length);
+
     return posts;
   } catch (error) {
     console.error('[Firebase Utils] getAllPosts: Error details:', {
@@ -203,7 +182,6 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
 // Approve a post (move from submitted_posts to approved_posts)
 export const approvePost = async (postId: string, adminUid: string) => {
   try {
-    console.log('[Firebase Utils] Approving post:', postId, 'by admin:', adminUid);
 
     // Get the post from submitted_posts
     const submittedPostRef = doc(getDb(), 'submitted_posts', postId);
@@ -214,7 +192,6 @@ export const approvePost = async (postId: string, adminUid: string) => {
     }
 
     const postData = postSnapshot.docs[0].data() as ForumPost;
-    console.log('[Firebase Utils] Post data retrieved:', postData.title);
 
     // Create the post in approved_posts collection
     const approvedPostData = {
@@ -226,11 +203,9 @@ export const approvePost = async (postId: string, adminUid: string) => {
     };
 
     const approvedDocRef = await addDoc(getApprovedPostsCollection(), approvedPostData);
-    console.log('[Firebase Utils] Post added to approved_posts with ID:', approvedDocRef.id);
 
     // Delete from submitted_posts
     await deleteDoc(submittedPostRef);
-    console.log('[Firebase Utils] Post deleted from submitted_posts');
 
     return approvedDocRef.id;
   } catch (error) {
@@ -242,7 +217,6 @@ export const approvePost = async (postId: string, adminUid: string) => {
 // Reject a post (move from submitted_posts to rejected_posts with reason)
 export const rejectPost = async (postId: string, adminUid: string, rejectionReason: string) => {
   try {
-    console.log('[Firebase Utils] Rejecting post:', postId, 'by admin:', adminUid, 'reason:', rejectionReason);
 
     // Get the post from submitted_posts
     const submittedPostRef = doc(getDb(), 'submitted_posts', postId);
@@ -253,7 +227,6 @@ export const rejectPost = async (postId: string, adminUid: string, rejectionReas
     }
 
     const postData = postSnapshot.docs[0].data() as ForumPost;
-    console.log('[Firebase Utils] Post data retrieved:', postData.title);
 
     // Create the post in rejected_posts collection
     const rejectedPostData = {
@@ -266,11 +239,9 @@ export const rejectPost = async (postId: string, adminUid: string, rejectionReas
     };
 
     const rejectedDocRef = await addDoc(getRejectedPostsCollection(), rejectedPostData);
-    console.log('[Firebase Utils] Post added to rejected_posts with ID:', rejectedDocRef.id);
 
     // Delete from submitted_posts
     await deleteDoc(submittedPostRef);
-    console.log('[Firebase Utils] Post deleted from submitted_posts');
 
     return rejectedDocRef.id;
   } catch (error) {
@@ -483,43 +454,25 @@ export const deletePost = async (postId: string) => {
 // Get submitted posts for admin review
 export const getSubmittedPosts = async (limitCount: number = 50) => {
   try {
-    console.log('[Firebase Utils] getSubmittedPosts: Starting...');
-    console.log('[Firebase Utils] getSubmittedPosts: Limit count:', limitCount);
-
     const collectionRef = getSubmittedPostsCollection();
-    console.log('[Firebase Utils] getSubmittedPosts: Collection reference:', collectionRef);
 
     const q = query(
       collectionRef,
       orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
-    console.log('[Firebase Utils] getSubmittedPosts: Query built successfully');
-    console.log('[Firebase Utils] getSubmittedPosts: Query details:', {
-      collection: 'submitted_posts',
-      orderBy: 'createdAt',
-      limit: limitCount
-    });
 
-    console.log('[Firebase Utils] getSubmittedPosts: About to execute query...');
     const querySnapshot = await getDocs(q);
-    console.log('[Firebase Utils] getSubmittedPosts: Query executed successfully');
-    console.log('[Firebase Utils] getSubmittedPosts: Query snapshot size:', querySnapshot.size);
-    console.log('[Firebase Utils] getSubmittedPosts: Query snapshot empty?', querySnapshot.empty);
-
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      console.log('[Firebase Utils] getSubmittedPosts: Processing document:', doc.id);
       const data = doc.data();
-      console.log('[Firebase Utils] getSubmittedPosts: Document data keys:', Object.keys(data));
       posts.push({
         id: doc.id,
         ...data
       } as ForumPost);
     });
 
-    console.log('[Firebase Utils] getSubmittedPosts: Total posts found:', posts.length);
     return posts;
   } catch (error) {
     console.error('[Firebase Utils] getSubmittedPosts: Error details:', {

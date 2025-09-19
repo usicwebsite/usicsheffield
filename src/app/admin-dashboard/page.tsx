@@ -56,6 +56,7 @@ interface Event {
   createdAt: Date;
   createdBy: string;
   isPublic: boolean;
+  signupFormUrl?: string;
 }
 
 interface EventFormData {
@@ -73,6 +74,7 @@ interface EventFormData {
   maxSignups?: number;
   tags: string[];
   isPublic: boolean;
+  signupFormUrl?: string;
 }
 
 
@@ -127,7 +129,8 @@ export default function AdminDashboard() {
     noSignupNeeded: false, // Default to requiring signup
     isPublic: true, // Default to public
     maxSignups: 50, // Default to 50 signups
-    tags: [] // Default to empty array
+    tags: [], // Default to empty array
+    signupFormUrl: '' // Default to empty string
   });
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -584,6 +587,9 @@ export default function AdminDashboard() {
       formData.append('isPublic', eventFormData.isPublic.toString());
       formData.append('tags', JSON.stringify(eventFormData.tags));
       formData.append('maxSignups', (eventFormData.maxSignups || 50).toString());
+      if (eventFormData.signupFormUrl) {
+        formData.append('signupFormUrl', eventFormData.signupFormUrl);
+      }
       formData.append('createdBy', user.uid);
       
       if (eventFormData.imageFile) {
@@ -1874,6 +1880,24 @@ export default function AdminDashboard() {
                       }`}
                       placeholder="Enter event description"
                       required
+                    />
+                  </div>
+
+                  {/* Signup Form URL */}
+                  <div>
+                    <label htmlFor="eventSignupFormUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                      Signup Form URL
+                      <span className="text-gray-500 text-xs ml-2">
+                        (Optional - external signup form link like Google Forms, Eventbrite, etc.)
+                      </span>
+                    </label>
+                    <input
+                      type="url"
+                      id="eventSignupFormUrl"
+                      value={eventFormData.signupFormUrl || ''}
+                      onChange={(e) => setEventFormData({...eventFormData, signupFormUrl: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://forms.google.com/your-form-link"
                     />
                   </div>
 

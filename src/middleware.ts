@@ -3,11 +3,11 @@ import type { NextRequest } from 'next/server';
 import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/csrf';
 
 // Security headers configuration
-const securityHeaders = {
+const securityHeaders: Record<string, string> = {
   // Content Security Policy - Restrict resource loading
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://accounts.google.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://accounts.google.com https://www.gstatic.com https://www.google.com https://*.googleapis.com https://*.firebaseapp.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
@@ -34,11 +34,11 @@ const securityHeaders = {
   // XSS protection (legacy but still useful)
   'X-XSS-Protection': '1; mode=block',
   
-  // Cross-Origin-Opener-Policy - Allow popups for authentication
-  'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-  
-  // Cross-Origin-Embedder-Policy - Required for some COOP policies
-  'Cross-Origin-Embedder-Policy': 'unsafe-none',
+  // Cross-Origin-Opener-Policy - Allow popups for authentication (temporarily disabled for Firebase Auth)
+  // 'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+
+  // Cross-Origin-Embedder-Policy - Required for some COOP policies (temporarily disabled for Firebase Auth)
+  // 'Cross-Origin-Embedder-Policy': 'unsafe-none',
   
   // Prevent caching of sensitive pages
   'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -69,18 +69,8 @@ export function middleware(request: NextRequest) {
   setCSRFTokenCookie(response, csrfToken);
 
   // Apply security headers to all responses
-  // Only log security headers in development mode for debugging
-  if (process.env.NODE_ENV === 'development' && process.env.DEBUG_SECURITY_HEADERS === 'true') {
-    console.log('[DEBUG] 🔧 Applying security headers for path:', path);
-  }
-  
   Object.entries(securityHeaders).forEach(([key, value]) => {
     response.headers.set(key, value);
-    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_SECURITY_HEADERS === 'true') {
-      if (key.includes('Cross-Origin') || key.includes('Content-Security')) {
-        console.log('[DEBUG] 📋 Set header:', key, '=', value);
-      }
-    }
   });
 
   // Apply no-cache headers to sensitive pages

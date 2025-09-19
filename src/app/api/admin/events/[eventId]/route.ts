@@ -85,6 +85,7 @@ export async function PUT(
     const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
     const existingImageUrl = formData.get('existingImageUrl') as string;
     const newImageUrl = formData.get('imageUrl') as string;
+    const signupFormUrl = formData.get('signupFormUrl') as string;
 
     // Validate required fields
     if (!title || !date || !startTime || !location || !description) {
@@ -136,6 +137,7 @@ export async function PUT(
       updatedAt: Date;
       endTime?: string;
       imageUrl?: string | null;
+      signupFormUrl?: string;
     } = {
       title,
       date,
@@ -150,7 +152,8 @@ export async function PUT(
       tags: tags || [],
       maxSignups: noSignupNeeded ? 0 : maxSignups,
       updatedAt: new Date(),
-      ...(endTime && { endTime })
+      ...(endTime && { endTime }),
+      ...(signupFormUrl && { signupFormUrl })
     };
 
     // Handle image URL - include if we have a URL, or null if image was removed
