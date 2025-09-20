@@ -6,6 +6,7 @@ import Image from 'next/image';
 import GoogleLogin from '@/components/GoogleLogin';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
+import { checkUserRestriction } from '@/lib/client-auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,10 +19,28 @@ export default function LoginPage() {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
       if (user) {
-        // User is already signed in, redirect to home page
-        router.push('/');
+        try {
+          // Check if user is restricted
+          const restrictionStatus = await checkUserRestriction();
+
+          if (restrictionStatus.restricted) {
+            console.log('Restricted user attempted to sign in, redirecting to restricted page');
+            // Sign out the restricted user
+            await auth.signOut();
+            // Redirect to restricted page
+            router.push('/restricted');
+            return;
+          }
+
+          // User is not restricted, redirect to home page
+          router.push('/');
+        } catch (error) {
+          console.error('Error checking restriction status during login:', error);
+          // On error, allow user to proceed but log the issue
+          router.push('/');
+        }
       }
       setIsLoading(false);
     });

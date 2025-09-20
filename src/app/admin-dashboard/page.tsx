@@ -10,6 +10,7 @@ import { getFirestoreDb } from '@/lib/firebase';
 import { getSubmittedPosts, approvePost, rejectPost, getApprovedPosts, updatePost, getComments, getCommentCount, deleteComment, ForumPost, ForumComment } from '@/lib/firebase-utils';
 import { categoryUtils } from '@/lib/static-data';
 import AdminTimeoutStatus from '@/components/AdminTimeoutStatus';
+import UsersManagement from '@/components/admin/UsersManagement';
 
 // Helper function to get Firebase ID token
 const getIdToken = async (): Promise<string | null> => {
@@ -92,10 +93,10 @@ export default function AdminDashboard() {
     rejectedPosts: 0,
     totalUsers: 0
   });
-  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'events'>(() => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'events' | 'users'>(() => {
     // Read the tab parameter from URL to set initial state
     const tabParam = searchParams.get('tab');
-    if (tabParam === 'posts' || tabParam === 'events') {
+    if (tabParam === 'posts' || tabParam === 'events' || tabParam === 'users') {
       return tabParam;
     }
     return 'overview';
@@ -115,6 +116,10 @@ export default function AdminDashboard() {
   
   // Events state
   const [events, setEvents] = useState<Event[]>([]);
+
+  // Users management state
+  const [usersSearchTerm, setUsersSearchTerm] = useState('');
+  const [usersFilterStatus, setUsersFilterStatus] = useState<'all' | 'restricted' | 'active'>('all');
   const [showEventForm, setShowEventForm] = useState(false);
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
@@ -333,6 +338,16 @@ export default function AdminDashboard() {
     }
   };
 
+  // Function to refresh users data (called from the header)
+  const fetchUsersData = async () => {
+    // This function will be passed to UsersManagement component
+    // The actual implementation will be in the UsersManagement component
+    // We just need to trigger a refresh
+    if (typeof window !== 'undefined') {
+      // Dispatch a custom event that UsersManagement can listen to
+      window.dispatchEvent(new CustomEvent('refreshUsers'));
+    }
+  };
 
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
@@ -1075,6 +1090,16 @@ export default function AdminDashboard() {
             >
               Manage Events
             </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`py-2 px-4 border-b-2 transition-colors ${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-300'
+                  : 'border-transparent text-gray-300 hover:text-white'
+              }`}
+            >
+              Manage Users
+            </button>
           </div>
         </div>
       </nav>
@@ -1166,6 +1191,72 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            {/* Users Management Header */}
+            <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+              <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                      </svg>
+                    </div>
+                    User Management
+                  </h2>
+                  <p className="text-gray-300 text-sm">Manage website users and restrict access when needed</p>
+                </div>
+
+                {/* Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full lg:w-auto">
+                  <div className="flex items-center gap-4 flex-1 lg:flex-none">
+                    <div className="relative flex-1 lg:w-80">
+                      <svg className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search by email, name, or UID..."
+                        value={usersSearchTerm}
+                        onChange={(e) => setUsersSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={usersFilterStatus}
+                      onChange={(e) => setUsersFilterStatus(e.target.value as 'all' | 'restricted' | 'active')}
+                      className="px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="active">Active Users</option>
+                      <option value="restricted">Restricted Users</option>
+                    </select>
+
+                    <button
+                      onClick={() => fetchUsersData()}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300 whitespace-nowrap"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <UsersManagement
+              searchTerm={usersSearchTerm}
+              filterStatus={usersFilterStatus}
+            />
           </div>
         )}
 

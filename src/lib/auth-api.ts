@@ -169,6 +169,34 @@ export function withAuth<T extends unknown[]>(
         );
       }
 
+      // Check if user is restricted (from custom claims OR database)
+      if (decodedToken.restricted === true) {
+        return NextResponse.json(
+          {
+            error: 'Account restricted',
+            message: 'Your account has been restricted by an administrator. Please contact support if you believe this is an error.'
+          },
+          { status: 403 }
+        );
+      }
+
+      // Also check Firestore for immediate restriction enforcement
+      try {
+        const db = getFirestore();
+        const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+        if (userDoc.exists && userDoc.data()?.restricted === true) {
+          return NextResponse.json(
+            {
+              error: 'Account restricted',
+              message: 'Your account has been restricted by an administrator. Please contact support if you believe this is an error.'
+            },
+            { status: 403 }
+          );
+        }
+      } catch (dbError) {
+        console.warn('[User Auth API] Could not check Firestore for restriction status:', dbError);
+        // Continue with token-based check only
+      }
 
       // Add user info to request object
       const authenticatedRequest = request as UserAuthenticatedRequest;

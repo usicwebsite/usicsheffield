@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { generateCSRFToken } from "@/lib/csrf";
 import { cookies } from 'next/headers';
 import GroupchatModalProvider from "@/components/GroupchatModalProvider";
+import RestrictionMonitor from "@/components/RestrictionMonitor";
 
 // Initialize the Geist font with Latin subset
 const geistSans = Geist({
@@ -86,6 +87,7 @@ export default async function RootLayout({
       >
         <ErrorBoundary>
           <FirebaseProvider>
+            <RestrictionMonitor />
             <GroupchatModalProvider>
               <AdminLayout>
                 {children}

@@ -12,14 +12,15 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith('/admin');
+  const isRestrictedPage = pathname === '/restricted';
 
   return (
     <AdminTimeoutProvider>
-      {!isAdminPage && <Navbar />}
+      {!isAdminPage && !isRestrictedPage && <Navbar />}
       <main className="flex-grow overflow-x-hidden">
         {children}
       </main>
-      {!isAdminPage && <Footer />}
+      {!isAdminPage && !isRestrictedPage && <Footer />}
     </AdminTimeoutProvider>
   );
 } 

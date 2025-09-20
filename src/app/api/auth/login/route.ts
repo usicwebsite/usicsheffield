@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
+import { syncUserDisplayNameWithGoogle } from '@/lib/firebase-admin-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +29,20 @@ export async function POST(request: NextRequest) {
 
     // Get user info from Firebase Auth
     const firebaseUser = await adminAuth.getUser(decodedToken.uid);
+
+    // Sync user's display name with Google account name
+    try {
+      const syncResult = await syncUserDisplayNameWithGoogle(decodedToken.uid, 'system');
+      if (syncResult.synced) {
+        console.log(`[Login API] Synced display name for user ${decodedToken.uid}: "${syncResult.oldName}" -> "${syncResult.newName}"`);
+        // Refresh user data after sync
+        const updatedFirebaseUser = await adminAuth.getUser(decodedToken.uid);
+        Object.assign(firebaseUser, updatedFirebaseUser);
+      }
+    } catch (syncError) {
+      console.warn('[Login API] Failed to sync display name, continuing with login:', syncError);
+      // Continue with login even if sync fails
+    }
 
     // Check if user exists in Firestore (optional - depends on your user management)
     if (adminDb) {

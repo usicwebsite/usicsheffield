@@ -634,4 +634,37 @@ export const searchApprovedPosts = async (searchTerm: string) => {
     console.error('Error searching approved posts:', error);
     throw error;
   }
+};
+
+// Get user's comments (for profile)
+export const getUserComments = async (userId: string, limitCount: number = 20): Promise<ForumComment[]> => {
+  try {
+    const db = getFirestoreDb();
+    if (!db) {
+      throw new Error('Firestore is not initialized');
+    }
+
+    const commentsCollection = collection(db, 'comments');
+    const q = query(
+      commentsCollection,
+      where('authorId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const comments: ForumComment[] = [];
+
+    querySnapshot.forEach((doc) => {
+      comments.push({
+        id: doc.id,
+        ...doc.data()
+      } as ForumComment);
+    });
+
+    return comments;
+  } catch (error) {
+    console.error('Error getting user comments:', error);
+    throw error;
+  }
 }; 

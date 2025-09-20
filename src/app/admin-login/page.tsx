@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { getFirestoreDb } from '@/lib/firebase';
+import { checkUserRestriction } from '@/lib/client-auth';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -21,11 +22,25 @@ export default function AdminLogin() {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Check if user is admin
-        const isAdmin = await checkAdminStatus(user.uid);
-        if (isAdmin) {
-          router.push('/admin-dashboard');
-          return;
+        try {
+          // First check if user is restricted
+          const restrictionStatus = await checkUserRestriction();
+
+          if (restrictionStatus.restricted) {
+            console.log('Restricted admin attempted to sign in, redirecting to restricted page');
+            await auth.signOut();
+            router.push('/restricted');
+            return;
+          }
+
+          // Check if user is admin
+          const isAdmin = await checkAdminStatus(user.uid);
+          if (isAdmin) {
+            router.push('/admin-dashboard');
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
         }
       }
       setIsInitialized(true);
