@@ -166,6 +166,16 @@ export const staticData = {
         category: "EDUCATION",
         isModal: true,
         linkText: "VIEW RESOURCES"
+      },
+      {
+        id: 5,
+        title: "Islamic Q&A Service - فاسأل",
+        description: "Get authentic Islamic answers from qualified scholars. Browse hundreds of answered questions covering worship, family life, Islamic rulings, and more.",
+        imagePath: "/images/WEB/fasal.jpeg",
+        category: "EDUCATION",
+        link: "https://fasalqa.com",
+        isExternal: true,
+        linkText: "VISIT SITE"
       }
     ],
     universityContacts: [
