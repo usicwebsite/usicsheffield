@@ -344,7 +344,8 @@ export const categoryUtils = {
     { id: "EVENTS", name: "Events" },
     { id: "ANNOUNCEMENTS", name: "Announcements" },
     { id: "QUESTIONS", name: "Questions" },
-    { id: "DISCUSSION", name: "Discussion" }
+    { id: "DISCUSSION", name: "Discussion" },
+    { id: "PODCAST_REFLECTIONS", name: "Podcast Reflections" }
   ],
 
   // Convert category ID to display name

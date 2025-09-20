@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getPosts, getCommentCount } from "@/lib/firebase-utils";
 import { ForumPost as ForumPostType } from "@/lib/firebase-utils";
+import { categoryUtils } from "@/lib/static-data";
 import ForumPost from "@/components/ForumPost";
 import ForumSidebar from "@/components/ForumSidebar";
 import NewPostForm from "@/components/NewPostForm";
@@ -191,7 +192,7 @@ export default function ForumPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-gray-300">Filtered by:</span>
                   <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {selectedCategory}
+                    {categoryUtils.getCategoryName(selectedCategory)}
                   </span>
                   <button
                     onClick={() => setSelectedCategory(null)}

@@ -89,7 +89,7 @@ export default function ForumSidebar({
           </span>
         </button>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out lg:block ${
-          isCategoriesExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 lg:max-h-96 lg:opacity-100'
+          isCategoriesExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 lg:max-h-[600px] lg:opacity-100'
         }`}>
           <div className="space-y-1 pt-2">
             {categories.map((category, index) => (
@@ -97,7 +97,7 @@ export default function ForumSidebar({
                 key={category.id}
                 onClick={() => onCategorySelect(category.id === "ALL" ? null : category.id)}
                 className={`w-full text-left px-3 py-2.5 rounded-md transition-all duration-200 transform ${
-                  selectedCategory === category.id || 
+                  selectedCategory === category.id ||
                   (category.id === "ALL" && selectedCategory === null)
                     ? "bg-blue-600 text-white shadow-lg scale-[1.02]"
                     : "text-gray-300 hover:bg-white/10 hover:scale-[1.01]"
