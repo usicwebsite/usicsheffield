@@ -124,6 +124,175 @@ export default function PricingPage() {
       </div>
 
       {/* Partner Discounts Section */}
+      <div className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
+              Member-Only Partner Discounts
+            </h2>
+            <p className="text-blue-100 max-w-2xl mx-auto mb-8">
+              Exclusive savings at our partner businesses (available to 1 Year & Lifetime members only)
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {pricing.partnerDiscounts.map((discount, index) => {
+              const [businessName, discountText] = discount.split(' (');
+              const cleanDiscountText = discountText?.replace(')', '') || '';
+              
+              // Define background colors and patterns for different business types
+              const getBusinessStyle = (name: string) => {
+                const lowerName = name.toLowerCase();
+                if (lowerName.includes('grill') || lowerName.includes('kebab') || lowerName.includes('halal')) {
+                  return {
+                    bg: 'bg-gradient-to-br from-orange-100 to-red-200',
+                    icon: '🍖',
+                    logoBg: 'from-orange-500 to-red-600'
+                  };
+                } else if (lowerName.includes('chai') || lowerName.includes('coffee') || lowerName.includes('tea')) {
+                  return {
+                    bg: 'bg-gradient-to-br from-amber-100 to-yellow-200',
+                    icon: '☕',
+                    logoBg: 'from-amber-500 to-yellow-600'
+                  };
+                } else if (lowerName.includes('dessert') || lowerName.includes('cookie') || lowerName.includes('sweet')) {
+                  return {
+                    bg: 'bg-gradient-to-br from-pink-100 to-purple-200',
+                    icon: '🍰',
+                    logoBg: 'from-pink-500 to-purple-600'
+                  };
+                } else if (lowerName.includes('therapy') || lowerName.includes('health')) {
+                  return {
+                    bg: 'bg-gradient-to-br from-green-100 to-emerald-200',
+                    icon: '🌿',
+                    logoBg: 'from-green-500 to-emerald-600'
+                  };
+                } else {
+                  return {
+                    bg: 'bg-gradient-to-br from-blue-100 to-indigo-200',
+                    icon: '🏪',
+                    logoBg: 'from-blue-500 to-indigo-600'
+                  };
+                }
+              };
+              
+              const businessStyle = getBusinessStyle(businessName);
+              
+              // Map business names to their logo files
+              const getBusinessLogo = (name: string) => {
+                const logoMap: { [key: string]: string } = {
+                  "Sabir's Grill": '/images/sponsors/logos/sabir\'s grill.png',
+                  "5 Akhis": '/images/sponsors/logos/5 akhis.jpeg',
+                  "Karak Chai": '/images/sponsors/logos/karak chaii.jpeg',
+                  "Big Daddy's": '/images/sponsors/logos/big daddys.jpg',
+                  "Mighty Bites": '/images/sponsors/logos/mighty bites.jpg',
+                  "Insomnia Cookies": '/images/sponsors/logos/insomnia cookies.png',
+                  "Ohannes": '/images/sponsors/logos/ohannes.jpg',
+                  "Al Maghrib Faith Essentials": '/images/sponsors/logos/al maghrib.png',
+                  "Shakebees": '/images/sponsors/logos/shakebees.png',
+                  "Heavenly Desserts": '/images/sponsors/logos/heavenly.jpeg',
+                  "M.A.K Halal": '/images/sponsors/logos/makhalal.png',
+                  "Kebabish Original": '/images/sponsors/logos/kebabish original.png',
+                  "Calis": '/images/sponsors/logos/calis.png',
+                  "Cha Cha Chai": '/images/sponsors/logos/cha cha chai.png',
+                  "Damascus Bakery": '/images/sponsors/logos/damascus bakery.png',
+                  "Noori Charms": '/images/sponsors/logos/noori charms.png',
+                  "Frog": '/images/sponsors/logos/frog.png',
+                  "Regen Therapy": '/images/sponsors/logos/regen therapy.png',
+                  "Iqra Store": '/images/sponsors/iqrastore.jpg'
+                };
+                return logoMap[name] || null;
+              };
+
+              // Map business names to their photo files
+              const getBusinessPhoto = (name: string) => {
+                const photoMap: { [key: string]: string } = {
+                  "Sabir's Grill": '/images/sponsors/pics/sabirs grill.jpeg',
+                  "5 Akhis": '/images/sponsors/pics/5 akhis.jpeg',
+                  "Karak Chai": '/images/sponsors/pics/karak chaii.jpeg',
+                  "Big Daddy's": '/images/sponsors/pics/big daddys.jpeg',
+                  "Mighty Bites": '/images/sponsors/pics/mighty bites.jpeg',
+                  "Insomnia Cookies": '/images/sponsors/pics/insomnia cookies.webp',
+                  "Ohannes": '/images/sponsors/pics/ohannes.jpg',
+                  "Al Maghrib Faith Essentials": '/images/sponsors/pics/al maghrib.jpg',
+                  "Shakebees": '/images/sponsors/pics/shakebees.jpeg',
+                  "Heavenly Desserts": '/images/sponsors/pics/heavenly desserts.jpg',
+                  "M.A.K Halal": '/images/sponsors/pics/mak halal.jpeg',
+                  "Kebabish Original": '/images/sponsors/pics/kebabish original.jpeg',
+                  "Calis": '/images/sponsors/pics/calis.jpg',
+                  "Cha Cha Chai": '/images/sponsors/pics/cha cha chai.jpeg',
+                  "Damascus Bakery": '/images/sponsors/pics/damascus bakery.webp',
+                  "Frog": '/images/sponsors/pics/frog.jpeg',
+                  "Iqra Store": '/images/sponsors/iqrastore.jpg'
+                };
+                return photoMap[name] || null;
+              };
+              
+              return (
+                <div
+                  key={index}
+                  className="bg-gradient-to-br from-gray-800/70 via-gray-900/50 to-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl border border-gray-600/40 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 relative group"
+                >
+
+                  {/* Business Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    {getBusinessPhoto(businessName) ? (
+                      <img 
+                        src={getBusinessPhoto(businessName)!} 
+                        alt={`${businessName} photo`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className={`w-full h-full ${businessStyle.bg} flex items-center justify-center`}>
+                        <div className="text-6xl opacity-60">
+                          {businessStyle.icon}
+                        </div>
+                        {/* Decorative elements */}
+                        <div className="absolute top-4 left-4 w-16 h-16 bg-white/20 rounded-full"></div>
+                        <div className="absolute bottom-4 right-4 w-12 h-12 bg-white/20 rounded-full"></div>
+                      </div>
+                    )}
+                    
+                    {/* Overlay gradient for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                    
+                    {/* Brand Logo */}
+                    <div className="absolute bottom-3 left-3">
+                      <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border-2 border-white/70 overflow-hidden">
+                        {getBusinessLogo(businessName) ? (
+                          <img 
+                            src={getBusinessLogo(businessName)!} 
+                            alt={`${businessName} logo`}
+                            className="w-8 h-8 object-contain rounded-full"
+                          />
+                        ) : (
+                          <div className={`w-8 h-8 bg-gradient-to-br ${businessStyle.logoBg} rounded-full flex items-center justify-center`}>
+                            <span className="text-white text-xs font-bold">
+                              {businessName.split(' ').map(word => word.charAt(0)).join('').slice(0, 2)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Info */}
+                  <div className="p-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-400 mb-1">
+                        {cleanDiscountText}
+                      </div>
+                      <div className="text-sm text-gray-300 leading-tight">
+                        {businessName}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       <style jsx global>{`
         /* Disable hover effects on mobile screens */
@@ -142,36 +311,6 @@ export default function PricingPage() {
           }
         }
       `}</style>
-      <div className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6 text-white">
-              Member-Only Partner Discounts
-            </h2>
-            <p className="text-blue-100 max-w-2xl mx-auto mb-8">
-              Exclusive savings at our partner businesses (available to 1 Year & Lifetime members only)
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-6xl mx-auto">
-            {pricing.partnerDiscounts.map((discount, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-lg p-4 border border-gray-700/50 hover:border-green-500/50 transition-all duration-300 transform hover:scale-105"
-              >
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-green-400 mb-1">
-                    {discount.split(' (')[1]?.replace(')', '') || ''}
-                  </div>
-                  <div className="text-xs text-gray-300 leading-tight">
-                    {discount.split(' (')[0]}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

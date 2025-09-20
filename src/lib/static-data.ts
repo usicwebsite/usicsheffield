@@ -243,10 +243,10 @@ export const staticData = {
     description: "We are grateful for the support of our sponsors who help make our activities possible.",
     sponsors: [
       {
-        name: "UNIT Sheffield",
-        logo: "/images/sponsors/unitlogo.png",
-        description: "Sheffield halal gourmet burger Urban diner specialising in gourmet burgers, Philly cheese-steaks, freakshakes and much more.",
-        website: "https://www.unitsheffield.com/",
+        name: "Iqra Store",
+        logo: "/images/sponsors/iqrastore.jpg",
+        description: "South Yorkshire's premier lifestyle store, committed to providing our customers with traditional & contemporary merchandise from around the world.",
+        website: "https://www.instagram.com/iqralifestylestore/?hl=en-gb",
         tier: "gold"
       }
     ],
@@ -377,7 +377,7 @@ export const staticData = {
       "Mighty Bites (30%)", "Insomnia Cookies (15%)", "Ohannes (15%)", "Al Maghrib Faith Essentials (40%)",
       "Shakebees (10%)", "Heavenly Desserts (15%)", "M.A.K Halal (20%)", "Kebabish Original (15%)",
       "Calis (10%)", "Cha Cha Chai (10%)", "Damascus Bakery (15%)", "Noori Charms (15%)",
-      "Frog (10%)", "Regen Therapy (20%)", "UNIT (10%)"
+      "Frog (10%)", "Regen Therapy (20%)", "Iqra Store (10%)"
     ],
     joinLink: "https://su.sheffield.ac.uk/activities/view/islamic-circle-society"
   },
