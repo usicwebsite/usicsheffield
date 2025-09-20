@@ -46,11 +46,7 @@ interface Event {
   startTime: string;
   endTime?: string;
   location: string;
-  price?: string; // Keep for backwards compatibility, but we'll use memberPrice/nonMemberPrice
-  memberPrice?: string;
-  nonMemberPrice?: string;
-  meetUpTime?: string;
-  meetUpLocation?: string;
+  price: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
@@ -70,11 +66,7 @@ interface EventFormData {
   startTime: string;
   endTime?: string;
   location: string;
-  price?: string; // Keep for backwards compatibility
-  memberPrice?: string;
-  nonMemberPrice?: string;
-  meetUpTime?: string;
-  meetUpLocation?: string;
+  price: string;
   description: string;
   imageFile?: File;
   formFields: string[];
@@ -135,11 +127,7 @@ export default function AdminDashboard() {
     startTime: '',
     endTime: '',
     location: '',
-    price: '', // Keep for backwards compatibility
-    memberPrice: '',
-    nonMemberPrice: '',
-    meetUpTime: '',
-    meetUpLocation: '',
+    price: '',
     description: '',
     formFields: [],
     signupOpen: true, // Default to open for signups
@@ -601,18 +589,7 @@ export default function AdminDashboard() {
         formData.append('endTime', eventFormData.endTime);
       }
       formData.append('location', eventFormData.location);
-      // Member price uses the old price field for backwards compatibility
-      formData.append('price', eventFormData.price || '');
-      // Non-member price is required
-      if (eventFormData.nonMemberPrice && eventFormData.nonMemberPrice.trim()) {
-        formData.append('nonMemberPrice', eventFormData.nonMemberPrice.trim());
-      }
-      if (eventFormData.meetUpTime && eventFormData.meetUpTime.trim()) {
-        formData.append('meetUpTime', eventFormData.meetUpTime.trim());
-      }
-      if (eventFormData.meetUpLocation && eventFormData.meetUpLocation.trim()) {
-        formData.append('meetUpLocation', eventFormData.meetUpLocation.trim());
-      }
+      formData.append('price', eventFormData.price);
       formData.append('description', eventFormData.description);
       // Only include formFields if signup is needed
       if (eventFormData.noSignupNeeded) {
@@ -988,61 +965,6 @@ export default function AdminDashboard() {
     return formattedStart;
   };
 
-  // Temporarily commented out loading condition to debug syntax error
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen bg-[#18384D]">
-  //       {/* Header */}
-  //       <header className="bg-[#234b64] shadow-lg">
-  //         <div className="container mx-auto px-4 py-4">
-  //           <div className="flex items-center justify-between">
-  //             <div className="flex items-center space-x-4">
-  //               <Image
-  //                 src="/1. USIC Full Logo.svg"
-  //                 alt="USIC Logo"
-  //                 width={40}
-  //                 height={40}
-  //                 className="w-auto h-10"
-  //                 style={{ filter: 'invert(1)' }}
-  //               />
-  //               <h1 className="text-white text-2xl font-bold">USIC Admin Dashboard</h1>
-  //             </div>
-  //           </div>
-  //         </header>
-
-  //       {/* Loading Content */}
-  //       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-  //         <div className="text-center max-w-md mx-auto">
-  //           <div className="mb-8">
-  //             <div className="w-20 h-20 mx-auto mb-6 relative">
-  //               <div className="absolute inset-0 rounded-full border-4 border-gray-300/30"></div>
-  //               <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 animate-spin"></div>
-  //               <div className="absolute inset-2 rounded-full bg-blue-400/20 animate-pulse"></div>
-  //             </div>
-  //             <h2 className="text-white text-2xl font-semibold mb-2">Loading Dashboard</h2>
-  //             <p className="text-gray-300 text-sm">Please wait while we prepare your admin panel...</p>
-  //           </div>
-
-  //         {/* Loading Steps */}
-  //         <div className="space-y-3 text-left">
-  //           <div className="flex items-center space-x-3">
-  //             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-  //             <span className="text-gray-300 text-sm">Verifying authentication...</span>
-  //           </div>
-  //           <div className="flex items-center space-x-3">
-  //             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-  //             <span className="text-gray-300 text-sm">Loading dashboard data...</span>
-  //           </div>
-  //           <div className="flex items-center space-x-3">
-  //             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-  //             <span className="text-gray-300 text-sm">Preparing admin interface...</span>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#18384D]">
@@ -1077,7 +999,7 @@ export default function AdminDashboard() {
               <h2 className="text-white text-2xl font-semibold mb-2">Loading Dashboard</h2>
               <p className="text-gray-300 text-sm">Please wait while we prepare your admin panel...</p>
             </div>
-
+            
             {/* Loading Steps */}
             <div className="space-y-3 text-left">
               <div className="flex items-center space-x-3">
@@ -1106,7 +1028,1779 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#18384D]">
-      <p>Temporarily simplified for debugging</p>
+      {/* Header */}
+      <header className="bg-[#234b64] shadow-lg">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Image
+                src="/1. USIC Full Logo.svg"
+                alt="USIC Logo"
+                width={40}
+                height={40}
+                className="w-auto h-10"
+                style={{ filter: 'invert(1)' }}
+              />
+              <h1 className="text-white text-2xl font-bold">USIC Admin Dashboard</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <AdminTimeoutStatus />
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-300"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="bg-[#1a3a4d] border-b border-white/10">
+        <div className="container mx-auto px-4">
+          <div className="flex space-x-8 py-4">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-2 px-4 border-b-2 transition-colors ${
+                activeTab === 'overview'
+                  ? 'border-blue-500 text-blue-300'
+                  : 'border-transparent text-gray-300 hover:text-white'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`py-2 px-4 border-b-2 transition-colors ${
+                activeTab === 'posts'
+                  ? 'border-blue-500 text-blue-300'
+                  : 'border-transparent text-gray-300 hover:text-white'
+              }`}
+            >
+              Manage Posts
+            </button>
+            <button
+              onClick={() => setActiveTab('events')}
+              className={`py-2 px-4 border-b-2 transition-colors ${
+                activeTab === 'events'
+                  ? 'border-blue-500 text-blue-300'
+                  : 'border-transparent text-gray-300 hover:text-white'
+              }`}
+            >
+              Manage Events
+            </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`py-2 px-4 border-b-2 transition-colors ${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-300'
+                  : 'border-transparent text-gray-300 hover:text-white'
+              }`}
+            >
+              Manage Users
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+                <h3 className="text-white text-lg font-semibold mb-2">Total Posts</h3>
+                <p className="text-3xl font-bold text-blue-300">{stats.totalPosts}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+                <h3 className="text-white text-lg font-semibold mb-2">Pending Posts</h3>
+                <p className="text-3xl font-bold text-yellow-300">{stats.pendingPosts}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+                <h3 className="text-white text-lg font-semibold mb-2">Approved Posts</h3>
+                <p className="text-3xl font-bold text-green-300">{stats.approvedPosts}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+                <h3 className="text-white text-lg font-semibold mb-2">Rejected Posts</h3>
+                <p className="text-3xl font-bold text-red-300">{stats.rejectedPosts || 0}</p>
+              </div>
+            </div>
+
+            {/* Pending Posts for Review */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+              <h2 className="text-white text-xl font-semibold mb-4">Pending Posts for Review</h2>
+
+              {pendingPosts.length === 0 ? (
+                <div className="text-center py-8">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-300 mt-4">No pending posts to review.</p>
+                  <p className="text-gray-400 text-sm mt-2">All submitted posts have been processed.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingPosts.map((post) => (
+                    <div key={post.id} className="bg-white/5 rounded-lg p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-white font-semibold mb-2">{post.title}</h3>
+                          <p className="text-gray-300 mb-4 line-clamp-3">{post.content}</p>
+                          <div className="flex items-center text-gray-400 text-sm space-x-4">
+                            <span>By {post.author}</span>
+                            <span>{formatDate(post.createdAt)}</span>
+                            <span className="bg-blue-500 text-white px-2 py-1 rounded">{categoryUtils.getCategoryName(post.category)}</span>
+                            <span>Likes: {post.likes}</span>
+                        </div>
+                        </div>
+                        <div className="flex flex-col space-y-2 ml-4">
+                          <button
+                            onClick={() => post.id && handleApprovePost(post.id)}
+                            disabled={loadingPosts[post.id!] === 'approving' || loadingPosts[post.id!] === 'rejecting'}
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white px-4 py-2 rounded transition duration-300 text-sm flex items-center justify-center gap-2"
+                          >
+                            {loadingPosts[post.id!] === 'approving' ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Approving...
+                              </>
+                            ) : (
+                              'Approve'
+                            )}
+                          </button>
+                          <button
+                            onClick={() => openRejectModal(post)}
+                            disabled={loadingPosts[post.id!] === 'approving' || loadingPosts[post.id!] === 'rejecting'}
+                            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white px-4 py-2 rounded transition duration-300 text-sm flex items-center justify-center gap-2"
+                          >
+                            {loadingPosts[post.id!] === 'rejecting' ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Rejecting...
+                              </>
+                            ) : (
+                              'Reject'
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            {/* Users Management Header */}
+            <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+              <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                      </svg>
+                    </div>
+                    User Management
+                  </h2>
+                  <p className="text-gray-300 text-sm">Manage website users and restrict access when needed</p>
+                </div>
+
+                {/* Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full lg:w-auto">
+                  <div className="flex items-center gap-4 flex-1 lg:flex-none">
+                    <div className="relative flex-1 lg:w-80">
+                      <svg className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search by email, name, or UID..."
+                        value={usersSearchTerm}
+                        onChange={(e) => setUsersSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={usersFilterStatus}
+                      onChange={(e) => setUsersFilterStatus(e.target.value as 'all' | 'restricted' | 'active')}
+                      className="px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="active">Active Users</option>
+                      <option value="restricted">Restricted Users</option>
+                    </select>
+
+                    <button
+                      onClick={() => fetchUsersData()}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300 whitespace-nowrap"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <UsersManagement
+              searchTerm={usersSearchTerm}
+              filterStatus={usersFilterStatus}
+            />
+          </div>
+        )}
+
+        {activeTab === 'posts' && (
+          <div className="space-y-6">
+            {/* Posts Management Header */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-white text-xl font-semibold mb-2">Manage Approved Posts</h2>
+                  <p className="text-gray-300 text-sm">Edit or delete posts that have been published to the forum</p>
+                  </div>
+                      <button
+                  onClick={loadApprovedPosts}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-300"
+                      >
+                  Refresh Posts
+                      </button>
+                    </div>
+                  </div>
+
+            {/* Approved Posts List */}
+            {approvedPosts.length === 0 ? (
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-12">
+                <div className="text-center">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-300 mt-4 text-lg">No approved posts found</p>
+                  <p className="text-gray-400 text-sm mt-2">Approved posts will appear here for management</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {approvedPosts.map((post) => (
+                  <div key={post.id} className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:border-white/30 transition-all duration-300 hover:shadow-lg hover:shadow-white/10">
+                    {editingPost?.id === post.id ? (
+                      // Edit Mode
+                      <div className="space-y-6">
+                        {/* Edit Header */}
+                        <div className="flex items-center gap-3 pb-4 border-b border-white/20">
+                          <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-white font-semibold">Editing Post</h3>
+                            <p className="text-gray-400 text-sm">Make changes to the post content</p>
+                </div>
+              </div>
+
+                        {/* Edit Form */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                Title
+                              </label>
+                              <input
+                                type="text"
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Enter post title..."
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                Category
+                              </label>
+                              <input
+                                type="text"
+                                value={editCategory}
+                                onChange={(e) => setEditCategory(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Enter category..."
+                              />
+                            </div>
+                          </div>
+
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Content
+                          </label>
+                          <textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            rows={8}
+                            className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                            placeholder="Enter post content..."
+                          />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3 pt-4 border-t border-white/20">
+                          <button
+                            onClick={cancelEditing}
+                            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel
+                          </button>
+                          <button
+                            onClick={savePostEdits}
+                            disabled={!editTitle.trim() || !editContent.trim()}
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Save Changes
+                          </button>
+                        </div>
+                </div>
+              ) : (
+                      // View Mode
+                <div className="space-y-4">
+                        {/* Header with Status Badges */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-3 flex-wrap">
+                              {post.isPinned && (
+                                <span className="bg-yellow-500/20 text-yellow-300 px-3 py-1 text-xs font-bold rounded-full border border-yellow-500/30 flex items-center gap-1">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                  </svg>
+                                  PINNED
+                                </span>
+                              )}
+                              {post.isLocked && (
+                                <span className="bg-red-500/20 text-red-300 px-3 py-1 text-xs font-bold rounded-full border border-red-500/30 flex items-center gap-1">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                  </svg>
+                                  LOCKED
+                                </span>
+                              )}
+                              <span className="bg-green-500/20 text-green-300 px-3 py-1 text-xs font-bold rounded-full border border-green-500/30 flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                APPROVED
+                              </span>
+                              <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30 flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                {categoryUtils.getCategoryName(post.category)}
+                              </span>
+                            </div>
+
+                                                        {/* Post Title */}
+                            <h3 className="text-white font-bold text-lg mb-3 leading-tight">{post.title}</h3>
+
+                            {/* Post Content Preview */}
+                            <div className="bg-white/5 rounded-lg p-4 mb-4 border border-white/10">
+                              <p className="text-gray-300 text-sm leading-relaxed line-clamp-3">
+                                {post.content}
+                              </p>
+                            </div>
+
+
+                            {/* Post Metadata */}
+                            <div className="flex items-center gap-6 text-gray-400 text-sm">
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>{post.author}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            <span>{formatDate(post.createdAt)}</span>
+                          </div>
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span>{post.likes || 0} likes</span>
+                        </div>
+                              {post.approvedAt && (
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span>Approved {formatDate(post.approvedAt)}</span>
+                                </div>
+                              )}
+                            </div>
+                                                      </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-col gap-3 ml-6">
+                          <button
+                              onClick={() => startEditingPost(post)}
+                              className="group flex items-center gap-3 px-4 py-3 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-500/50 rounded-lg text-blue-300 hover:text-blue-200 transition-all duration-200"
+                          >
+                              <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              <span className="font-medium">Edit Post</span>
+                          </button>
+
+                          <button
+                              onClick={() => post.id && toggleComments(post.id)}
+                              className="group flex items-center gap-3 px-4 py-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500/50 rounded-lg text-green-300 hover:text-green-200 transition-all duration-200"
+                            >
+                              <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                              <span className="font-medium">
+                                {expandedPosts.has(post.id!) ? 'Hide Comments' : `View Comments (${commentCounts[post.id!] || 0})`}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => post.id && handleDeletePost(post.id)}
+                              className="group flex items-center gap-3 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-300 hover:text-red-200 transition-all duration-200"
+                            >
+                              <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              <span className="font-medium">Delete Post</span>
+                          </button>
+                        </div>
+                      </div>
+
+                        {/* Comments Section */}
+                        {expandedPosts.has(post.id!) && (
+                          <div className="mt-6">
+                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/20">
+                              <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                    </div>
+                              <div>
+                                <h4 className="text-white font-semibold">Comments</h4>
+                                <p className="text-gray-400 text-sm">{commentCounts[post.id!] || 0} comments</p>
+                </div>
+            </div>
+
+                            {postComments[post.id!]?.length === 0 ? (
+                              <div className="text-center py-8">
+                                <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                </div>
+                                <p className="text-gray-400 font-medium">No comments yet</p>
+                                <p className="text-gray-500 text-sm mt-1">Comments will appear here when users engage with this post</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                {postComments[post.id!].map((comment) => (
+                                  <div
+                                    key={comment.id}
+                                    className="bg-gradient-to-r from-white/5 to-white/3 border border-white/10 rounded-lg p-4 hover:border-white/20 transition-all duration-200"
+                                  >
+                                    <div className="flex items-start justify-between mb-3">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
+                                          <span className="text-blue-400 text-sm font-semibold">
+                                            {comment.author.charAt(0).toUpperCase()}
+                                          </span>
+                                        </div>
+                                        <div>
+                                          <p className="text-white font-medium text-sm">{comment.author}</p>
+                                          <p className="text-gray-400 text-xs">{formatDate(comment.createdAt)}</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1 px-2 py-1 bg-pink-500/20 border border-pink-500/30 rounded-full">
+                                          <svg className="w-3 h-3 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                          </svg>
+                                          <span className="text-pink-300 text-xs font-medium">{comment.likes || 0}</span>
+                                        </div>
+                                        <button
+                                          onClick={() => comment.id && handleDeleteComment(comment.id, post.id!)}
+                                          className="p-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-400 hover:text-red-300 transition-all duration-200 group"
+                                          title="Delete comment"
+                                        >
+                                          <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                                      <p className="text-gray-300 text-sm leading-relaxed">{comment.content}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'events' && (
+          <div className="space-y-6">
+            {/* Events Management Header */}
+            <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-2 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    Event Management
+                  </h2>
+                  <p className="text-gray-300 text-sm">Create and manage community events</p>
+                </div>
+                <button
+                  onClick={() => setShowEventForm(true)}
+                  className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 flex items-center gap-3 font-semibold"
+                >
+                  <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Event
+                </button>
+              </div>
+            </div>
+
+            {/* Events Grid */}
+            {events.length === 0 ? (
+              <div className="bg-gradient-to-r from-white/5 to-white/3 backdrop-blur-sm border border-white/10 rounded-xl p-12 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-500/20 to-gray-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-white text-xl font-semibold mb-2">No Events Yet</h3>
+                <p className="text-gray-400 mb-6">Start by creating your first community event</p>
+                <button
+                  onClick={() => setShowEventForm(true)}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 inline-flex items-center gap-2 font-semibold"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Your First Event
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {events.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/admin-dashboard/events/${event.id}`}
+                    className="bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-white/10 group cursor-pointer block"
+                  >
+                    {/* Event Image */}
+                    {event.imageUrl && (
+                      <div className="mb-4 overflow-hidden rounded-lg">
+                        <Image
+                          src={event.imageUrl}
+                          alt={event.title}
+                          width={400}
+                          height={200}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+
+                    {/* Event Title and Status */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-green-500/20 text-green-300 px-3 py-1 text-xs font-bold rounded-full border border-green-500/30 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          ACTIVE
+                        </span>
+                        <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                          {event.formFields.length} FIELD{event.formFields.length !== 1 ? 'S' : ''}
+                        </span>
+                        {event.maxSignups && !event.noSignupNeeded && (
+                          <span className="bg-green-500/20 text-green-300 px-3 py-1 text-xs font-bold rounded-full border border-green-500/30 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            MAX {event.maxSignups}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-white font-bold text-lg mb-2 leading-tight group-hover:text-blue-200 transition-colors duration-200">{event.title}</h3>
+                    </div>
+
+                    {/* Event Details */}
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center text-gray-300 text-sm">
+                        <svg className="w-4 h-4 mr-3 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="truncate">{event.date}</span>
+                      </div>
+                      <div className="flex items-center text-gray-300 text-sm">
+                        <svg className="w-4 h-4 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="truncate">
+                          {formatTimeRange(event.startTime, event.endTime)}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-gray-300 text-sm">
+                        <svg className="w-4 h-4 mr-3 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                      {event.price && (
+                        <div className="flex items-center text-gray-300 text-sm">
+                          <svg className="w-4 h-4 mr-3 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          <span className="truncate">
+                            {event.price === 'Free' || !event.price
+                              ? 'Free'
+                              : `£${event.price}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Event Description */}
+                    <div className="bg-white/5 rounded-lg p-3 mb-4 border border-white/10">
+                      <p className="text-gray-300 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+                    </div>
+
+                    {/* Click indicator */}
+                    <div className="flex items-center justify-center text-gray-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Click to manage event
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Event Creation Modal */}
+        {showEventForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">Create New Event</h3>
+                  <button
+                    onClick={() => {
+                      setShowEventForm(false);
+                      setEventFormTab('manual');
+                      setAiEventText('');
+                      setMissingFields([]);
+                      if (imagePreview) {
+                        URL.revokeObjectURL(imagePreview);
+                        setImagePreview(null);
+                      }
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setEventFormTab('manual')}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                      eventFormTab === 'manual'
+                        ? 'bg-white text-gray-900 shadow'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Manual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEventFormTab('ai')}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                      eventFormTab === 'ai'
+                        ? 'bg-white text-gray-900 shadow'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    AI Assisted
+                  </button>
+                </div>
+
+                {eventFormTab === 'manual' && (
+                  <>
+                    {missingFields.length > 0 && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                          <h4 className="text-orange-800 font-medium">Please complete the missing information:</h4>
+                        </div>
+                        <ul className="mt-2 text-orange-700 text-sm">
+                          {missingFields.map(field => (
+                            <li key={field} className="flex items-center">
+                              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                              {field === 'title' ? 'Event Title' :
+                               field === 'date' ? 'Event Date' :
+                               field === 'startTime' ? 'Start Time' :
+                               field === 'endTime' ? 'End Time' :
+                               field === 'location' ? 'Event Location' :
+                               field === 'description' ? 'Event Description' :
+                               field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                <form onSubmit={handleCreateEvent} className="space-y-6">
+                  {/* Event Title */}
+                  <div>
+                    <label htmlFor="eventTitle" className={`block text-sm font-medium mb-2 ${
+                      missingFields.includes('title') ? 'text-red-600' : 'text-gray-700'
+                    }`}>
+                      Event Title * {missingFields.includes('title') && <span className="text-red-500">(Please fill)</span>}
+                    </label>
+                    <input
+                      type="text"
+                      id="eventTitle"
+                      value={eventFormData.title}
+                      onChange={(e) => {
+                        setEventFormData({...eventFormData, title: e.target.value});
+                        if (missingFields.includes('title') && e.target.value.trim()) {
+                          setMissingFields(missingFields.filter(f => f !== 'title'));
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        missingFields.includes('title')
+                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                          : 'border-gray-300'
+                      }`}
+                      placeholder="Enter event title"
+                      required
+                    />
+                  </div>
+
+                  {/* Date and Time */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label htmlFor="eventDate" className={`block text-sm font-medium mb-2 ${
+                        missingFields.includes('date') ? 'text-red-600' : 'text-gray-700'
+                      }`}>
+                        Date * {missingFields.includes('date') && <span className="text-red-500">(Please fill)</span>}
+                      </label>
+                      <input
+                        type="date"
+                        id="eventDate"
+                        value={eventFormData.date}
+                        onChange={(e) => {
+                          setEventFormData({...eventFormData, date: e.target.value});
+                          if (missingFields.includes('date') && e.target.value) {
+                            setMissingFields(missingFields.filter(f => f !== 'date'));
+                          }
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          missingFields.includes('date')
+                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                            : 'border-gray-300'
+                        }`}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="startTime" className={`block text-sm font-medium mb-2 ${
+                        missingFields.includes('startTime') ? 'text-red-600' : 'text-gray-700'
+                      }`}>
+                        Start Time * {missingFields.includes('startTime') && <span className="text-red-500">(Please fill)</span>}
+                      </label>
+                      <input
+                        type="time"
+                        id="startTime"
+                        value={eventFormData.startTime}
+                        onChange={(e) => {
+                          setEventFormData({...eventFormData, startTime: e.target.value});
+                          if (missingFields.includes('startTime') && e.target.value) {
+                            setMissingFields(missingFields.filter(f => f !== 'startTime'));
+                          }
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          missingFields.includes('startTime')
+                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                            : 'border-gray-300'
+                        }`}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
+                        End Time
+                        <span className="text-gray-500 text-xs ml-1">(optional)</span>
+                      </label>
+                      <input
+                        type="time"
+                        id="endTime"
+                        value={eventFormData.endTime || ''}
+                        onChange={(e) => setEventFormData({...eventFormData, endTime: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Location and Price */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="eventLocation" className={`block text-sm font-medium mb-2 ${
+                        missingFields.includes('location') ? 'text-red-600' : 'text-gray-700'
+                      }`}>
+                        Location * {missingFields.includes('location') && <span className="text-red-500">(Please fill)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        id="eventLocation"
+                        value={eventFormData.location}
+                        onChange={(e) => {
+                          setEventFormData({...eventFormData, location: e.target.value});
+                          if (missingFields.includes('location') && e.target.value.trim()) {
+                            setMissingFields(missingFields.filter(f => f !== 'location'));
+                          }
+                        }}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          missingFields.includes('location')
+                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                            : 'border-gray-300'
+                        }`}
+                        placeholder="Enter event location"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="eventPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                        Price
+                      </label>
+                      <input
+                        type="text"
+                        id="eventPrice"
+                        value={eventFormData.price}
+                        onChange={(e) => setEventFormData({...eventFormData, price: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Free, 10, 15-20 (GBP symbol added automatically)"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label htmlFor="eventDescription" className={`block text-sm font-medium mb-2 ${
+                      missingFields.includes('description') ? 'text-red-600' : 'text-gray-700'
+                    }`}>
+                      Description * {missingFields.includes('description') && <span className="text-red-500">(Please fill)</span>}
+                    </label>
+                    <textarea
+                      id="eventDescription"
+                      value={eventFormData.description}
+                      onChange={(e) => {
+                        setEventFormData({...eventFormData, description: e.target.value});
+                        if (missingFields.includes('description') && e.target.value.trim()) {
+                          setMissingFields(missingFields.filter(f => f !== 'description'));
+                        }
+                      }}
+                      rows={4}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        missingFields.includes('description')
+                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                          : 'border-gray-300'
+                      }`}
+                      placeholder="Enter event description"
+                      required
+                    />
+                  </div>
+
+                  {/* Signup Form URL */}
+                  <div>
+                    <label htmlFor="eventSignupFormUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                      Signup Form URL
+                      <span className="text-gray-500 text-xs ml-2">
+                        (Optional - external signup form link like Google Forms, Eventbrite, etc.)
+                      </span>
+                    </label>
+                    <input
+                      type="url"
+                      id="eventSignupFormUrl"
+                      value={eventFormData.signupFormUrl || ''}
+                      onChange={(e) => setEventFormData({...eventFormData, signupFormUrl: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://forms.google.com/your-form-link"
+                    />
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tags
+                      <span className="text-gray-500 text-xs ml-2">
+                        (Select relevant tags for this event - optional)
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {[
+                        'annual',
+                        'weekly',
+                        'brothers only',
+                        'sisters only',
+                        'education',
+                        'welfare'
+                      ].map((tag) => (
+                        <label key={tag} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={eventFormData.tags.includes(tag)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEventFormData({
+                                  ...eventFormData,
+                                  tags: [...eventFormData.tags, tag]
+                                });
+                              } else {
+                                setEventFormData({
+                                  ...eventFormData,
+                                  tags: eventFormData.tags.filter(t => t !== tag)
+                                });
+                              }
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 block text-sm text-gray-700 capitalize">
+                            {tag}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {eventFormData.tags.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Selected Tags:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {eventFormData.tags.map((tag) => (
+                            <span key={tag} className="inline-flex items-center px-2 py-1 bg-blue-500/20 text-blue-700 text-xs rounded-full border border-blue-500/30">
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => setEventFormData({
+                                  ...eventFormData,
+                                  tags: eventFormData.tags.filter(t => t !== tag)
+                                })}
+                                className="ml-2 text-blue-700 hover:text-blue-900"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Event Visibility Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="isPublic" className="block text-sm font-medium text-gray-700">
+                        Public
+                      </label>
+                      <div
+                        className="relative inline-flex items-center cursor-pointer group"
+                        onClick={() => setEventFormData({
+                          ...eventFormData,
+                          isPublic: !eventFormData.isPublic
+                        })}
+                      >
+                        {/* Toggle Track */}
+                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                          eventFormData.isPublic
+                            ? 'bg-blue-600'
+                            : 'bg-gray-400'
+                        }`}>
+                          {/* Toggle Knob */}
+                          <div className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                            eventFormData.isPublic
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
+                          }`} />
+                        </div>
+
+                        {/* Hidden checkbox for form handling */}
+                        <input
+                          type="checkbox"
+                          id="isPublic"
+                          checked={eventFormData.isPublic}
+                          onChange={(e) => setEventFormData({
+                            ...eventFormData,
+                            isPublic: e.target.checked
+                          })}
+                          className="sr-only"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sign Up Options */}
+                  <div className="space-y-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="signupOpen"
+                      checked={eventFormData.signupOpen}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setEventFormData({
+                          ...eventFormData,
+                          signupOpen: checked,
+                          // If signup is being opened, no signup cannot be needed
+                          noSignupNeeded: checked ? false : eventFormData.noSignupNeeded
+                        });
+                      }}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="signupOpen" className="ml-2 block text-sm font-medium text-gray-700">
+                      Sign up open?
+                      <span className="text-gray-500 text-xs ml-2">
+                        (If checked, public users can sign up for this event)
+                      </span>
+                    </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="noSignupNeeded"
+                        checked={eventFormData.noSignupNeeded}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setEventFormData({
+                            ...eventFormData,
+                            noSignupNeeded: checked,
+                            // If no signup is needed, signup cannot be open
+                            signupOpen: checked ? false : eventFormData.signupOpen,
+                            // Clear form fields if no signup is needed, or set defaults if signup is needed
+                            formFields: checked ? [] : (eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields),
+                            // Clear maxSignups if no signup is needed
+                            maxSignups: checked ? undefined : eventFormData.maxSignups
+                          });
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="noSignupNeeded" className="ml-2 block text-sm font-medium text-gray-700">
+                        No sign up needed
+                        <span className="text-gray-500 text-xs ml-2">
+                          (Check if this is a public event where people can just show up without registering)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Max Sign Ups - Only show if signup is needed */}
+                  {!eventFormData.noSignupNeeded && (
+                    <div>
+                      <label htmlFor="maxSignups" className="block text-sm font-medium text-gray-700 mb-2">
+                        Maximum Sign Ups
+                      </label>
+                      <select
+                        id="maxSignups"
+                        value={eventFormData.maxSignups || 50}
+                        onChange={(e) => setEventFormData({
+                          ...eventFormData,
+                          maxSignups: parseInt(e.target.value)
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        {Array.from({ length: 200 }, (_, i) => i + 1).map(num => (
+                          <option key={num} value={num}>
+                            {num}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">Maximum number of people who can sign up for this event</p>
+                    </div>
+                  )}
+
+                  {/* Image Upload */}
+                  <div>
+                    <label htmlFor="eventImage" className="block text-sm font-medium text-gray-700 mb-2">
+                      Event Poster
+                    </label>
+                    <input
+                      type="file"
+                      id="eventImage"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setEventFormData({...eventFormData, imageFile: file});
+                          // Create preview URL
+                          const previewUrl = URL.createObjectURL(file);
+                          setImagePreview(previewUrl);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Upload an event poster (optional, max 5MB)</p>
+                    
+                    {/* Image Preview */}
+                    {imagePreview && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                        <div className="relative w-full max-w-xs">
+                          <Image
+                            src={imagePreview}
+                            alt="Event poster preview"
+                            width={400}
+                            height={300}
+                            className="w-full max-h-48 object-contain rounded-lg border"
+                            style={{ aspectRatio: 'auto' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setEventFormData({...eventFormData, imageFile: undefined});
+                              // Clear the file input
+                              const fileInput = document.getElementById('eventImage') as HTMLInputElement;
+                              if (fileInput) fileInput.value = '';
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Form Fields Selection - Only show if signup is needed */}
+                  {!eventFormData.noSignupNeeded && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Signup Form Fields *
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">Select which information to collect from attendees</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {[...availableFormFields, ...customFormFields].map((field) => (
+                          <label key={field} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={eventFormData.formFields.includes(field)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEventFormData({
+                                    ...eventFormData,
+                                    formFields: [...eventFormData.formFields, field]
+                                  });
+                                } else {
+                                  setEventFormData({
+                                    ...eventFormData,
+                                    formFields: eventFormData.formFields.filter(f => f !== field)
+                                  });
+                                }
+                              }}
+                              className="mr-2"
+                            />
+                            <span className="text-sm text-gray-700 capitalize">
+                              {field.replace('_', ' ')}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      {eventFormData.formFields.length === 0 && (
+                        <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
+                      )}
+
+                      {/* Custom Form Fields */}
+                      <div className="mt-4 border-t pt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Add Custom Form Field
+                        </label>
+                        <p className="text-xs text-gray-500 mb-3">Create your own custom field for specific event requirements</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newCustomField}
+                            onChange={(e) => setNewCustomField(e.target.value)}
+                            placeholder="e.g., Allergies, Dietary Restrictions, etc."
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (newCustomField.trim() && !availableFormFields.includes(newCustomField.trim()) && !customFormFields.includes(newCustomField.trim())) {
+                                setCustomFormFields([...customFormFields, newCustomField.trim()]);
+                                setEventFormData({
+                                  ...eventFormData,
+                                  formFields: [...eventFormData.formFields, newCustomField.trim()]
+                                });
+                                setNewCustomField('');
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-300"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        {customFormFields.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-sm font-medium text-gray-700 mb-2">Custom Fields Added:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {customFormFields.map((field, index) => (
+                                <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                  {field.replace(/_/g, ' ')}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedCustomFields = customFormFields.filter(f => f !== field);
+                                      setCustomFormFields(updatedCustomFields);
+                                      setEventFormData({
+                                        ...eventFormData,
+                                        formFields: eventFormData.formFields.filter(f => f !== field)
+                                      });
+                                    }}
+                                    className="ml-2 text-blue-600 hover:text-blue-800"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show message when no signup is needed */}
+                  {eventFormData.noSignupNeeded && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <h4 className="text-blue-800 font-medium">No Sign Up Required</h4>
+                          <p className="text-blue-600 text-sm">This is a public event where attendees can just show up without registering.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Submit Buttons */}
+                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEventForm(false);
+                        if (imagePreview) {
+                          URL.revokeObjectURL(imagePreview);
+                          setImagePreview(null);
+                        }
+                      }}
+                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isCreatingEvent || (!eventFormData.noSignupNeeded && eventFormData.formFields.length === 0)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isCreatingEvent ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Event'
+                      )}
+                    </button>
+                  </div>
+                </form>
+                  </>
+                )}
+
+                {eventFormTab === 'ai' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="aiEventText" className="block text-sm font-medium text-gray-700 mb-2">
+                        Event Details
+                      </label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Paste your event details here and AI will automatically extract the title, date, time, location, and description.
+                      </p>
+                      <textarea
+                        id="aiEventText"
+                        value={aiEventText}
+                        onChange={(e) => setAiEventText(e.target.value)}
+                        rows={10}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder={`Examples:
+
+SINGLE EVENT:
+Fresher's Student Panel
+Thursday, 2 October⋅6:00 – 8:00pm
+The Quran as a Source of Guidance: Panel
+
+MULTIPLE EVENTS (use separators):
+---
+Fresher's Student Panel
+Thursday, 2 October⋅6:00 – 8:00pm
+The Quran as a Source of Guidance: Panel
+---
+
+Friday Football
+Friday, 3 October⋅7:00 – 9:00pm
+Join us for our weekly football session
+---
+
+Annual Dinner
+Saturday, 4 October⋅8:00pm – 11:00pm
+Celebrating another successful year
+---
+
+Or use numbered lists:
+1. Fresher's Student Panel - Thursday, 2 October⋅6:00 – 8:00pm - The Quran as a Source of Guidance
+2. Friday Football - Friday, 3 October⋅7:00 – 9:00pm - Weekly sports session
+3. Annual Dinner - Saturday, 4 October⋅8:00pm - Celebrating the year`}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowEventForm(false);
+                          setEventFormTab('manual');
+                          setAiEventText('');
+                          setMissingFields([]);
+                          if (imagePreview) {
+                            URL.revokeObjectURL(imagePreview);
+                            setImagePreview(null);
+                          }
+                        }}
+                        className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAIEventParsing}
+                        disabled={isProcessingAI || !aiEventText.trim()}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {isProcessingAI ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Create Event with AI
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Batch Events Review Modal */}
+        {showBatchReview && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Review Events ({parsedEvents.length})</h3>
+                    <p className="text-sm text-gray-600 mt-1">Review and create multiple events at once</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowBatchReview(false);
+                      setParsedEvents([]);
+                      setBatchCreationProgress({});
+                      setBatchCreationErrors({});
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Events List */}
+                <div className="space-y-4 mb-6">
+                  {parsedEvents.map((event, index) => {
+                    const requiredFields = ['title', 'date', 'startTime', 'location', 'description'] as const;
+                    const missing = requiredFields.filter(field => !event[field as keyof Event]);
+                    const progress = batchCreationProgress[index] || 'pending';
+                    const error = batchCreationErrors[index];
+
+                    return (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-gray-900">Event {index + 1}</h4>
+                          <div className="flex items-center gap-2">
+                            {progress === 'pending' && (
+                              <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">Pending</span>
+                            )}
+                            {progress === 'creating' && (
+                              <span className="px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded flex items-center gap-1">
+                                <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                Creating...
+                              </span>
+                            )}
+                            {progress === 'completed' && (
+                              <span className="px-2 py-1 text-xs bg-green-100 text-green-600 rounded flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Created
+                              </span>
+                            )}
+                            {progress === 'failed' && (
+                              <span className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded">Failed</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {error && (
+                          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                            <strong>Error:</strong> {error}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <input
+                              type="text"
+                              value={event.title || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].title = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.title ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                              placeholder="Event title"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input
+                              type="date"
+                              value={event.date || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].date = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.date ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                            <input
+                              type="time"
+                              value={event.startTime || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].startTime = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.startTime ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                            <input
+                              type="text"
+                              value={event.location || ''}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].location = e.target.value;
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                !event.location ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
+                              placeholder="Event location"
+                            />
+                          </div>
+                        </div>
+
+                        {/* No Signup Needed Checkbox */}
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`noSignupNeeded-${index}`}
+                              checked={event.noSignupNeeded || false}
+                              onChange={(e) => {
+                                const updatedEvents = [...parsedEvents];
+                                updatedEvents[index].noSignupNeeded = e.target.checked;
+                                // Clear form fields if no signup is needed
+                                if (e.target.checked) {
+                                  updatedEvents[index].formFields = [];
+                                } else if (!updatedEvents[index].formFields || updatedEvents[index].formFields.length === 0) {
+                                  // Set default form fields if signup is needed and none are set
+                                  updatedEvents[index].formFields = ['name', 'email'];
+                                }
+                                setParsedEvents(updatedEvents);
+                              }}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor={`noSignupNeeded-${index}`} className="ml-2 block text-sm font-medium text-gray-700">
+                              No sign up needed
+                              <span className="text-gray-500 text-xs ml-2">
+                                (Public event - people can just show up)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Show message when no signup is needed */}
+                        {event.noSignupNeeded && (
+                          <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                            <strong>Note:</strong> No form fields needed for walk-in events
+                          </div>
+                        )}
+
+                        {/* Form Fields - Only show if signup is needed */}
+                        {!event.noSignupNeeded && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Form Fields
+                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {availableFormFields.map((field) => (
+                                <label key={field} className="flex items-center text-xs">
+                                  <input
+                                    type="checkbox"
+                                    checked={event.formFields?.includes(field) || false}
+                                    onChange={(e) => {
+                                      const updatedEvents = [...parsedEvents];
+                                      const currentFields = updatedEvents[index].formFields || [];
+                                      if (e.target.checked) {
+                                        updatedEvents[index].formFields = [...currentFields, field];
+                                      } else {
+                                        updatedEvents[index].formFields = currentFields.filter(f => f !== field);
+                                      }
+                                      setParsedEvents(updatedEvents);
+                                    }}
+                                    className="mr-2 h-3 w-3"
+                                  />
+                                  <span className="capitalize">
+                                    {field.replace('_', ' ')}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                            {(!event.formFields || event.formFields.length === 0) && (
+                              <p className="text-red-500 text-xs mt-1">Please select at least one form field</p>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                          <textarea
+                            value={event.description || ''}
+                            onChange={(e) => {
+                              const updatedEvents = [...parsedEvents];
+                              updatedEvents[index].description = e.target.value;
+                              setParsedEvents(updatedEvents);
+                            }}
+                            rows={2}
+                            className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                              !event.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                            placeholder="Event description"
+                          />
+                        </div>
+
+                        {missing.length > 0 && (
+                          <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                            <strong>Missing:</strong> {missing.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBatchReview(false);
+                      setParsedEvents([]);
+                      setBatchCreationProgress({});
+                      setBatchCreationErrors({});
+                    }}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBatchCreateEvents}
+                    disabled={isCreatingEvent}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isCreatingEvent ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Creating Events...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Create All Events ({parsedEvents.length})
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rejection Reason Modal */}
+        {showRejectModal && selectedPostForRejection && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Reject Post</h3>
+
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-800 mb-2">Post Title:</h4>
+                <p className="text-gray-600 text-sm">{selectedPostForRejection.title}</p>
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="rejectionReason" className="block text-sm font-medium text-gray-700 mb-2">
+                  Rejection Reason *
+                </label>
+                <textarea
+                  id="rejectionReason"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="Please provide a reason for rejecting this post..."
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeRejectModal}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitRejection}
+                  disabled={!rejectionReason.trim() || (selectedPostForRejection?.id ? loadingPosts[selectedPostForRejection.id] === 'rejecting' : false)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {selectedPostForRejection?.id && loadingPosts[selectedPostForRejection.id] === 'rejecting' ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Rejecting...
+                    </>
+                  ) : (
+                    'Reject Post'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
     </div>
   );
-}
+} 
