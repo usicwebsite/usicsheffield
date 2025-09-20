@@ -2210,9 +2210,10 @@ export default function AdminDashboard() {
                           <Image
                             src={imagePreview}
                             alt="Event poster preview"
-                            width={300}
-                            height={200}
-                            className="w-full h-32 object-cover rounded-lg border"
+                            width={400}
+                            height={300}
+                            className="w-full max-h-48 object-contain rounded-lg border"
+                            style={{ aspectRatio: 'auto' }}
                           />
                           <button
                             type="button"

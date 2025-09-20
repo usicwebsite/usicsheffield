@@ -734,9 +734,10 @@ export default function EventDetailPage() {
                   <Image
                     src={event.imageUrl}
                     alt={event.title}
-                    width={600}
-                    height={300}
-                    className="w-full h-64 md:h-80 object-cover rounded-lg"
+                    width={800}
+                    height={400}
+                    className="w-full max-h-96 object-contain rounded-lg"
+                    style={{ aspectRatio: 'auto' }}
                   />
                 </div>
               )}
@@ -751,9 +752,10 @@ export default function EventDetailPage() {
                         <Image
                           src={imagePreviewUrl || event.imageUrl!}
                           alt="Event poster preview"
-                          width={400}
-                          height={200}
-                          className="w-full h-64 md:h-80 object-cover rounded-lg"
+                          width={800}
+                          height={400}
+                          className="w-full max-h-96 object-contain rounded-lg"
+                          style={{ aspectRatio: 'auto' }}
                         />
                         <button
                           type="button"
@@ -781,8 +783,7 @@ export default function EventDetailPage() {
                     />
                     <p className="text-xs text-gray-400 mt-1">
                       Supported formats: JPG, PNG, GIF. Max size: 5MB<br/>
-                      <strong>Important:</strong> For best display, use 4:3 aspect ratio (e.g., 800×600, 1200×900)<br/>
-                      Non-4:3 images will be cropped to fit the display area
+                      All aspect ratios are supported - your original image proportions will be preserved
                     </p>
                   </div>
 

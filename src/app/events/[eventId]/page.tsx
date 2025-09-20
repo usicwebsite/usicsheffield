@@ -277,7 +277,7 @@ export default function EventPage() {
                     alt={event.title}
                     width={600}
                     height={400}
-                    className="w-full h-64 md:h-80 object-cover rounded-lg"
+                    className="w-full h-64 object-cover rounded-lg"
                   />
                 </div>
               )}

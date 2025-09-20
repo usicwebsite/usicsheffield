@@ -137,13 +137,12 @@ export async function POST(request: NextRequest) {
         const bytes = await imageFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Upload to Cloudinary
+        // Upload to Cloudinary with optimization (no aspect ratio constraints)
         const result = await new Promise((resolve, reject) => {
           cloudinary.uploader.upload_stream(
             {
               folder: 'usic-events',
               transformation: [
-                { width: 800, height: 600, crop: 'fill', gravity: 'auto' },
                 { quality: 'auto', fetch_format: 'auto' }
               ],
               public_id: `event_${Date.now()}`,

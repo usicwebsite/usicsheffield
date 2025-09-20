@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to Cloudinary with optimization for event posters (no resizing)
+    // Upload to Cloudinary with optimization (preserves original aspect ratio)
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {

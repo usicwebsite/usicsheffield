@@ -881,13 +881,13 @@ export default function EventsPage() {
                 }
               }}
             >
-              <div className="aspect-video bg-[#102736] relative flex-shrink-0 h-48">
+              <div className="bg-[#102736] relative flex-shrink-0 h-48">
                 {('image' in event ? event.image : (event as AdminEvent).imageUrl) ? (
                   <Image
                     src={'image' in event ? event.image! : (event as AdminEvent).imageUrl!}
                     alt={event.title}
-                    width={640}
-                    height={360}
+                    width={600}
+                    height={600}
                     className="w-full h-full object-cover"
                     style={{
                       objectPosition:
@@ -1051,9 +1051,10 @@ export default function EventsPage() {
                     alt={selectedEvent.title}
                     width={800}
                     height={400}
-                    className="w-full h-64 md:h-80 object-cover"
+                    className="w-full max-h-96 object-contain"
                     style={{
-                      objectPosition: 'center 65%'
+                      objectPosition: 'center center',
+                      aspectRatio: 'auto'
                     }}
                   />
                 </div>
