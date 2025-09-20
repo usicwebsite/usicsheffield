@@ -17,7 +17,7 @@ export async function GET() {
       
       // Get signup count for this event
       let signupCount = 0;
-      if (data.signupOpen && !data.noSignupNeeded) {
+      if (data.signupOpen && data.signupMethod === 'website') {
         try {
           const signupsSnapshot = await adminDb!
             .collection('event_signups')
@@ -36,12 +36,17 @@ export async function GET() {
         startTime: data.startTime,
         endTime: data.endTime,
         location: data.location,
-        price: data.price,
+        price: data.price, // Keep for backwards compatibility
+        memberPrice: data.memberPrice,
+        nonMemberPrice: data.nonMemberPrice,
+        meetUpTime: data.meetUpTime,
+        meetUpLocation: data.meetUpLocation,
         description: data.description,
         imageUrl: data.imageUrl,
         formFields: data.formFields,
         signupOpen: data.signupOpen || false, // Default to false for backwards compatibility
-        noSignupNeeded: data.noSignupNeeded || false,
+        signupMethod: data.signupMethod || (data.noSignupNeeded ? 'none' : 'website'), // Backwards compatibility
+        noSignupNeeded: data.signupMethod ? data.signupMethod === 'none' : (data.noSignupNeeded || false), // Backwards compatibility
         tags: data.tags || [],
         maxSignups: data.maxSignups,
         signupCount,

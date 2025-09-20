@@ -16,6 +16,8 @@ interface Event {
   imageUrl?: string;
   formFields: string[];
   signupOpen: boolean;
+  signupMethod: 'none' | 'website' | 'external'; // 'none' = walk-in, 'website' = website signup, 'external' = external link
+  noSignupNeeded?: boolean; // Keep for backwards compatibility
   createdAt: Date;
   signupFormUrl?: string;
 }
@@ -289,7 +291,11 @@ export default function EventPage() {
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                   <span className="text-lg">
-                    {event.signupOpen ? (
+                    {event.signupMethod === 'none' ? (
+                      <span className="text-blue-300 font-semibold">Walk-in Event</span>
+                    ) : event.signupMethod === 'external' ? (
+                      <span className="text-purple-300 font-semibold">External Registration</span>
+                    ) : event.signupOpen ? (
                       <span className="text-green-300 font-semibold">Registration Open</span>
                     ) : (
                       <span className="text-gray-400">Registration Closed</span>
@@ -339,18 +345,22 @@ export default function EventPage() {
           </div>
 
           {/* Conditional Signup Form or Info Message */}
-          {event.signupFormUrl ? (
+          {event.signupMethod === 'external' ? (
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
               <h2 className="text-2xl font-bold text-white mb-6">Sign Up</h2>
               <p className="text-gray-300 mb-4">Click the button below to sign up for this event using our external registration form.</p>
-              <button
-                onClick={() => window.open(event.signupFormUrl, '_blank')}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300"
-              >
-                Sign Up for Event
-              </button>
+              {event.signupFormUrl ? (
+                <button
+                  onClick={() => window.open(event.signupFormUrl, '_blank')}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300"
+                >
+                  Sign Up for Event
+                </button>
+              ) : (
+                <p className="text-red-300">External signup URL not configured.</p>
+              )}
             </div>
-          ) : event.signupOpen ? (
+          ) : event.signupMethod === 'website' && event.signupOpen ? (
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
               <h2 className="text-2xl font-bold text-white mb-6">Sign Up</h2>
 
@@ -399,6 +409,26 @@ export default function EventPage() {
                   )}
                 </button>
               </form>
+            </div>
+          ) : event.signupMethod === 'none' ? (
+            <div className="bg-blue-600/20 backdrop-blur-sm border border-blue-500/30 rounded-lg p-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">Walk-in Event</h2>
+                <p className="text-gray-300 mb-4">
+                  This is a walk-in event - no registration required! Just show up at the event location.
+                </p>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                  <h3 className="text-white font-semibold mb-2">Event Details</h3>
+                  <p className="text-gray-300 text-sm">
+                    Feel free to attend this event without prior registration. We look forward to seeing you there!
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="bg-gray-600/20 backdrop-blur-sm border border-gray-500/30 rounded-lg p-6">

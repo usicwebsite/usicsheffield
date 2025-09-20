@@ -24,12 +24,17 @@ type AdminEvent = {
   startTime: string;
   endTime?: string;
   location: string;
-  price: string;
+  price?: string; // Keep for backwards compatibility
+  memberPrice?: string;
+  nonMemberPrice?: string;
+  meetUpTime?: string;
+  meetUpLocation?: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
   signupOpen: boolean;
-  noSignupNeeded: boolean;
+  signupMethod: 'none' | 'website' | 'external'; // 'none' = walk-in, 'website' = website signup, 'external' = external link
+  noSignupNeeded?: boolean; // Keep for backwards compatibility
   maxSignups?: number;
   signupCount?: number;
   tags: string[];
@@ -662,20 +667,32 @@ export default function EventsPage() {
                             if ('category' in event) {
                               // Static event
                               openModal(event);
-                            } else if ('noSignupNeeded' in event && event.noSignupNeeded) {
-                              // Admin event with no signup needed - walk-in event
-                              openModal(event);
-                            } else if ('signupOpen' in event && event.signupOpen) {
-                              // Admin event with signup open and signup needed
-                              const isSoldOut = event.maxSignups && event.signupCount && event.signupCount >= event.maxSignups;
-                              if (isSoldOut) {
-                                openModal(event);
-                              } else {
-                                window.location.href = `/events/${event.id}`;
-                              }
                             } else {
-                              // Admin event with signup closed
-                              openModal(event);
+                              // Admin event - handle based on signup method
+                              const adminEvent = event as AdminEvent;
+
+                              if (adminEvent.signupMethod === 'none') {
+                                // Walk-in event
+                                openModal(event);
+                              } else if (adminEvent.signupMethod === 'external') {
+                                // External signup - redirect to external link
+                                if (adminEvent.signupFormUrl) {
+                                  window.open(adminEvent.signupFormUrl, '_blank');
+                                } else {
+                                  openModal(event);
+                                }
+                              } else if (adminEvent.signupMethod === 'website' && adminEvent.signupOpen) {
+                                // Website signup - redirect to event page
+                                const isSoldOut = adminEvent.maxSignups && adminEvent.signupCount && adminEvent.signupCount >= adminEvent.maxSignups;
+                                if (isSoldOut) {
+                                  openModal(event);
+                                } else {
+                                  window.location.href = `/events/${event.id}`;
+                                }
+                              } else {
+                                // Signup closed or other cases
+                                openModal(event);
+                              }
                             }
                           }}
                         >
@@ -924,7 +941,33 @@ export default function EventsPage() {
                     </svg>
                     <span>{event.location}</span>
                   </div>
-                  {'price' in event && event.price && event.price !== 'Free' && (
+                  {'meetUpLocation' in event && event.meetUpLocation && (
+                    <div className="flex items-start">
+                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                      </svg>
+                      <span>Meet up: {event.meetUpLocation}</span>
+                    </div>
+                  )}
+                  {'meetUpTime' in event && event.meetUpTime && (
+                    <div className="flex items-start">
+                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
+                      </svg>
+                      <span>Meet up: {formatTimeRange(event.meetUpTime)}</span>
+                    </div>
+                  )}
+                  {('memberPrice' in event || 'nonMemberPrice' in event) && (event.memberPrice || event.nonMemberPrice) ? (
+                    <div className="flex items-start">
+                      <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
+                      </svg>
+                      <div>
+                        {event.memberPrice && <div>Members: £{event.memberPrice}</div>}
+                        {event.nonMemberPrice && <div>Non-members: £{event.nonMemberPrice}</div>}
+                      </div>
+                    </div>
+                  ) : ('price' in event && event.price && event.price !== 'Free') && (
                     <div className="flex items-start">
                       <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
@@ -945,18 +988,20 @@ export default function EventsPage() {
                   >
                     SIGN UP NOW
                   </button>
-                ) : ('signupFormUrl' in event && event.signupFormUrl) ? (
-                  // Admin event with external signup form URL
+                ) : (event as AdminEvent).signupMethod === 'external' ? (
+                  // Admin event with external signup
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click when clicking button
-                      window.open(event.signupFormUrl, '_blank');
+                      if ((event as AdminEvent).signupFormUrl) {
+                        window.open((event as AdminEvent).signupFormUrl, '_blank');
+                      }
                     }}
                     className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
                     SIGN UP NOW
                   </button>
-                ) : ('noSignupNeeded' in event && event.noSignupNeeded) ? (
+                ) : (event as AdminEvent).signupMethod === 'none' ? (
                   // Admin event with no signup needed
                   <button
                     onClick={(e) => {
@@ -967,10 +1012,11 @@ export default function EventsPage() {
                   >
                     LEARN MORE
                   </button>
-                ) : ('signupOpen' in event && event.signupOpen) ? (
-                  // Admin event with signup open and signup needed
+                ) : (event as AdminEvent).signupMethod === 'website' && (event as AdminEvent).signupOpen ? (
+                  // Admin event with website signup open
                   (() => {
-                    const isSoldOut = event.maxSignups && event.signupCount && event.signupCount >= event.maxSignups;
+                    const adminEvent = event as AdminEvent;
+                    const isSoldOut = adminEvent.maxSignups && adminEvent.signupCount && adminEvent.signupCount >= adminEvent.maxSignups;
                     return (
                       <button
                         onClick={(e) => {
@@ -1082,6 +1128,9 @@ export default function EventsPage() {
                       <p className="text-blue-200">
                         {'category' in selectedEvent ? selectedEvent.time : formatTimeRange(selectedEvent.startTime, selectedEvent.endTime)}
                       </p>
+                      {'meetUpTime' in selectedEvent && selectedEvent.meetUpTime && (
+                        <p className="text-blue-200 text-sm mt-1">Meet up: {formatTimeRange(selectedEvent.meetUpTime)}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1094,10 +1143,26 @@ export default function EventsPage() {
                     <div>
                       <h4 className="text-white font-semibold mb-1">Location</h4>
                       <p className="text-blue-200">{selectedEvent.location}</p>
+                      {'meetUpLocation' in selectedEvent && selectedEvent.meetUpLocation && (
+                        <p className="text-blue-200 text-sm mt-1">Meet up: {selectedEvent.meetUpLocation}</p>
+                      )}
                     </div>
                   </div>
                   
-                  {'category' in selectedEvent ? (
+                  {('memberPrice' in selectedEvent || 'nonMemberPrice' in selectedEvent) && (selectedEvent.memberPrice || selectedEvent.nonMemberPrice) ? (
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
+                      </svg>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">Price</h4>
+                        <div className="text-blue-200">
+                          {selectedEvent.memberPrice && <div>Members: £{selectedEvent.memberPrice}</div>}
+                          {selectedEvent.nonMemberPrice && <div>Non-members: £{selectedEvent.nonMemberPrice}</div>}
+                        </div>
+                      </div>
+                    </div>
+                  ) : 'category' in selectedEvent ? (
                     <div className="flex items-start">
                       <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path>
@@ -1115,10 +1180,23 @@ export default function EventsPage() {
                       <div>
                         <h4 className="text-white font-semibold mb-1">Registration Status</h4>
                         <p className="text-blue-200">
-                          {'noSignupNeeded' in selectedEvent && selectedEvent.noSignupNeeded
-                            ? 'Walk-in Event - No Registration Required'
-                            : ('signupOpen' in selectedEvent && selectedEvent.signupOpen ? 'Sign Up Open' : 'Info Only - Registration Closed')
-                          }
+                          {(() => {
+                            const adminEvent = selectedEvent as AdminEvent;
+                            if ('signupMethod' in adminEvent) {
+                              if (adminEvent.signupMethod === 'none') {
+                                return 'Walk-in Event - No Registration Required';
+                              } else if (adminEvent.signupMethod === 'external') {
+                                return 'External Registration Required';
+                              } else {
+                                return adminEvent.signupOpen ? 'Sign Up Open' : 'Info Only - Registration Closed';
+                              }
+                            } else {
+                              // Fallback for backwards compatibility - static events
+                              return 'signupLink' in selectedEvent
+                                ? 'Sign Up Open'
+                                : 'Info Only - Registration Closed';
+                            }
+                          })()}
                         </p>
                       </div>
                     </div>

@@ -76,10 +76,14 @@ export async function PUT(
     const endTime = formData.get('endTime') as string;
     const location = formData.get('location') as string;
     const price = formData.get('price') as string;
+    const memberPrice = formData.get('memberPrice') as string;
+    const nonMemberPrice = formData.get('nonMemberPrice') as string;
+    const meetUpTime = formData.get('meetUpTime') as string;
+    const meetUpLocation = formData.get('meetUpLocation') as string;
     const description = formData.get('description') as string;
     const formFields = JSON.parse(formData.get('formFields') as string);
     const signupOpen = formData.get('signupOpen') === 'true';
-    const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
+    const signupMethod = formData.get('signupMethod') as string || 'website'; // Default to website for backwards compatibility
     const isPublic = formData.get('isPublic') === 'true';
     const tags = JSON.parse(formData.get('tags') as string || '[]');
     const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
@@ -88,7 +92,7 @@ export async function PUT(
     const signupFormUrl = formData.get('signupFormUrl') as string;
 
     // Validate required fields
-    if (!title || !date || !startTime || !location || !description) {
+    if (!title || !date || !startTime || !location || !price || !nonMemberPrice || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -98,9 +102,9 @@ export async function PUT(
       processedFormFields = Array.isArray(formFields) ? formFields : [];
     }
 
-    // Only validate formFields if signup is needed
-    if (!noSignupNeeded && processedFormFields.length === 0) {
-      return NextResponse.json({ error: 'At least one form field is required' }, { status: 400 });
+    // Only validate formFields if website signup is selected
+    if (signupMethod === 'website' && processedFormFields.length === 0) {
+      return NextResponse.json({ error: 'At least one form field is required for website signup' }, { status: 400 });
     }
 
     // Determine the final image URL
@@ -126,11 +130,10 @@ export async function PUT(
       date: string;
       startTime: string;
       location: string;
-      price: string;
       description: string;
       formFields: string[];
       signupOpen: boolean;
-      noSignupNeeded: boolean;
+      signupMethod: string;
       isPublic: boolean;
       tags: string[];
       maxSignups: number;
@@ -138,22 +141,31 @@ export async function PUT(
       endTime?: string;
       imageUrl?: string | null;
       signupFormUrl?: string;
+      price?: string;
+      memberPrice?: string;
+      nonMemberPrice?: string;
+      meetUpTime?: string;
+      meetUpLocation?: string;
     } = {
       title,
       date,
       startTime,
       location,
-      price,
       description,
       formFields: processedFormFields,
       signupOpen,
-      noSignupNeeded,
+      signupMethod: signupMethod || 'website', // Default to website for backwards compatibility
       isPublic,
       tags: tags || [],
-      maxSignups: noSignupNeeded ? 0 : maxSignups,
+      maxSignups: signupMethod === 'none' ? 0 : (signupMethod === 'website' ? maxSignups : 50),
       updatedAt: new Date(),
       ...(endTime && { endTime }),
-      ...(signupFormUrl && { signupFormUrl })
+      ...(signupFormUrl && { signupFormUrl }),
+      ...(price && { price }),
+      ...(memberPrice && { memberPrice }),
+      ...(nonMemberPrice && { nonMemberPrice }),
+      ...(meetUpTime && { meetUpTime }),
+      ...(meetUpLocation && { meetUpLocation })
     };
 
     // Handle image URL - include if we have a URL, or null if image was removed

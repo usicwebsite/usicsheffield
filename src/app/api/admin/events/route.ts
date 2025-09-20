@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
       // Get signup count for this event
       let signupCount = 0;
-      if (data.signupOpen && !data.noSignupNeeded) {
+      if (data.signupOpen && data.signupMethod === 'website') {
         try {
           const signupsSnapshot = await adminDb!
             .collection('event_signups')
@@ -91,19 +91,23 @@ export async function POST(request: NextRequest) {
     const endTime = formData.get('endTime') as string;
     const location = formData.get('location') as string;
     const price = formData.get('price') as string;
+    const memberPrice = formData.get('memberPrice') as string;
+    const nonMemberPrice = formData.get('nonMemberPrice') as string;
+    const meetUpTime = formData.get('meetUpTime') as string;
+    const meetUpLocation = formData.get('meetUpLocation') as string;
     const description = formData.get('description') as string;
     const formFields = JSON.parse(formData.get('formFields') as string);
     const signupOpen = formData.get('signupOpen') === 'true';
-    const noSignupNeeded = formData.get('noSignupNeeded') === 'true';
     const isPublic = formData.get('isPublic') === 'true';
     const tags = JSON.parse(formData.get('tags') as string || '[]');
     const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
     const createdBy = formData.get('createdBy') as string;
     const imageFile = formData.get('image') as File;
     const signupFormUrl = formData.get('signupFormUrl') as string;
+    const signupMethod = formData.get('signupMethod') as string || 'website'; // Default to website for backwards compatibility
 
     // Validate required fields
-    if (!title || !date || !startTime || !location || !description || !createdBy) {
+    if (!title || !date || !startTime || !location || !price || !nonMemberPrice || !description || !createdBy) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -113,9 +117,9 @@ export async function POST(request: NextRequest) {
       processedFormFields = Array.isArray(formFields) ? formFields : [];
     }
 
-    // Only validate formFields if signup is needed
-    if (!noSignupNeeded && processedFormFields.length === 0) {
-      return NextResponse.json({ error: 'At least one form field is required' }, { status: 400 });
+    // Only validate formFields if website signup is selected
+    if (signupMethod === 'website' && (!processedFormFields || processedFormFields.length === 0)) {
+      return NextResponse.json({ error: 'At least one form field is required for website signup' }, { status: 400 });
     }
 
     let imageUrl = '';
@@ -168,15 +172,19 @@ export async function POST(request: NextRequest) {
       startTime,
       ...(endTime && { endTime }),
       location,
-      price: price || 'Free',
+      ...(price && { price }), // Keep for backwards compatibility
+      ...(memberPrice && { memberPrice }),
+      ...(nonMemberPrice && { nonMemberPrice }),
+      ...(meetUpTime && { meetUpTime }),
+      ...(meetUpLocation && { meetUpLocation }),
       description,
       imageUrl,
       formFields: processedFormFields,
       signupOpen,
-      noSignupNeeded,
+      signupMethod: signupMethod || 'website', // Default to website for backwards compatibility
       isPublic,
       tags: tags || [],
-      maxSignups: noSignupNeeded ? 0 : maxSignups,
+      maxSignups: signupMethod === 'none' ? 0 : (signupMethod === 'website' ? maxSignups : 50),
       createdBy,
       createdAt: new Date(),
       updatedAt: new Date(),

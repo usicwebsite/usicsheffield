@@ -37,11 +37,18 @@ export async function GET(
       startTime: eventData.startTime,
       endTime: eventData.endTime,
       location: eventData.location,
-      price: eventData.price,
+      price: eventData.price, // Keep for backwards compatibility
+      memberPrice: eventData.memberPrice,
+      nonMemberPrice: eventData.nonMemberPrice,
+      meetUpTime: eventData.meetUpTime,
+      meetUpLocation: eventData.meetUpLocation,
       description: eventData.description,
       imageUrl: eventData.imageUrl,
       formFields: eventData.formFields,
       signupOpen: eventData.signupOpen || false, // Default to false for backwards compatibility
+      signupMethod: eventData.signupMethod || (eventData.noSignupNeeded ? 'none' : 'website'), // Backwards compatibility
+      noSignupNeeded: eventData.signupMethod ? eventData.signupMethod === 'none' : (eventData.noSignupNeeded || false), // Backwards compatibility
+      signupFormUrl: eventData.signupFormUrl,
       createdAt: eventData.createdAt?.toDate?.() || new Date()
     };
 

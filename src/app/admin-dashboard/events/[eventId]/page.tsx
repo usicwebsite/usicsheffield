@@ -12,12 +12,16 @@ interface Event {
   startTime: string;
   endTime?: string;
   location: string;
-  price: string;
+  price?: string; // Keep for backwards compatibility
+  memberPrice?: string;
+  nonMemberPrice?: string;
+  meetUpTime?: string;
+  meetUpLocation?: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
   signupOpen: boolean;
-  noSignupNeeded: boolean;
+  signupMethod: 'none' | 'website' | 'external'; // 'none' = walk-in, 'website' = website signup, 'external' = external link
   maxSignups?: number;
   tags: string[];
   createdAt: Date;
@@ -52,16 +56,29 @@ export default function EventDetailPage() {
     startTime: '',
     endTime: '',
     location: '',
-    price: '',
+    price: '', // Keep for backwards compatibility
+    memberPrice: '',
+    nonMemberPrice: '',
+    meetUpTime: '',
+    meetUpLocation: '',
     description: '',
     formFields: [] as string[],
     signupOpen: true,
-    noSignupNeeded: false,
+    signupMethod: 'website' as 'none' | 'website' | 'external',
     isPublic: true,
     maxSignups: 50,
     tags: [] as string[],
     signupFormUrl: ''
   });
+
+  // Helper function to update signup method based on URL
+  const updateSignupMethodBasedOnUrl = (url: string, currentMethod: 'none' | 'website' | 'external'): 'none' | 'website' | 'external' => {
+    if (url.trim()) {
+      return 'external';
+    }
+    // If URL is cleared and current method was external, switch to website
+    return currentMethod === 'external' ? 'website' : currentMethod;
+  };
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -179,18 +196,35 @@ export default function EventDetailPage() {
       const foundEvent = eventsList.find((e: Event) => e.id === eventId);
 
       if (foundEvent) {
-        setEvent(foundEvent);
+        // Handle migration from old noSignupNeeded field to new signupMethod
+        let signupMethod: 'none' | 'website' | 'external' = 'website';
+        if (foundEvent.signupFormUrl && foundEvent.signupFormUrl.trim()) {
+          signupMethod = 'external';
+        } else if (foundEvent.noSignupNeeded) {
+          signupMethod = 'none';
+        } else {
+          signupMethod = 'website';
+        }
+
+        setEvent({
+          ...foundEvent,
+          signupMethod // Add the computed signupMethod to the event
+        });
         setEditForm({
           title: foundEvent.title,
           date: foundEvent.date,
           startTime: foundEvent.startTime,
           endTime: foundEvent.endTime || '',
           location: foundEvent.location,
-          price: foundEvent.price || '',
+          price: foundEvent.price || '', // Keep for backwards compatibility
+          memberPrice: foundEvent.memberPrice || '',
+          nonMemberPrice: foundEvent.nonMemberPrice || '',
+          meetUpTime: foundEvent.meetUpTime || '',
+          meetUpLocation: foundEvent.meetUpLocation || '',
           description: foundEvent.description,
           formFields: foundEvent.formFields || [],
           signupOpen: foundEvent.signupOpen || false,
-          noSignupNeeded: foundEvent.noSignupNeeded || false,
+          signupMethod,
           isPublic: foundEvent.isPublic !== false, // Default to true for backwards compatibility
           maxSignups: foundEvent.maxSignups || 50,
           tags: foundEvent.tags || [],
@@ -359,16 +393,30 @@ export default function EventDetailPage() {
         formData.append('endTime', editForm.endTime);
       }
       formData.append('location', editForm.location);
-      formData.append('price', editForm.price);
+      // Member price uses the old price field for backwards compatibility
+      formData.append('price', editForm.price || '');
+      // Non-member price is required
+      if (editForm.nonMemberPrice && editForm.nonMemberPrice.trim()) {
+        formData.append('nonMemberPrice', editForm.nonMemberPrice.trim());
+      }
+      if (editForm.meetUpTime) {
+        formData.append('meetUpTime', editForm.meetUpTime);
+      }
+      if (editForm.meetUpLocation) {
+        formData.append('meetUpLocation', editForm.meetUpLocation);
+      }
       formData.append('description', editForm.description);
-      // Only include formFields if signup is needed
-      if (editForm.noSignupNeeded) {
+      // Handle formFields based on signup method
+      if (editForm.signupMethod === 'none') {
         formData.append('formFields', JSON.stringify([])); // Empty array for no signup events
-      } else {
+      } else if (editForm.signupMethod === 'website') {
         formData.append('formFields', JSON.stringify(editForm.formFields));
+      } else {
+        // External signup - empty form fields since signup happens externally
+        formData.append('formFields', JSON.stringify([]));
       }
       formData.append('signupOpen', editForm.signupOpen.toString());
-      formData.append('noSignupNeeded', editForm.noSignupNeeded.toString());
+      formData.append('signupMethod', editForm.signupMethod);
       formData.append('isPublic', editForm.isPublic.toString());
       formData.append('tags', JSON.stringify(editForm.tags));
       formData.append('maxSignups', (editForm.maxSignups || 50).toString());
@@ -688,7 +736,7 @@ export default function EventDetailPage() {
                               </span>
                             )}
                             <span className="text-xs text-gray-500">
-                              {sidebarEvent.formFields.length} fields
+                              {sidebarEvent.signupMethod === 'website' ? sidebarEvent.formFields.length : 0} fields
                             </span>
                           </div>
                         </div>
@@ -829,23 +877,71 @@ export default function EventDetailPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Location</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Event Location</label>
                     <input
                       type="text"
                       value={editForm.location}
                       onChange={(e) => setEditForm({...editForm, location: e.target.value})}
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                      placeholder="Enter event location"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Price (Optional)</label>
-                    <input
-                      type="text"
-                      value={editForm.price}
-                      onChange={(e) => setEditForm({...editForm, price: e.target.value})}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
-                      placeholder="Free or enter price"
-                    />
+                  {/* Member and Non-Member Price */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Member Price
+                        <span className="text-gray-500 text-xs ml-2">(uses the old Price field for backwards compatibility)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.price}
+                        onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                        placeholder="e.g., Free, 5, 8 (GBP symbol added automatically)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Non-Member Price *
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.nonMemberPrice}
+                        onChange={(e) => setEditForm({...editForm, nonMemberPrice: e.target.value})}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                        placeholder="e.g., Free, 10, 15 (GBP symbol added automatically)"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Meet Up Time and Location */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Meet Up Time
+                        <span className="text-gray-500 text-xs ml-2">(optional - different from event start time)</span>
+                      </label>
+                      <input
+                        type="time"
+                        value={editForm.meetUpTime}
+                        onChange={(e) => setEditForm({...editForm, meetUpTime: e.target.value})}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Meet Up Location
+                        <span className="text-gray-500 text-xs ml-2">(optional - different from event location)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.meetUpLocation}
+                        onChange={(e) => setEditForm({...editForm, meetUpLocation: e.target.value})}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                        placeholder="Enter meet up location"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
@@ -868,7 +964,14 @@ export default function EventDetailPage() {
                     <input
                       type="url"
                       value={editForm.signupFormUrl}
-                      onChange={(e) => setEditForm({...editForm, signupFormUrl: e.target.value})}
+                      onChange={(e) => {
+                        const url = e.target.value;
+                        setEditForm({
+                          ...editForm,
+                          signupFormUrl: url,
+                          signupMethod: updateSignupMethodBasedOnUrl(url, editForm.signupMethod)
+                        });
+                      }}
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
                       placeholder="https://forms.google.com/your-form-link"
                     />
@@ -983,7 +1086,7 @@ export default function EventDetailPage() {
                   </div>
 
                   {/* Signup Options */}
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center">
                       <input
                         type="checkbox"
@@ -993,9 +1096,7 @@ export default function EventDetailPage() {
                           const checked = e.target.checked;
                           setEditForm({
                             ...editForm,
-                            signupOpen: checked,
-                            // If signup is being opened, no signup cannot be needed
-                            noSignupNeeded: checked ? false : editForm.noSignupNeeded
+                            signupOpen: checked
                           });
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -1008,37 +1109,101 @@ export default function EventDetailPage() {
                       </label>
                     </div>
 
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="editNoSignupNeeded"
-                        checked={editForm.noSignupNeeded}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setEditForm({
-                            ...editForm,
-                            noSignupNeeded: checked,
-                            // If no signup is needed, signup cannot be open
-                            signupOpen: checked ? false : editForm.signupOpen,
-                            // Clear form fields if no signup is needed, or set defaults if signup is needed
-                            formFields: checked ? [] : (editForm.formFields.length === 0 ? ['name', 'email'] : editForm.formFields),
-                            // Clear maxSignups if no signup is needed
-                            maxSignups: checked ? 0 : editForm.maxSignups
-                          });
-                        }}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label htmlFor="editNoSignupNeeded" className="ml-2 block text-sm font-medium text-gray-300">
-                        No sign up needed
-                        <span className="text-gray-500 text-xs ml-2">
-                          (Check if this is a public event where people can just show up without registering)
-                        </span>
+                    {/* Signup Method Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-3">
+                        Signup Method
+                        {editForm.signupFormUrl && (
+                          <span className="text-purple-300 text-xs ml-2">
+                            (Auto-selected: External Link detected)
+                          </span>
+                        )}
                       </label>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="signupMethodExternal"
+                            name="signupMethod"
+                            value="external"
+                            checked={editForm.signupMethod === 'external'}
+                            onChange={(e) => {
+                              setEditForm({
+                                ...editForm,
+                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                formFields: [], // Clear form fields for external signup
+                                maxSignups: 50 // Reset max signups
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            disabled={!!editForm.signupFormUrl} // Disable manual selection when URL is present
+                          />
+                          <label htmlFor="signupMethodExternal" className={`ml-2 block text-sm ${editForm.signupFormUrl ? 'text-purple-300' : 'text-gray-300'}`}>
+                            External Link
+                            <span className="text-gray-500 text-xs ml-2">
+                              {editForm.signupFormUrl
+                                ? '(Automatically selected when URL is provided)'
+                                : '(Users sign up via external form/link - requires signup URL below)'
+                              }
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="signupMethodWebsite"
+                            name="signupMethod"
+                            value="website"
+                            checked={editForm.signupMethod === 'website'}
+                            onChange={(e) => {
+                              setEditForm({
+                                ...editForm,
+                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                formFields: editForm.formFields.length === 0 ? ['name', 'email'] : editForm.formFields, // Set defaults for website signup
+                                maxSignups: 50 // Reset max signups
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                          />
+                          <label htmlFor="signupMethodWebsite" className="ml-2 block text-sm text-gray-300">
+                            Website Signup
+                            <span className="text-gray-500 text-xs ml-2">
+                              (Users sign up using our website form)
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="signupMethodNone"
+                            name="signupMethod"
+                            value="none"
+                            checked={editForm.signupMethod === 'none'}
+                            onChange={(e) => {
+                              setEditForm({
+                                ...editForm,
+                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                formFields: [], // Clear form fields for no signup
+                                maxSignups: 0 // Clear max signups
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                          />
+                          <label htmlFor="signupMethodNone" className="ml-2 block text-sm text-gray-300">
+                            No Sign Up Needed
+                            <span className="text-gray-500 text-xs ml-2">
+                              (Walk-in event - people can just show up)
+                            </span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Max Sign Ups - Only show if signup is needed */}
-                  {!editForm.noSignupNeeded && (
+                  {/* Max Sign Ups - Only show if website signup is selected */}
+                  {editForm.signupMethod === 'website' && (
                     <div>
                       <label htmlFor="editMaxSignups" className="block text-sm font-medium text-gray-300 mb-2">
                         Maximum Sign Ups
@@ -1062,8 +1227,8 @@ export default function EventDetailPage() {
                     </div>
                   )}
 
-                  {/* Form Fields Selection - Only show if signup is needed */}
-                  {!editForm.noSignupNeeded && (
+                  {/* Form Fields Selection - Only show if website signup is selected */}
+                  {editForm.signupMethod === 'website' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Signup Form Fields *
@@ -1164,7 +1329,7 @@ export default function EventDetailPage() {
                   )}
 
                   {/* Show message when no signup is needed */}
-                  {editForm.noSignupNeeded && (
+                  {editForm.signupMethod === 'none' && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center">
                         <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1178,10 +1343,25 @@ export default function EventDetailPage() {
                     </div>
                   )}
 
+                  {/* Show message when external signup is selected */}
+                  {editForm.signupMethod === 'external' && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        <div>
+                          <h4 className="text-green-800 font-medium">External Signup</h4>
+                          <p className="text-green-600 text-sm">Attendees will sign up using the external link provided below.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-3">
                     <button
                       onClick={handleSaveEvent}
-                      disabled={uploadingImage || (!editForm.noSignupNeeded && editForm.formFields.length === 0)}
+                      disabled={uploadingImage || (editForm.signupMethod === 'website' && editForm.formFields.length === 0)}
                       className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition duration-300 flex items-center gap-2"
                     >
                       {uploadingImage ? (
@@ -1213,9 +1393,9 @@ export default function EventDetailPage() {
                       ACTIVE EVENT
                     </span>
                     <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30">
-                      {event.noSignupNeeded ? 0 : event.formFields.length} FORM FIELDS
+                      {event.signupMethod === 'website' ? event.formFields.length : 0} FORM FIELDS
                     </span>
-                    {!event.noSignupNeeded && (
+                    {event.signupMethod === 'website' && (
                       <button
                         onClick={async () => {
                           try {
@@ -1275,9 +1455,14 @@ export default function EventDetailPage() {
                         </span>
                       </button>
                     )}
-                    {event.noSignupNeeded && (
+                    {event.signupMethod === 'none' && (
                       <span className="bg-blue-500/20 text-blue-300 px-3 py-1 text-xs font-bold rounded-full border border-blue-500/30">
                         WALK-IN EVENT
+                      </span>
+                    )}
+                    {event.signupMethod === 'external' && (
+                      <span className="bg-purple-500/20 text-purple-300 px-3 py-1 text-xs font-bold rounded-full border border-purple-500/30">
+                        EXTERNAL SIGNUP
                       </span>
                     )}
                   </div>
@@ -1312,11 +1497,51 @@ export default function EventDetailPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <div>
-                          <p className="text-sm text-gray-400">Location</p>
+                          <p className="text-sm text-gray-400">Event Location</p>
                           <p className="font-semibold">{event.location}</p>
                         </div>
                       </div>
-                      {event.price && (
+                      {event.meetUpLocation && (
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 mr-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm text-gray-400">Meet Up Location</p>
+                            <p className="font-semibold">{event.meetUpLocation}</p>
+                          </div>
+                        </div>
+                      )}
+                      {event.meetUpTime && (
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm text-gray-400">Meet Up Time</p>
+                            <p className="font-semibold">{formatTimeRange(event.meetUpTime)}</p>
+                          </div>
+                        </div>
+                      )}
+                      {(event.memberPrice || event.nonMemberPrice) ? (
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          <div>
+                            <p className="text-sm text-gray-400">Price</p>
+                            <div className="font-semibold">
+                              {event.memberPrice && (
+                                <div className="text-green-300">Members: {event.memberPrice === 'Free' ? 'Free' : `£${event.memberPrice}`}</div>
+                              )}
+                              {event.nonMemberPrice && (
+                                <div className="text-blue-300">Non-members: {event.nonMemberPrice === 'Free' ? 'Free' : `£${event.nonMemberPrice}`}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : event.price ? (
                         <div className="flex items-center">
                           <svg className="w-5 h-5 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -1330,7 +1555,7 @@ export default function EventDetailPage() {
                             </p>
                           </div>
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
