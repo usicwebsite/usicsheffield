@@ -107,12 +107,13 @@ export default function Navbar() {
                     >
                       Journey
                     </Link>
-                    <div className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
-                      Benefits
-                      <span className="ml-2 text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                        Coming Soon
-                      </span>
-                    </div>
+                    <Link
+                      href="/pricing"
+                      className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors duration-200"
+                      onClick={() => setIsMembershipDropdownOpen(false)}
+                    >
+                      Pricing
+                    </Link>
                   </div>
                 </div>
               )}
@@ -193,12 +194,13 @@ export default function Navbar() {
                 >
                   Journey
                 </Link>
-                <div className="block px-3 py-2 rounded-md text-sm text-gray-400 cursor-not-allowed">
-                  Benefits
-                  <span className="ml-2 text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                    Coming Soon
-                  </span>
-                </div>
+                <Link
+                  href="/pricing"
+                  className="block px-3 py-2 rounded-md text-sm text-blue-200 hover:bg-[#234b64] hover:text-white"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Pricing
+                </Link>
               </div>
             </div>
             <Link 

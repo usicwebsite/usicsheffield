@@ -303,10 +303,82 @@ export const staticData = {
       }
     ],
     pricing: {
-      student: "£5/year",
+      student: "£12/year",
       alumni: "£10/year",
-      supporter: "£20/year"
+      supporter: "£30/lifetime"
     },
+    joinLink: "https://su.sheffield.ac.uk/activities/view/islamic-circle-society"
+  },
+
+  // Pricing data for the pricing page
+  pricing: {
+    title: "Choose Your USIC Membership",
+    subtitle: "Join our vibrant community with flexible membership options",
+    tiers: [
+      {
+        name: "Non-Member",
+        price: "Free",
+        period: "",
+        description: "Access basic events and community",
+        popular: false,
+        features: [
+          "Access to public events",
+          "Basic community announcements",
+          "Limited social media access",
+          "No exclusive discounts",
+          "No priority booking",
+          "No membership card",
+          "Standard event pricing"
+        ],
+        ctaText: "Stay Free",
+        highlighted: false
+      },
+      {
+        name: "1 Year",
+        price: "£12",
+        period: "per year",
+        description: "Perfect for current students",
+        popular: false,
+        features: [
+          "Personal USIC membership card",
+          "19+ partner business discounts",
+          "Priority ticket access",
+          "Exclusive event discounts",
+          "Access to all social events",
+          "Community WhatsApp groups",
+          "Islamic knowledge resources",
+          "Mentorship opportunities"
+        ],
+        ctaText: "Join for 1 Year",
+        highlighted: false
+      },
+      {
+        name: "Lifetime",
+        price: "£30",
+        period: "one-time",
+        description: "Support the community forever",
+        popular: true,
+        features: [
+          "Everything in 1 Year plan",
+          "Lifetime membership card",
+          "VIP event invitations",
+          "Behind-the-scenes access",
+          "Recognition in community",
+          "Priority support",
+          "Exclusive lifetime events",
+          "Help shape USIC's future"
+        ],
+        ctaText: "Become Lifetime Member",
+        highlighted: true
+      }
+    ],
+    partnerDiscounts: [
+      "Sabir's Grill (10%)", "5 Akhis (20%)", "Karak Chai (15%)", "Big Daddy's (30%)",
+      "Mighty Bites (30%)", "Insomnia Cookies (15%)", "Ohannes (15%)", "Al Maghrib Faith Essentials (40%)",
+      "Shakebees (10%)", "Heavenly Desserts (15%)", "M.A.K Halal (20%)", "Kebabish Original (15%)",
+      "Calis (10%)", "Cha Cha Chai (10%)", "Damascus Bakery (15%)", "Noori Charms (15%)",
+      "Frog (10%)", "Regen Therapy (20%)", "UNIT (10%)"
+    ],
     joinLink: "https://su.sheffield.ac.uk/activities/view/islamic-circle-society"
   },
 
@@ -396,6 +468,11 @@ export const seoMetadata = {
     title: "Sponsors - USIC Sheffield",
     description: "Meet our generous sponsors who support USIC's activities and help create opportunities for Muslim students at the University of Sheffield.",
     keywords: "USIC sponsors, Islamic society sponsors, University of Sheffield, community support"
+  },
+  pricing: {
+    title: "USIC Membership Pricing - Join USIC Sheffield",
+    description: "Choose your USIC membership tier: Non-Member (Free), 1 Year (£12), or Lifetime (£30). Access exclusive discounts, priority booking, and community benefits.",
+    keywords: "USIC membership pricing, join USIC, Islamic society membership, University of Sheffield, Muslim student membership, USIC pricing"
   }
 };
 
