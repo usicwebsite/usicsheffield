@@ -921,7 +921,6 @@ export default function EventsPage() {
               </div>
               <div className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">{event.title}</h3>
-                <p className="text-blue-200 mb-4 text-sm">{event.description}</p>
                 <div className="space-y-2 text-sm text-blue-200 mb-6 flex-grow">
                   <div className="flex items-start">
                     <svg className="w-4 h-4 text-blue-300 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -1207,7 +1206,7 @@ export default function EventsPage() {
               {/* Event Description */}
               <div className="mb-6">
                 <h4 className="text-white font-semibold mb-3 text-lg uppercase tracking-tight">About This Event</h4>
-                <p className="text-blue-100 leading-relaxed text-base">{selectedEvent.description}</p>
+                <div className="text-blue-100 leading-relaxed text-base whitespace-pre-wrap">{selectedEvent.description}</div>
               </div>
 
               
