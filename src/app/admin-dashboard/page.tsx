@@ -46,12 +46,17 @@ interface Event {
   startTime: string;
   endTime?: string;
   location: string;
-  price: string;
+  price?: string; // Keep for backwards compatibility
+  memberPrice?: string;
+  nonMemberPrice?: string;
+  meetUpTime?: string;
+  meetUpLocation?: string;
   description: string;
   imageUrl?: string;
   formFields: string[];
   signupOpen: boolean;
-  noSignupNeeded: boolean;
+  noSignupNeeded?: boolean; // Keep for backwards compatibility
+  signupMethod?: 'none' | 'website' | 'external';
   maxSignups?: number;
   tags: string[];
   createdAt: Date;
@@ -66,12 +71,17 @@ interface EventFormData {
   startTime: string;
   endTime?: string;
   location: string;
-  price: string;
+  price: string; // Keep for backwards compatibility - member price
+  nonMemberPrice: string; // Required field
+  memberPrice: string; // Required field
+  meetUpTime?: string;
+  meetUpLocation?: string;
   description: string;
   imageFile?: File;
   formFields: string[];
   signupOpen: boolean;
-  noSignupNeeded: boolean;
+  noSignupNeeded: boolean; // Keep for backwards compatibility
+  signupMethod: 'none' | 'website' | 'external'; // New comprehensive signup method
   maxSignups?: number;
   tags: string[];
   isPublic: boolean;
@@ -127,16 +137,22 @@ export default function AdminDashboard() {
     startTime: '',
     endTime: '',
     location: '',
-    price: '',
+    price: '', // Member price - backwards compatibility
+    nonMemberPrice: '', // Required field
+    memberPrice: '', // Optional member price
+    meetUpTime: '',
+    meetUpLocation: '',
     description: '',
     formFields: [],
     signupOpen: true, // Default to open for signups
-    noSignupNeeded: false, // Default to requiring signup
+    noSignupNeeded: false, // Keep for backwards compatibility
+    signupMethod: 'website', // Default to website signup
     isPublic: true, // Default to public
     maxSignups: 50, // Default to 50 signups
     tags: [], // Default to empty array
     signupFormUrl: '' // Default to empty string
   });
+  const [eventFormErrors, setEventFormErrors] = useState<string[]>([]);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -557,18 +573,66 @@ export default function AdminDashboard() {
     }
   };
 
+  // Helper function to update signup method based on URL
+  const updateSignupMethodBasedOnUrl = (url: string, currentMethod: 'none' | 'website' | 'external'): 'none' | 'website' | 'external' => {
+    if (url.trim()) {
+      return 'external';
+    }
+    // If URL is cleared and current method was external, switch to website
+    return currentMethod === 'external' ? 'website' : currentMethod;
+  };
+
+  const validateEventForm = (formData: EventFormData): string[] => {
+    const errors: string[] = [];
+
+    // Required fields validation
+    if (!formData.title.trim()) {
+      errors.push('Title');
+    }
+    if (!formData.date) {
+      errors.push('Date');
+    }
+    if (!formData.startTime) {
+      errors.push('Start Time');
+    }
+    if (!formData.location.trim()) {
+      errors.push('Location');
+    }
+    if (!formData.memberPrice.trim()) {
+      errors.push('Member Price');
+    }
+    if (!formData.nonMemberPrice.trim()) {
+      errors.push('Non-Member Price');
+    }
+    if (!formData.description.trim()) {
+      errors.push('Description');
+    }
+
+    // Signup method validation
+    if (formData.signupMethod === 'external' && !formData.signupFormUrl?.trim()) {
+      errors.push('Signup Form URL (required for external signup)');
+    }
+
+    // Form fields validation - only if website signup is selected
+    if (formData.signupMethod === 'website' && formData.formFields.length === 0) {
+      errors.push('At least one form field (when website signup is selected)');
+    }
+
+    return errors;
+  };
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!eventFormData.noSignupNeeded && eventFormData.formFields.length === 0) {
-      alert('Please select at least one form field');
+
+    // Validate form data
+    const validationErrors = validateEventForm(eventFormData);
+    if (validationErrors.length > 0) {
+      setEventFormErrors(validationErrors);
       return;
     }
 
-    if (!eventFormData.startTime) {
-      alert('Please select a start time');
-      return;
-    }
+    // Clear any previous errors
+    setEventFormErrors([]);
 
     try {
       setIsCreatingEvent(true);
@@ -589,16 +653,29 @@ export default function AdminDashboard() {
         formData.append('endTime', eventFormData.endTime);
       }
       formData.append('location', eventFormData.location);
-      formData.append('price', eventFormData.price);
+      // Member price uses the old price field for backwards compatibility
+      formData.append('price', eventFormData.price || '');
+      // Both member and non-member prices are required
+      formData.append('memberPrice', eventFormData.memberPrice.trim());
+      formData.append('nonMemberPrice', eventFormData.nonMemberPrice.trim());
+      if (eventFormData.meetUpTime) {
+        formData.append('meetUpTime', eventFormData.meetUpTime);
+      }
+      if (eventFormData.meetUpLocation) {
+        formData.append('meetUpLocation', eventFormData.meetUpLocation);
+      }
       formData.append('description', eventFormData.description);
-      // Only include formFields if signup is needed
-      if (eventFormData.noSignupNeeded) {
+      // Handle formFields based on signup method
+      if (eventFormData.signupMethod === 'none') {
         formData.append('formFields', JSON.stringify([])); // Empty array for no signup events
-      } else {
+      } else if (eventFormData.signupMethod === 'website') {
         formData.append('formFields', JSON.stringify(eventFormData.formFields));
+      } else {
+        // External signup - empty form fields since signup happens externally
+        formData.append('formFields', JSON.stringify([]));
       }
       formData.append('signupOpen', eventFormData.signupOpen.toString());
-      formData.append('noSignupNeeded', eventFormData.noSignupNeeded.toString());
+      formData.append('signupMethod', eventFormData.signupMethod);
       formData.append('isPublic', eventFormData.isPublic.toString());
       formData.append('tags', JSON.stringify(eventFormData.tags));
       formData.append('maxSignups', (eventFormData.maxSignups || 50).toString());
@@ -628,6 +705,23 @@ export default function AdminDashboard() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        // If server provides specific missing fields, format them nicely
+        if (errorData.missingFields && Array.isArray(errorData.missingFields)) {
+          const fieldNames = errorData.missingFields.map((field: string) => {
+            // Convert field names to user-friendly names
+            const fieldNameMap: { [key: string]: string } = {
+              title: 'Title',
+              date: 'Date',
+              startTime: 'Start Time',
+              location: 'Location',
+              price: 'Price',
+              description: 'Description',
+              createdBy: 'Created By'
+            };
+            return fieldNameMap[field] || field;
+          });
+          throw new Error(`Missing required fields: ${fieldNames.join(', ')}`);
+        }
         throw new Error(errorData.error || 'Failed to create event');
       }
 
@@ -641,17 +735,23 @@ export default function AdminDashboard() {
         startTime: eventFormData.startTime,
         endTime: eventFormData.endTime,
         location: eventFormData.location,
-        price: eventFormData.price,
+        price: eventFormData.price, // Keep for backwards compatibility
+        memberPrice: eventFormData.price, // Use the price field as member price
+        nonMemberPrice: eventFormData.nonMemberPrice,
+        meetUpTime: eventFormData.meetUpTime,
+        meetUpLocation: eventFormData.meetUpLocation,
         description: eventFormData.description,
         imageUrl: result.imageUrl,
         formFields: eventFormData.formFields,
         signupOpen: eventFormData.signupOpen,
-        noSignupNeeded: eventFormData.noSignupNeeded,
+        noSignupNeeded: eventFormData.signupMethod === 'none',
+        signupMethod: eventFormData.signupMethod,
         isPublic: eventFormData.isPublic,
         maxSignups: eventFormData.maxSignups,
         tags: eventFormData.tags,
         createdAt: new Date(),
-        createdBy: user.uid
+        createdBy: user.uid,
+        signupFormUrl: eventFormData.signupFormUrl
       };
       
       setEvents(prev => [newEvent, ...prev]);
@@ -663,20 +763,28 @@ export default function AdminDashboard() {
                       startTime: '',
                       endTime: '',
                       location: '',
-                      price: '',
+                      price: '', // Member price
+                      nonMemberPrice: '', // Required field
+                      memberPrice: '', // Optional member price
+                      meetUpTime: '',
+                      meetUpLocation: '',
                       description: '',
                       formFields: [],
                       signupOpen: true,
-                      noSignupNeeded: false,
+                      noSignupNeeded: false, // Keep for backwards compatibility
+                      signupMethod: 'website', // Default to website signup
                       isPublic: true,
                       maxSignups: 50,
-                      tags: []
+                      tags: [],
+                      signupFormUrl: ''
                     });
+      setEventFormErrors([]);
       setImagePreview(null);
       setShowEventForm(false);
     } catch (error) {
       console.error('Error creating event:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create event');
+      // Clear validation errors and show API error
+      setEventFormErrors([error instanceof Error ? error.message : 'Failed to create event']);
     } finally {
       setIsCreatingEvent(false);
     }
@@ -756,15 +864,21 @@ export default function AdminDashboard() {
             startTime: singleEvent.startTime || '',
             endTime: singleEvent.endTime || '',
             location: singleEvent.location || '',
-            price: singleEvent.price || '',
+            price: singleEvent.price || '', // Member price
+            nonMemberPrice: singleEvent.price || '', // Use same price for non-members by default
+            memberPrice: singleEvent.price || '',
+            meetUpTime: '',
+            meetUpLocation: '',
             description: singleEvent.description || aiEventText,
             formFields: ['name', 'email'], // Default form fields
             signupOpen: true,
-            noSignupNeeded: false,
+            noSignupNeeded: false, // Keep for backwards compatibility
+            signupMethod: 'website', // Default to website signup
             isPublic: true, // Default to public
             maxSignups: 50, // Default to 50 signups
             imageFile: undefined,
-            tags: [] // Default to empty array
+            tags: [], // Default to empty array
+            signupFormUrl: '' // Default to empty string
           });
 
           // Set missing fields for visual indication
@@ -1747,6 +1861,7 @@ export default function AdminDashboard() {
                       setEventFormTab('manual');
                       setAiEventText('');
                       setMissingFields([]);
+                      setEventFormErrors([]);
                       if (imagePreview) {
                         URL.revokeObjectURL(imagePreview);
                         setImagePreview(null);
@@ -1759,6 +1874,31 @@ export default function AdminDashboard() {
                     </svg>
                   </button>
                 </div>
+
+                {/* Validation Errors */}
+                {eventFormErrors.length > 0 && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-red-800">
+                          Missing Required Fields
+                        </h3>
+                        <div className="mt-2 text-sm text-red-700">
+                          <ul role="list" className="list-disc pl-5 space-y-1">
+                            {eventFormErrors.map((error, index) => (
+                              <li key={index}>{error}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
@@ -1905,44 +2045,93 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Location and Price */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="eventLocation" className={`block text-sm font-medium mb-2 ${
-                        missingFields.includes('location') ? 'text-red-600' : 'text-gray-700'
-                      }`}>
-                        Location * {missingFields.includes('location') && <span className="text-red-500">(Please fill)</span>}
+                  {/* Location */}
+                  <div className="mb-4">
+                    <label htmlFor="eventLocation" className={`block text-sm font-medium mb-2 ${
+                      missingFields.includes('location') ? 'text-red-600' : 'text-gray-700'
+                    }`}>
+                      Location * {missingFields.includes('location') && <span className="text-red-500">(Please fill)</span>}
+                    </label>
+                    <input
+                      type="text"
+                      id="eventLocation"
+                      value={eventFormData.location}
+                      onChange={(e) => {
+                        setEventFormData({...eventFormData, location: e.target.value});
+                        if (missingFields.includes('location') && e.target.value.trim()) {
+                          setMissingFields(missingFields.filter(f => f !== 'location'));
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        missingFields.includes('location')
+                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
+                          : 'border-gray-300'
+                      }`}
+                      placeholder="Enter event location"
+                      required
+                    />
+                  </div>
+
+                  {/* Member and Non-Member Price */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-start">
+                    <div className="flex flex-col h-full justify-between">
+                      <label htmlFor="eventMemberPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                        Member Price *
+                        <span className="text-gray-500 text-xs ml-2"></span>
                       </label>
                       <input
                         type="text"
-                        id="eventLocation"
-                        value={eventFormData.location}
-                        onChange={(e) => {
-                          setEventFormData({...eventFormData, location: e.target.value});
-                          if (missingFields.includes('location') && e.target.value.trim()) {
-                            setMissingFields(missingFields.filter(f => f !== 'location'));
-                          }
-                        }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          missingFields.includes('location')
-                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
-                            : 'border-gray-300'
-                        }`}
-                        placeholder="Enter event location"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="eventPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                        Price
-                      </label>
-                      <input
-                        type="text"
-                        id="eventPrice"
+                        id="eventMemberPrice"
                         value={eventFormData.price}
                         onChange={(e) => setEventFormData({...eventFormData, price: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Free, 10, 15-20 (GBP symbol added automatically)"
+                        placeholder="(GBP symbol added automatically)"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col h-full justify-between">
+                      <label htmlFor="eventNonMemberPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                        Non-Member Price *
+                      </label>
+                      <input
+                        type="text"
+                        id="eventNonMemberPrice"
+                        value={eventFormData.nonMemberPrice}
+                        onChange={(e) => setEventFormData({...eventFormData, nonMemberPrice: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="(GBP symbol added automatically)"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Meet Up Time and Location */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="eventMeetUpTime" className="block text-sm font-medium text-gray-700 mb-2">
+                        Meet Up Time
+                        <span className="text-gray-500 text-xs ml-2">(optional - different from event start time)</span>
+                      </label>
+                      <input
+                        type="time"
+                        id="eventMeetUpTime"
+                        value={eventFormData.meetUpTime}
+                        onChange={(e) => setEventFormData({...eventFormData, meetUpTime: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="eventMeetUpLocation" className="block text-sm font-medium text-gray-700 mb-2">
+                        Meet Up Location
+                        <span className="text-gray-500 text-xs ml-2">(optional - different from event location)</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="eventMeetUpLocation"
+                        value={eventFormData.meetUpLocation}
+                        onChange={(e) => setEventFormData({...eventFormData, meetUpLocation: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter meet up location"
                       />
                     </div>
                   </div>
@@ -1986,7 +2175,14 @@ export default function AdminDashboard() {
                       type="url"
                       id="eventSignupFormUrl"
                       value={eventFormData.signupFormUrl || ''}
-                      onChange={(e) => setEventFormData({...eventFormData, signupFormUrl: e.target.value})}
+                      onChange={(e) => {
+                        const url = e.target.value;
+                        setEventFormData({
+                          ...eventFormData,
+                          signupFormUrl: url,
+                          signupMethod: updateSignupMethodBasedOnUrl(url, eventFormData.signupMethod)
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://forms.google.com/your-form-link"
                     />
@@ -2100,63 +2296,122 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Sign Up Options */}
-                  <div className="space-y-3">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="signupOpen"
-                      checked={eventFormData.signupOpen}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setEventFormData({
-                          ...eventFormData,
-                          signupOpen: checked,
-                          // If signup is being opened, no signup cannot be needed
-                          noSignupNeeded: checked ? false : eventFormData.noSignupNeeded
-                        });
-                      }}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="signupOpen" className="ml-2 block text-sm font-medium text-gray-700">
-                      Sign up open?
-                      <span className="text-gray-500 text-xs ml-2">
-                        (If checked, public users can sign up for this event)
-                      </span>
-                    </label>
-                    </div>
-
+                  {/* Signup Options */}
+                  <div className="space-y-4">
                     <div className="flex items-center">
                       <input
                         type="checkbox"
-                        id="noSignupNeeded"
-                        checked={eventFormData.noSignupNeeded}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setEventFormData({
-                            ...eventFormData,
-                            noSignupNeeded: checked,
-                            // If no signup is needed, signup cannot be open
-                            signupOpen: checked ? false : eventFormData.signupOpen,
-                            // Clear form fields if no signup is needed, or set defaults if signup is needed
-                            formFields: checked ? [] : (eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields),
-                            // Clear maxSignups if no signup is needed
-                            maxSignups: checked ? undefined : eventFormData.maxSignups
-                          });
-                        }}
+                        id="signupOpen"
+                        checked={eventFormData.signupOpen}
+                        onChange={(e) => setEventFormData({
+                          ...eventFormData,
+                          signupOpen: e.target.checked
+                        })}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <label htmlFor="noSignupNeeded" className="ml-2 block text-sm font-medium text-gray-700">
-                        No sign up needed
+                      <label htmlFor="signupOpen" className="ml-2 block text-sm font-medium text-gray-700">
+                        Sign up open?
                         <span className="text-gray-500 text-xs ml-2">
-                          (Check if this is a public event where people can just show up without registering)
+                          (If checked, public users can sign up for this event)
                         </span>
                       </label>
                     </div>
+
+                    {/* Signup Method Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Signup Method
+                        {eventFormData.signupFormUrl && (
+                          <span className="text-purple-600 text-xs ml-2">
+                            (Auto-selected: External Link detected)
+                          </span>
+                        )}
+                      </label>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="signupMethodExternal"
+                            name="signupMethod"
+                            value="external"
+                            checked={eventFormData.signupMethod === 'external'}
+                            onChange={(e) => {
+                              setEventFormData({
+                                ...eventFormData,
+                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                formFields: [], // Clear form fields for external signup
+                                maxSignups: 50 // Reset max signups
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            disabled={!!eventFormData.signupFormUrl} // Disable manual selection when URL is present
+                          />
+                          <label htmlFor="signupMethodExternal" className={`ml-2 block text-sm ${eventFormData.signupFormUrl ? 'text-purple-600' : 'text-gray-700'}`}>
+                            External Link
+                            <span className="text-gray-500 text-xs ml-2">
+                              {eventFormData.signupFormUrl
+                                ? '(Automatically selected when URL is provided)'
+                                : '(Users sign up via external form/link - requires signup URL below)'
+                              }
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="signupMethodWebsite"
+                            name="signupMethod"
+                            value="website"
+                            checked={eventFormData.signupMethod === 'website'}
+                            onChange={(e) => {
+                              setEventFormData({
+                                ...eventFormData,
+                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                formFields: eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields, // Set defaults for website signup
+                                maxSignups: 50 // Reset max signups
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                          />
+                          <label htmlFor="signupMethodWebsite" className="ml-2 block text-sm text-gray-700">
+                            Website Signup
+                            <span className="text-gray-500 text-xs ml-2">
+                              (Users sign up using our website form)
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id="signupMethodNone"
+                            name="signupMethod"
+                            value="none"
+                            checked={eventFormData.signupMethod === 'none'}
+                            onChange={(e) => {
+                              setEventFormData({
+                                ...eventFormData,
+                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                formFields: [], // Clear form fields for no signup
+                                maxSignups: 0 // Clear max signups
+                              });
+                            }}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                          />
+                          <label htmlFor="signupMethodNone" className="ml-2 block text-sm text-gray-700">
+                            No Sign Up Needed
+                            <span className="text-gray-500 text-xs ml-2">
+                              (Walk-in event - people can just show up)
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Max Sign Ups - Only show if signup is needed */}
-                  {!eventFormData.noSignupNeeded && (
+                  {/* Max Sign Ups - Only show if website signup is selected */}
+                  {eventFormData.signupMethod === 'website' && (
                     <div>
                       <label htmlFor="maxSignups" className="block text-sm font-medium text-gray-700 mb-2">
                         Maximum Sign Ups
@@ -2177,6 +2432,88 @@ export default function AdminDashboard() {
                         ))}
                       </select>
                       <p className="text-xs text-gray-500 mt-1">Maximum number of people who can sign up for this event</p>
+                    </div>
+                  )}
+
+                  {/* Form Fields Selection - Only show if website signup is selected */}
+                  {eventFormData.signupMethod === 'website' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Signup Form Fields *
+                        <span className="text-gray-500 text-xs ml-2">
+                          (Select which information to collect from attendees)
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                        {[
+                          'name',
+                          'email',
+                          'whatsapp_number',
+                          'student_id',
+                          'dietary_requirements',
+                          'emergency_contact',
+                          'transportation_needs',
+                          'accommodation_needs',
+                          'special_requests'
+                        ].map((field) => (
+                          <label key={field} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={eventFormData.formFields.includes(field)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEventFormData({
+                                    ...eventFormData,
+                                    formFields: [...eventFormData.formFields, field]
+                                  });
+                                } else {
+                                  setEventFormData({
+                                    ...eventFormData,
+                                    formFields: eventFormData.formFields.filter(f => f !== field)
+                                  });
+                                }
+                              }}
+                              className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="text-sm text-gray-700 capitalize">
+                              {field.replace(/_/g, ' ')}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      {eventFormData.formFields.length === 0 && (
+                        <p className="text-red-600 text-xs">Please select at least one form field</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Show message when no signup is needed */}
+                  {eventFormData.signupMethod === 'none' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <h4 className="text-blue-800 font-medium">No Sign Up Required</h4>
+                          <p className="text-blue-600 text-sm">This is a public event where attendees can just show up without registering.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show message when external signup is selected */}
+                  {eventFormData.signupMethod === 'external' && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        <div>
+                          <h4 className="text-green-800 font-medium">External Signup</h4>
+                          <p className="text-green-600 text-sm">Attendees will sign up using the external link provided above.</p>
+                        </div>
+                      </div>
                     </div>
                   )}
 

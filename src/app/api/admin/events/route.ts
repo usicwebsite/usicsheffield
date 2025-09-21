@@ -106,9 +106,43 @@ export async function POST(request: NextRequest) {
     const signupFormUrl = formData.get('signupFormUrl') as string;
     const signupMethod = formData.get('signupMethod') as string || 'website'; // Default to website for backwards compatibility
 
-    // Validate required fields
-    if (!title || !date || !startTime || !location || !price || !nonMemberPrice || !description || !createdBy) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate required fields and collect missing ones
+    const missingFields: string[] = [];
+
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+      missingFields.push('title');
+    }
+    if (!date || typeof date !== 'string' || date.trim() === '') {
+      missingFields.push('date');
+    }
+    if (!startTime || typeof startTime !== 'string' || startTime.trim() === '') {
+      missingFields.push('startTime');
+    }
+    if (!location || typeof location !== 'string' || location.trim() === '') {
+      missingFields.push('location');
+    }
+    if (!price || typeof price !== 'string' || price.trim() === '') {
+      missingFields.push('price');
+    }
+    if (!memberPrice || typeof memberPrice !== 'string' || memberPrice.trim() === '') {
+      missingFields.push('memberPrice');
+    }
+    if (!nonMemberPrice || typeof nonMemberPrice !== 'string' || nonMemberPrice.trim() === '') {
+      missingFields.push('nonMemberPrice');
+    }
+    if (!description || typeof description !== 'string' || description.trim() === '') {
+      missingFields.push('description');
+    }
+    if (!createdBy || typeof createdBy !== 'string' || createdBy.trim() === '') {
+      missingFields.push('createdBy');
+    }
+
+    if (missingFields.length > 0) {
+      return NextResponse.json({
+        error: 'Missing required fields',
+        missingFields: missingFields,
+        message: `The following required fields are missing: ${missingFields.join(', ')}`
+      }, { status: 400 });
     }
 
     // Handle formFields - can be null/undefined for no signup events

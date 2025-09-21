@@ -92,7 +92,7 @@ export async function PUT(
     const signupFormUrl = formData.get('signupFormUrl') as string;
 
     // Validate required fields
-    if (!title || !date || !startTime || !location || !price || !nonMemberPrice || !description) {
+    if (!title || !date || !startTime || !location || !price || !memberPrice || !nonMemberPrice || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 

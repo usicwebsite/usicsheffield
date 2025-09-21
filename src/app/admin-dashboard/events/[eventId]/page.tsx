@@ -13,8 +13,8 @@ interface Event {
   endTime?: string;
   location: string;
   price?: string; // Keep for backwards compatibility
-  memberPrice?: string;
-  nonMemberPrice?: string;
+  memberPrice: string;
+  nonMemberPrice: string;
   meetUpTime?: string;
   meetUpLocation?: string;
   description: string;
@@ -395,10 +395,9 @@ export default function EventDetailPage() {
       formData.append('location', editForm.location);
       // Member price uses the old price field for backwards compatibility
       formData.append('price', editForm.price || '');
-      // Non-member price is required
-      if (editForm.nonMemberPrice && editForm.nonMemberPrice.trim()) {
-        formData.append('nonMemberPrice', editForm.nonMemberPrice.trim());
-      }
+      // Both member and non-member prices are required
+      formData.append('memberPrice', editForm.memberPrice.trim());
+      formData.append('nonMemberPrice', editForm.nonMemberPrice.trim());
       if (editForm.meetUpTime) {
         formData.append('meetUpTime', editForm.meetUpTime);
       }
