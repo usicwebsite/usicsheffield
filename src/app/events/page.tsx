@@ -47,6 +47,7 @@ export default function EventsPage() {
   const [adminEvents, setAdminEvents] = useState<AdminEvent[]>([]);
   const [, setLoadingAdminEvents] = useState(true);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const todayDotRef = useRef<HTMLDivElement>(null);
 
   // Function to get day of the week
   const getDayOfWeek = (date: Date): string => {
@@ -497,7 +498,7 @@ export default function EventsPage() {
       const todayIndex = organizedDates.findIndex(dateItem => dateItem.dateKey === todayKey);
 
       if (todayIndex !== -1) {
-        // Today has events - scroll to that position
+        // Today has events - scroll to that timeline item
         const timelineItem = timelineRef.current.children[todayIndex] as HTMLElement;
         if (timelineItem) {
           timelineItem.scrollIntoView({
@@ -506,8 +507,25 @@ export default function EventsPage() {
             inline: 'center'
           });
         }
+      } else if (todayDotRef.current) {
+        // Today has no events but there's a today dot - scroll to center it horizontally
+        const timelineContainer = timelineRef.current.parentElement;
+        if (timelineContainer) {
+          const containerRect = timelineContainer.getBoundingClientRect();
+          const dotRect = todayDotRef.current.getBoundingClientRect();
+
+          // Calculate scroll position to center the dot horizontally
+          const targetScrollLeft = timelineContainer.scrollLeft +
+            (dotRect.left + dotRect.width / 2) -
+            (containerRect.left + containerRect.width / 2);
+
+          timelineContainer.scrollTo({
+            left: targetScrollLeft,
+            behavior: 'smooth'
+          });
+        }
       } else if (organizedDates.length > 0) {
-        // Today has no events - find closest date
+        // Today has no events and no dot - find closest date
         const todayTime = today.getTime();
         let closestIndex = 0;
         let minDiff = Math.abs(todayTime - new Date(organizedDates[0].dateKey).getTime());
@@ -652,6 +670,7 @@ export default function EventsPage() {
 
                 return todayPosition > 0 ? (
                   <div
+                    ref={todayDotRef}
                     className="absolute top-4 sm:top-8 z-20"
                     style={{ left: `${todayPosition}px` }}
                   >

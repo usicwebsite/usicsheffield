@@ -3,6 +3,17 @@ import { adminDb } from '@/lib/firebase-admin';
 import { verifyAdminToken } from '@/lib/firebase-admin-utils';
 import { v2 as cloudinary } from 'cloudinary';
 
+// Helper function to check if a price is considered "free"
+const isPriceFree = (price: string): boolean => {
+  if (!price || typeof price !== 'string') return false;
+  const normalizedPrice = price.trim().toLowerCase();
+  return normalizedPrice === 'free' ||
+         normalizedPrice === '0' ||
+         normalizedPrice === '0.0' ||
+         normalizedPrice === '0.00' ||
+         normalizedPrice === '0.000';
+};
+
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dkqbvreso',
@@ -92,8 +103,16 @@ export async function PUT(
     const signupFormUrl = formData.get('signupFormUrl') as string;
 
     // Validate required fields
-    if (!title || !date || !startTime || !location || !price || !memberPrice || !nonMemberPrice || !description) {
+    if (!title || !date || !startTime || !location || !price || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Price fields are required unless they're free or no signup is needed
+    if (signupMethod !== 'none' && !isPriceFree(memberPrice) && (!memberPrice || typeof memberPrice !== 'string' || memberPrice.trim() === '')) {
+      return NextResponse.json({ error: 'Member price is required unless it\'s free or no signup is needed' }, { status: 400 });
+    }
+    if (signupMethod !== 'none' && !isPriceFree(nonMemberPrice) && (!nonMemberPrice || typeof nonMemberPrice !== 'string' || nonMemberPrice.trim() === '')) {
+      return NextResponse.json({ error: 'Non-member price is required unless it\'s free or no signup is needed' }, { status: 400 });
     }
 
     // Handle formFields - can be null/undefined for no signup events

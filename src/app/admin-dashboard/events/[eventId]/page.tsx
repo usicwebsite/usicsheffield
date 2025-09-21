@@ -217,8 +217,8 @@ export default function EventDetailPage() {
           endTime: foundEvent.endTime || '',
           location: foundEvent.location,
           price: foundEvent.price || '', // Keep for backwards compatibility
-          memberPrice: foundEvent.memberPrice || '',
-          nonMemberPrice: foundEvent.nonMemberPrice || '',
+          memberPrice: signupMethod === 'none' ? 'Free' : (foundEvent.memberPrice || ''),
+          nonMemberPrice: signupMethod === 'none' ? 'Free' : (foundEvent.nonMemberPrice || ''),
           meetUpTime: foundEvent.meetUpTime || '',
           meetUpLocation: foundEvent.meetUpLocation || '',
           description: foundEvent.description,
@@ -1185,7 +1185,9 @@ export default function EventDetailPage() {
                                 ...editForm,
                                 signupMethod: e.target.value as 'none' | 'website' | 'external',
                                 formFields: [], // Clear form fields for no signup
-                                maxSignups: 0 // Clear max signups
+                                maxSignups: 0, // Clear max signups
+                                memberPrice: 'Free', // Set price to Free for no signup events
+                                nonMemberPrice: 'Free' // Set price to Free for no signup events
                               });
                             }}
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"

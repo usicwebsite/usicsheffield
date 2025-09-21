@@ -582,6 +582,17 @@ export default function AdminDashboard() {
     return currentMethod === 'external' ? 'website' : currentMethod;
   };
 
+  // Helper function to check if a price is considered "free"
+  const isPriceFree = (price: string): boolean => {
+    if (!price || typeof price !== 'string') return false;
+    const normalizedPrice = price.trim().toLowerCase();
+    return normalizedPrice === 'free' ||
+           normalizedPrice === '0' ||
+           normalizedPrice === '0.0' ||
+           normalizedPrice === '0.00' ||
+           normalizedPrice === '0.000';
+  };
+
   const validateEventForm = (formData: EventFormData): string[] => {
     const errors: string[] = [];
 
@@ -598,11 +609,13 @@ export default function AdminDashboard() {
     if (!formData.location.trim()) {
       errors.push('Location');
     }
-    if (!formData.memberPrice.trim()) {
-      errors.push('Member Price');
+
+    // Price fields are required unless they're free or no signup is needed
+    if (formData.signupMethod !== 'none' && !isPriceFree(formData.memberPrice) && !formData.memberPrice.trim()) {
+      errors.push('Member Price (unless it\'s free or no signup is needed)');
     }
-    if (!formData.nonMemberPrice.trim()) {
-      errors.push('Non-Member Price');
+    if (formData.signupMethod !== 'none' && !isPriceFree(formData.nonMemberPrice) && !formData.nonMemberPrice.trim()) {
+      errors.push('Non-Member Price (unless it\'s free or no signup is needed)');
     }
     if (!formData.description.trim()) {
       errors.push('Description');
@@ -2394,7 +2407,9 @@ export default function AdminDashboard() {
                                 ...eventFormData,
                                 signupMethod: e.target.value as 'none' | 'website' | 'external',
                                 formFields: [], // Clear form fields for no signup
-                                maxSignups: 0 // Clear max signups
+                                maxSignups: 0, // Clear max signups
+                                memberPrice: 'Free', // Set price to Free for no signup events
+                                nonMemberPrice: 'Free' // Set price to Free for no signup events
                               });
                             }}
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
@@ -2435,57 +2450,6 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Form Fields Selection - Only show if website signup is selected and no external URL is provided */}
-                  {eventFormData.signupMethod === 'website' && !eventFormData.signupFormUrl?.trim() && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Signup Form Fields *
-                        <span className="text-gray-500 text-xs ml-2">
-                          (Select which information to collect from attendees)
-                        </span>
-                      </label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-                        {[
-                          'name',
-                          'email',
-                          'whatsapp_number',
-                          'student_id',
-                          'dietary_requirements',
-                          'emergency_contact',
-                          'transportation_needs',
-                          'accommodation_needs',
-                          'special_requests'
-                        ].map((field) => (
-                          <label key={field} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={eventFormData.formFields.includes(field)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setEventFormData({
-                                    ...eventFormData,
-                                    formFields: [...eventFormData.formFields, field]
-                                  });
-                                } else {
-                                  setEventFormData({
-                                    ...eventFormData,
-                                    formFields: eventFormData.formFields.filter(f => f !== field)
-                                  });
-                                }
-                              }}
-                              className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span className="text-sm text-gray-700 capitalize">
-                              {field.replace(/_/g, ' ')}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                      {eventFormData.formFields.length === 0 && (
-                        <p className="text-red-600 text-xs">Please select at least one form field</p>
-                      )}
-                    </div>
-                  )}
 
                   {/* Show message when no signup is needed */}
                   {eventFormData.signupMethod === 'none' && (
