@@ -243,8 +243,8 @@ export const staticData = {
     description: "We are grateful for the support of our sponsors who help make our activities possible.",
     sponsors: [
       {
-        name: "Unit",
-        logo: "/images/sponsors/iqrastore.jpg",
+        name: "Iqra Store",
+        logo: "/images/sponsors/iqra.png",
         description: "South Yorkshire's premier lifestyle store, committed to providing our customers with traditional & contemporary merchandise from around the world.",
         website: "https://www.instagram.com/iqralifestylestore/?hl=en-gb",
         tier: "gold"
@@ -319,13 +319,12 @@ export const staticData = {
         name: "Non-Member",
         price: "Free",
         period: "",
-        description: "Access basic events and community",
+        description: "Public events and community",
         popular: false,
         features: [
           "Access to public events",
-          "Basic community announcements",
-          "Limited social media access",
-          "No exclusive discounts",
+          "Community WhatsApp groups",
+          "No exclusive store discounts",
           "No priority booking",
           "No membership card",
           "Standard event pricing"
@@ -343,11 +342,9 @@ export const staticData = {
           "Personal USIC membership card",
           "19+ partner business discounts",
           "Priority ticket access",
-          "Exclusive event discounts",
-          "Access to all social events",
+          "Exclusive store discounts",
           "Community WhatsApp groups",
-          "Islamic knowledge resources",
-          "Mentorship opportunities"
+          "Discounted tickets for events"
         ],
         ctaText: "Join for 1 Year",
         highlighted: false
@@ -356,17 +353,15 @@ export const staticData = {
         name: "Lifetime",
         price: "£30",
         period: "one-time",
-        description: "Support the community forever",
+        description: "Be a part of the community forever",
         popular: true,
         features: [
-          "Everything in 1 Year plan",
           "Lifetime membership card",
-          "VIP event invitations",
-          "Behind-the-scenes access",
-          "Recognition in community",
-          "Priority support",
-          "Exclusive lifetime events",
-          "Help shape USIC's future"
+          "19+ partner business discounts",
+          "Priority ticket access",
+          "Exclusive store discounts",
+          "Community WhatsApp groups",
+          "Discounted tickets for events"
         ],
         ctaText: "Become Lifetime Member",
         highlighted: true

@@ -67,6 +67,11 @@ export default function PricingPage() {
                     <div className="text-gray-400 text-sm font-medium">
                       {tier.period}
                     </div>
+                    {tier.price === "Free" && (
+                      <div className="invisible text-xs text-gray-500 mt-1">
+                        Hidden text for Free tier
+                      </div>
+                    )}
                   </div>
                 </div>
 
