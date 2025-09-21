@@ -73,12 +73,7 @@ export default async function RootLayout({
         <meta name="csrf-token" content={csrfToken} />
         {/* CSP handled by middleware - removed conflicting meta tag */}
 
-        {/* Resource hints for instant loading */}
-        <link rel="preload" href="/Assalamu-aleykum-black.svg" as="image" type="image/svg+xml" />
-        <link rel="preload" href="/images/WEB/brothers/IMG_9262.JPG" as="image" />
-        <link rel="preload" href="/images/WEB/brothers/IMG_9980.JPG" as="image" />
-        <link rel="preload" href="/images/WEB/sisters/sister3.jpeg" as="image" />
-        <link rel="preconnect" href="https://res.cloudinary.com" />
+        {/* Let Next.js handle image optimization - removed manual preloads that conflict in production */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
 

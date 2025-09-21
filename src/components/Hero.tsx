@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { staticData } from '@/lib/static-data';
 import { useImageSlideshow } from '@/hooks/useImageSlideshow';
@@ -12,28 +12,10 @@ import ScrollArrow from '@/components/ui/ScrollArrow';
  */
 export default function Hero() {
   const images = staticData.homepage.hero.images;
-  const { currentImageIndex, shouldRenderImage, getImageLoadingState } = useImageSlideshow({
+  const { currentImageIndex, shouldRenderImage } = useImageSlideshow({
     images,
-    preloadCount: 3 // Reduced preload count to minimize re-renders
+    preloadCount: 3 // Preload nearby images for smooth transitions
   });
-
-  // Use refs to prevent loading state changes from causing re-renders
-  const loadingStatesRef = useRef<Map<number, string>>(new Map());
-
-  // Stable loading state getter that caches results to prevent re-renders
-  const getStableLoadingState = useCallback((index: number) => {
-    const cached = loadingStatesRef.current.get(index);
-    if (cached !== undefined) return cached;
-
-    const current = getImageLoadingState(index);
-    loadingStatesRef.current.set(index, current);
-    return current;
-  }, [getImageLoadingState]);
-
-  // Update cached loading states only when current image changes
-  React.useEffect(() => {
-    loadingStatesRef.current.clear(); // Clear cache on image change
-  }, [currentImageIndex]);
 
   // Scroll to next section
   const scrollToNextSection = () => {
@@ -57,19 +39,17 @@ export default function Hero() {
         {images.map((image, index) => {
           if (!shouldRenderImage(index)) return null;
 
-          const loadingState = getStableLoadingState(index);
           const isCurrentImage = index === currentImageIndex;
-          const imageSrc = loadingState === 'failed' ? fallbackImage : image;
 
           return (
             <div
               key={image}
               className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
-                isCurrentImage && loadingState === 'loaded' ? 'opacity-100' : 'opacity-0'
+                isCurrentImage ? 'opacity-100' : 'opacity-0'
               }`}
             >
               <Image
-                src={imageSrc}
+                src={image}
                 alt={`Slideshow image ${index + 1}`}
                 fill
                 sizes="100vw"
@@ -77,8 +57,8 @@ export default function Hero() {
                   objectFit: 'cover',
                   filter: 'brightness(0.5)'
                 }}
-                priority={index < 3} // Prioritize first 3 images
-                loading={index < 3 ? 'eager' : 'lazy'} // Only eager load first 3, others lazy
+                priority={index < 5} // Prioritize first 5 hero images for above-the-fold content
+                loading="eager" // Let Next.js optimize loading based on priority
                 quality={85}
                 onError={(e) => {
                   // Fallback to logo if image fails to load

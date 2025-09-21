@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface UseImageSlideshowProps {
   images: string[];
@@ -39,8 +39,8 @@ export function useImageSlideshow({
     };
   }, [images, interval]);
 
-  // Check if image should be rendered - simplified since Next.js handles loading
-  const shouldRenderImage = (index: number) => {
+  // Memoized function to check if image should be rendered
+  const shouldRenderImage = useCallback((index: number) => {
     // Always show current image
     if (index === currentImageIndex) return true;
 
@@ -50,18 +50,10 @@ export function useImageSlideshow({
     }
 
     return false;
-  };
-
-  // Simplified loading state - let Next.js Image handle this
-  const getImageLoadingState = (index: number) => {
-    // Since we're not manually tracking loading states anymore,
-    // just return 'loaded' for images we want to show
-    return shouldRenderImage(index) ? 'loaded' : 'loading';
-  };
+  }, [currentImageIndex, preloadCount]);
 
   return {
     currentImageIndex,
-    shouldRenderImage,
-    getImageLoadingState
+    shouldRenderImage
   };
 }
