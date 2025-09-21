@@ -61,11 +61,6 @@ export function middleware(request: NextRequest) {
   // Get the pathname of the request (e.g. /, /admin, /admin/dashboard)
   const path = request.nextUrl.pathname;
 
-  // Handle service worker requests - return 204 No Content to prevent 404s
-  if (path === '/sw.js' || path === '/service-worker.js') {
-    return new NextResponse(null, { status: 204 });
-  }
-
   // Create response object - admin authentication is now handled client-side
   const response = NextResponse.next();
 

@@ -13,7 +13,7 @@ export default function Hero() {
   const images = staticData.homepage.hero.images;
   const { currentImageIndex, shouldRenderImage, getImageLoadingState } = useImageSlideshow({
     images,
-    initialInterval: 5000 // 5 seconds for first image
+    preloadCount: 5 // Preload more images for smoother transitions
   });
 
   // Scroll to next section
@@ -41,7 +41,7 @@ export default function Hero() {
           return (
             <div
               key={image}
-              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
                 isCurrentImage ? 'opacity-100' : 'opacity-0'
               }`}
             >

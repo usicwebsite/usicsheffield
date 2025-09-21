@@ -9,134 +9,94 @@ interface UseImageSlideshowProps {
 export function useImageSlideshow({
   images,
   interval = 3000,
-  initialInterval = 5000 // 5 seconds for first image
-}: Omit<UseImageSlideshowProps, 'preloadCount'> & { initialInterval?: number }) {
+  preloadCount = 2
+}: UseImageSlideshowProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [preloadedImages, setPreloadedImages] = useState<Set<number>>(new Set());
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
   const preloadPromisesRef = useRef<Map<number, Promise<void>>>(new Map());
 
-  // Ultra-minimal preload - only first image initially
-  const preloadFirstImage = useCallback(async () => {
+  // Optimized preload function - only critical images initially
+  const preloadCriticalImages = useCallback(async (count: number = 5) => {
     const preloadPromises: Promise<void>[] = [];
 
-    // Only preload the very first image for ultra-fast initial load
-    if (preloadPromisesRef.current.has(0)) return;
+    // Only preload the first few critical images for fast initial load
+    for (let i = 0; i < Math.min(count, images.length); i++) {
+      if (preloadPromisesRef.current.has(i)) continue; // Already preloading
 
-    const preloadPromise = new Promise<void>((resolve) => {
-      const img = new window.Image();
-      img.onload = () => {
-        setPreloadedImages(prev => new Set([...prev, 0]));
-        resolve();
-      };
-      img.onerror = () => {
-        setFailedImages(prev => new Set([...prev, 0]));
-        resolve(); // Resolve even on error
-      };
-      img.src = images[0];
-    });
+      const preloadPromise = new Promise<void>((resolve) => {
+        const img = new window.Image();
+        img.onload = () => {
+          setPreloadedImages(prev => new Set([...prev, i]));
+          resolve();
+        };
+        img.onerror = () => {
+          setFailedImages(prev => new Set([...prev, i]));
+          resolve(); // Resolve even on error to not block other preloads
+        };
+        img.src = images[i];
+      });
 
-    preloadPromisesRef.current.set(0, preloadPromise);
-    preloadPromises.push(preloadPromise);
+      preloadPromisesRef.current.set(i, preloadPromise);
+      preloadPromises.push(preloadPromise);
+    }
 
     await Promise.all(preloadPromises);
   }, [images]);
 
-  // Background preload for remaining images in slideshow order
-  const preloadRemainingImagesDuringPause = useCallback(() => {
-    // Load images in slideshow order starting from next image
-    // This ensures smooth transitions without random image appearances
-    let currentLoadIndex = 1; // Start from second image
+  // Progressive preload for remaining images (background loading)
+  const preloadRemainingImages = useCallback(() => {
+    // Load remaining images in background without blocking
+    for (let i = 5; i < images.length; i++) {
+      if (preloadPromisesRef.current.has(i)) continue;
 
-    const loadNextImage = () => {
-      if (currentLoadIndex >= images.length) return;
-
-      const img = new window.Image();
-      img.onload = () => {
-        setPreloadedImages(prev => new Set([...prev, currentLoadIndex]));
-        currentLoadIndex++;
-        // Load next image after a short delay
-        setTimeout(loadNextImage, 50);
-      };
-      img.onerror = () => {
-        setFailedImages(prev => new Set([...prev, currentLoadIndex]));
-        currentLoadIndex++;
-        // Continue loading next image even if this one failed
-        setTimeout(loadNextImage, 50);
-      };
-      img.src = images[currentLoadIndex];
-    };
-
-    // Start the sequential loading
-    loadNextImage();
+      // Use setTimeout to defer loading and not block main thread
+      setTimeout(() => {
+        const img = new window.Image();
+        img.onload = () => {
+          setPreloadedImages(prev => new Set([...prev, i]));
+        };
+        img.onerror = () => {
+          setFailedImages(prev => new Set([...prev, i]));
+        };
+        img.src = images[i];
+      }, (i - 5) * 50); // Stagger loading to avoid network congestion
+    }
   }, [images]);
 
-  // Initial ultra-minimal preload
+  // Initial critical preload only
   useEffect(() => {
-    preloadFirstImage();
-    // Start background loading immediately after first image loads
-    preloadRemainingImagesDuringPause();
-  }, [preloadFirstImage, preloadRemainingImagesDuringPause]);
+    preloadCriticalImages();
+    // Start background loading after initial render
+    setTimeout(() => preloadRemainingImages(), 1000);
+  }, [preloadCriticalImages, preloadRemainingImages]);
 
-  // Auto-rotate images with extended first image timing
+  // Auto-rotate images
   useEffect(() => {
-    let currentInterval = initialInterval; // Start with 5 seconds for first image
-    let intervalId: NodeJS.Timeout;
-
-    const startInterval = () => {
-      intervalId = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % images.length;
-
-          // After first transition, switch to normal interval (3 seconds)
-          if (nextIndex === 1 && currentInterval === initialInterval) {
-            currentInterval = interval;
-            clearInterval(intervalId);
-            startInterval(); // Restart with new interval
-          }
-
-          return nextIndex;
-        });
-      }, currentInterval);
-    };
-
-    startInterval();
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => {
+        return (prevIndex + 1) % images.length;
+      });
+    }, interval);
 
     return () => clearInterval(intervalId);
-  }, [images, interval, initialInterval]);
+  }, [images, interval]);
 
-  // Ensure current image is always considered loaded to prevent blanks
-  useEffect(() => {
-    // Mark current image as loaded when it becomes current
-    // This prevents any blank states during transitions
-    if (!preloadedImages.has(currentImageIndex) && !failedImages.has(currentImageIndex)) {
-      setPreloadedImages(prev => new Set([...prev, currentImageIndex]));
-    }
-  }, [currentImageIndex]);
-
-  // Check if image should be rendered - aggressive anti-flickering
+  // Check if image should be rendered - more permissive to avoid blanks
   const shouldRenderImage = (index: number) => {
-    // CRITICAL: Only show current image until all critical images are loaded
-    // This prevents ANY flickering during the initial loading phase
-    const criticalImagesLoaded = preloadedImages.size >= Math.min(5, images.length);
-
-    if (!criticalImagesLoaded) {
-      // During loading phase: only show current image
-      return index === currentImageIndex;
-    }
-
-    // After loading phase: normal slideshow behavior
-    // Always show current image
+    // Always show current image if it's loaded or failed (will show error state)
     if (index === currentImageIndex) return true;
 
-    // Show next image if preloaded (for smooth transitions)
-    const nextIndex = (currentImageIndex + 1) % images.length;
-    if (index === nextIndex && preloadedImages.has(index) && !failedImages.has(index)) {
+    // Show preloaded images
+    if (preloadedImages.has(index)) return true;
+
+    // For images within preload distance, show if they're not failed
+    if (Math.abs(index - currentImageIndex) <= preloadCount && !failedImages.has(index)) {
       return true;
     }
 
-    // Don't show any other images to prevent flickering
-    return false;
+    // Show any successfully loaded images to prevent blanks
+    return preloadedImages.has(index);
   };
 
   // Get loading state for an image

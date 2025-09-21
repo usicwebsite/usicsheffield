@@ -66,7 +66,7 @@ function usePredictiveImagePreloading(images: Array<{id: number, imagePath: stri
 }
 
 export default function EventsSection() {
-  const [criticalImagesLoaded, setCriticalImagesLoaded] = useState(false);
+  const [visibleImages, setVisibleImages] = useState<Set<number>>(new Set());
 
   // Event images data - alternating between brothers and sisters
   const eventImages = [
@@ -444,14 +444,17 @@ export default function EventsSection() {
   const topSliderPreloader = usePredictiveImagePreloading(eventImages, topRowRef);
   const bottomSliderPreloader = usePredictiveImagePreloading(bottomSliderImages, bottomRowRef);
 
-  // Intersection Observer for lazy loading (kept for potential future use)
+  // Intersection Observer for lazy loading
   const imageObserver = useCallback((node: HTMLDivElement) => {
     if (node) {
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            // No longer setting visibleImages since we use criticalImagesLoaded logic
-            observer.unobserve(entry.target);
+            if (entry.isIntersecting) {
+              const imageIndex = parseInt(entry.target.getAttribute('data-image-index') || '0');
+              setVisibleImages(prev => new Set([...prev, imageIndex]));
+              observer.unobserve(entry.target);
+            }
           });
         },
         {
@@ -464,41 +467,20 @@ export default function EventsSection() {
     }
   }, []);
   
-  // Monitor when critical images are loaded
+  // Initial preloading of minimal critical images
   useEffect(() => {
-    const checkCriticalImagesLoaded = () => {
-      const topLoaded = topSliderPreloader.preloadedImages.size >= 6;
-      const bottomLoaded = bottomSliderPreloader.preloadedImages.size >= 6;
-      if (topLoaded && bottomLoaded && !criticalImagesLoaded) {
-        setCriticalImagesLoaded(true);
-      }
-    };
-
-    // Check immediately and then every 100ms
-    checkCriticalImagesLoaded();
-    const interval = setInterval(checkCriticalImagesLoaded, 100);
-
-    return () => clearInterval(interval);
-  }, [topSliderPreloader.preloadedImages.size, bottomSliderPreloader.preloadedImages.size, criticalImagesLoaded]);
-
-  // Start preloading after 1 second delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Start preloading first 6 images per slider
-      topSliderPreloader.preloadCriticalImages(0, 6);
-      bottomSliderPreloader.preloadCriticalImages(0, 6);
-    }, 1000); // 1 second delay to prioritize hero loading
-
-    return () => clearTimeout(timer);
+    // Only preload first 6 images per slider for fast initial load (enough for viewport)
+    topSliderPreloader.preloadCriticalImages(0, 6);
+    bottomSliderPreloader.preloadCriticalImages(0, 6);
+    // Background loading will handle the rest
   }, []);
 
   // Auto-scroll effect with constant speed and predictive preloading
-  // Only start animation when critical images are loaded to prevent flickering
   useEffect(() => {
     const topRow = topRowRef.current;
     const bottomRow = bottomRowRef.current;
 
-    if (!topRow || !bottomRow || !criticalImagesLoaded) {
+    if (!topRow || !bottomRow) {
       return;
     }
 
@@ -747,7 +729,7 @@ export default function EventsSection() {
         bottomRow.removeEventListener('mouseleave', resumeBottomScrolling);
       }
     };
-  }, [criticalImagesLoaded]);
+  }, []);
 
   return (
     <section className="py-16 bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
@@ -786,6 +768,7 @@ export default function EventsSection() {
           {/* Triple the images for continuous scrolling effect */}
           {[...eventImages, ...eventImages, ...eventImages].map((image, index) => {
             const originalIndex = index % eventImages.length;
+            const isVisible = visibleImages.has(originalIndex);
             const loadingState = topSliderPreloader.getImageLoadingState(image.id);
             const fallbackImage = '/images/WEB/usic-logo.png';
             const imageSrc = loadingState === 'failed' ? fallbackImage : image.imagePath;
@@ -798,14 +781,15 @@ export default function EventsSection() {
                 className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                {loadingState === 'loaded' && criticalImagesLoaded ? (
+                {loadingState === 'loaded' || isVisible ? (
                   <Image
                     src={imageSrc}
                     alt={image.alt}
                     fill
                     sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
                     style={{
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      filter: loadingState === 'failed' ? 'brightness(0.3)' : 'none'
                     }}
                     className="transition-transform duration-500 hover:scale-105"
                     loading="lazy"
@@ -817,22 +801,20 @@ export default function EventsSection() {
                       }
                     }}
                   />
-                ) : (
-                  // During loading or failed state - show consistent placeholder
+                ) : loadingState === 'loading' ? (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                    {!criticalImagesLoaded ? (
-                      // Loading state - show spinner
-                      <div className="w-6 h-6 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
-                    ) : (
-                      // Failed or not loaded - show fallback
-                      <Image
-                        src={fallbackImage}
-                        alt="USIC logo fallback"
-                        width={40}
-                        height={40}
-                        className="opacity-50"
-                      />
-                    )}
+                    <div className="w-6 h-6 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  // Failed state - show fallback
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <Image
+                      src={fallbackImage}
+                      alt="USIC logo fallback"
+                      width={40}
+                      height={40}
+                      className="opacity-50"
+                    />
                   </div>
                 )}
               </div>
@@ -852,6 +834,7 @@ export default function EventsSection() {
           {/* Triple the images for continuous scrolling effect */}
           {[...bottomSliderImages, ...bottomSliderImages, ...bottomSliderImages].map((image, index) => {
             const originalIndex = index % bottomSliderImages.length;
+            const isVisible = visibleImages.has(originalIndex);
             const loadingState = bottomSliderPreloader.getImageLoadingState(image.id);
             const fallbackImage = '/images/WEB/usic-logo.png';
             const imageSrc = loadingState === 'failed' ? fallbackImage : image.imagePath;
@@ -864,14 +847,15 @@ export default function EventsSection() {
                 className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                {loadingState === 'loaded' && criticalImagesLoaded ? (
+                {loadingState === 'loaded' || isVisible ? (
                   <Image
                     src={imageSrc}
                     alt={image.alt}
                     fill
                     sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
                     style={{
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      filter: loadingState === 'failed' ? 'brightness(0.3)' : 'none'
                     }}
                     className="transition-transform duration-500 hover:scale-105"
                     loading="lazy"
@@ -883,22 +867,20 @@ export default function EventsSection() {
                       }
                     }}
                   />
-                ) : (
-                  // During loading or failed state - show consistent placeholder
+                ) : loadingState === 'loading' ? (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                    {!criticalImagesLoaded ? (
-                      // Loading state - show spinner
-                      <div className="w-6 h-6 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
-                    ) : (
-                      // Failed or not loaded - show fallback
-                      <Image
-                        src={fallbackImage}
-                        alt="USIC logo fallback"
-                        width={40}
-                        height={40}
-                        className="opacity-50"
-                      />
-                    )}
+                    <div className="w-6 h-6 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  // Failed state - show fallback
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <Image
+                      src={fallbackImage}
+                      alt="USIC logo fallback"
+                      width={40}
+                      height={40}
+                      className="opacity-50"
+                    />
                   </div>
                 )}
               </div>
