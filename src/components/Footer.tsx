@@ -51,7 +51,16 @@ export default function Footer() {
         {/* Bottom section with copyright */}
         <div className="mt-8 pt-8 border-t border-blue-800">
           <p className="text-center">
-            &copy; {new Date().getFullYear()} {footerInfo.copyright}. All rights reserved.
+            Made by{' '}
+            <a
+              href="https://www.instagram.com/mikhailbuilds"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-200 underline transition-colors"
+            >
+              @mikhailbuilds
+            </a>
+            . All rights reserved.
           </p>
         </div>
       </div>

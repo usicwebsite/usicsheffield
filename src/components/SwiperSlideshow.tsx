@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
@@ -17,18 +17,53 @@ export default function SwiperSlideshow() {
   const { slideshow } = staticData.homepage;
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
+  // Set initial pagination active state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const paginationEl = document.querySelector('.swiper-pagination');
+      if (paginationEl) {
+        const bullets = paginationEl.querySelectorAll('span');
+        if (bullets.length > 0) {
+          bullets[0].classList.add('swiper-pagination-bullet-active');
+        }
+      }
+    }, 100); // Small delay to ensure swiper has rendered
+
+    return () => clearTimeout(timer);
+  }, []);
+
+
   const handleSlideChange = (swiper: SwiperType) => {
     setCurrentSlideIndex(swiper.realIndex);
+
+    // Update pagination active state manually
+    // Map duplicate slides to their corresponding original bullets
+    const mappedIndex = swiper.realIndex % 4;
+
+    // Remove active class from all bullets
+    const paginationEl = document.querySelector('.swiper-pagination');
+    if (paginationEl) {
+      const bullets = paginationEl.querySelectorAll('span');
+      bullets.forEach((bullet, index) => {
+        bullet.classList.remove('swiper-pagination-bullet-active');
+        // Add active class to the correct bullet
+        if (index === mappedIndex) {
+          bullet.classList.add('swiper-pagination-bullet-active');
+        }
+      });
+    }
   };
 
+
   const renderSlideContent = (slide: typeof slideshow.slides[0]) => {
+
     switch (slide.type) {
       case 'spotify':
         return (
           <div className="w-full h-full flex items-center justify-center">
-            <a 
-              href={slide.externalUrl} 
-              target="_blank" 
+            <a
+              href={slide.externalUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className="block w-full h-full group cursor-pointer"
             >
@@ -56,9 +91,9 @@ export default function SwiperSlideshow() {
       case 'youtube':
         return (
           <div className="w-full h-full flex items-center justify-center">
-            <a 
-              href={slide.externalUrl} 
-              target="_blank" 
+            <a
+              href={slide.externalUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className="block w-full h-full group cursor-pointer"
             >
@@ -86,9 +121,9 @@ export default function SwiperSlideshow() {
       case 'instagram':
         return (
           <div className="w-full h-full flex items-center justify-center">
-            <a 
-              href={slide.externalUrl} 
-              target="_blank" 
+            <a
+              href={slide.externalUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className="block w-full h-full group cursor-pointer"
             >
@@ -116,9 +151,9 @@ export default function SwiperSlideshow() {
       case 'newsletter':
         return (
           <div className="w-full h-full flex items-center justify-center">
-            <a 
-              href={slide.externalUrl} 
-              target="_blank" 
+            <a
+              href={slide.externalUrl}
+              target="_blank"
               rel="noopener noreferrer"
               className="block w-full h-full group cursor-pointer"
             >
@@ -218,7 +253,10 @@ export default function SwiperSlideshow() {
               el: '.swiper-pagination',
               clickable: true,
               renderBullet: function (index, className) {
-                return `<span class="${className}">${slideshow.slides[index].title}</span>`;
+                // Only render bullets for first 4 slides
+                if (index >= 4) return '';
+
+                return `<span class="${className}" data-slide-index="${index}">${slideshow.slides[index].title}</span>`;
               },
             }}
             modules={[EffectCoverflow, Navigation, Pagination]}
@@ -337,6 +375,7 @@ export default function SwiperSlideshow() {
           color: #fff;
           opacity: 0.5;
         }
+
         
         .swiper-pagination-bullet-active {
           border-bottom: 2px solid #cc334f;

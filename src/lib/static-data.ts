@@ -82,6 +82,43 @@ export const staticData = {
           thumbnailImage: "/images/WEB/slideshow/newsletter.jpg",
           externalUrl: "https://mailchi.mp/f0da36dbc07a/usic-updates",
           fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        // Duplicate slides for loop mode
+        {
+          id: "podcast-duplicate",
+          title: "Latest Podcast",
+          description: "Listen to our latest Islamic discussions and community insights",
+          type: "spotify",
+          thumbnailImage: "/images/WEB/slideshow/podcast.jpg",
+          externalUrl: "https://open.spotify.com/episode/6rHLkFmkyRW02yzF0Ne70D",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        {
+          id: "youtube-duplicate",
+          title: "Latest Video",
+          description: "Watch our latest events and community highlights",
+          type: "youtube",
+          thumbnailImage: "/images/WEB/slideshow/youtube.jpg",
+          externalUrl: "https://youtu.be/X_EiFOr168o?si=1damg0KSBXm04U-R",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        {
+          id: "instagram-duplicate",
+          title: "Latest Post",
+          description: "Follow our journey on Instagram for daily updates",
+          type: "instagram",
+          thumbnailImage: "/images/WEB/committee.jpeg",
+          externalUrl: "https://www.instagram.com/p/DORUV3lCDAg/",
+          fallbackImage: "/images/WEB/usic-logo.png"
+        },
+        {
+          id: "newsletter-duplicate",
+          title: "Weekly Newsletter",
+          description: "Sign up for all things USIC - every Sunday!",
+          type: "newsletter",
+          thumbnailImage: "/images/WEB/slideshow/newsletter.jpg",
+          externalUrl: "https://mailchi.mp/f0da36dbc07a/usic-updates",
+          fallbackImage: "/images/WEB/usic-logo.png"
         }
       ]
     }
