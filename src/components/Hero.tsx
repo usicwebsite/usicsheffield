@@ -12,13 +12,9 @@ import ScrollArrow from '@/components/ui/ScrollArrow';
  */
 export default function Hero() {
   const images = staticData.homepage.hero.images;
-  const swiperImages = staticData.homepage.slideshow.slides.map(slide => slide.thumbnailImage);
-  const eventImages = staticData.homepage.eventImages;
   const { currentImageIndex, shouldRenderImage, getImageLoadingState } = useImageSlideshow({
     images,
-    preloadCount: 3, // Reduced preload count to minimize re-renders
-    swiperImages,
-    eventImages
+    preloadCount: 3 // Reduced preload count to minimize re-renders
   });
 
   // Use refs to prevent loading state changes from causing re-renders
@@ -52,8 +48,12 @@ export default function Hero() {
 
   return (
     <div className="relative overflow-hidden w-full h-screen">
-      {/* Image slideshow background */}
+      {/* Image slideshow background - skeleton first, images appear seamlessly */}
       <div className="absolute inset-0 z-0">
+        {/* Skeleton background - instant loading */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0A1219] via-[#18384D] to-[#0F1E2C]" />
+
+        {/* Images load invisibly and appear seamlessly */}
         {images.map((image, index) => {
           if (!shouldRenderImage(index)) return null;
 
@@ -64,8 +64,8 @@ export default function Hero() {
           return (
             <div
               key={image}
-              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
-                isCurrentImage ? 'opacity-100' : 'opacity-0'
+              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+                isCurrentImage && loadingState === 'loaded' ? 'opacity-100' : 'opacity-0'
               }`}
             >
               <Image
@@ -75,10 +75,10 @@ export default function Hero() {
                 sizes="100vw"
                 style={{
                   objectFit: 'cover',
-                  filter: loadingState === 'failed' ? 'brightness(0.3)' : 'brightness(0.5)'
+                  filter: 'brightness(0.5)'
                 }}
                 priority={index < 3} // Prioritize first 3 images
-                loading={index < 3 ? 'eager' : 'lazy'}
+                loading={index < 3 ? 'eager' : 'lazy'} // Only eager load first 3, others lazy
                 quality={85}
                 onError={(e) => {
                   // Fallback to logo if image fails to load

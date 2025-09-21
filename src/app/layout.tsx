@@ -72,6 +72,16 @@ export default async function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="csrf-token" content={csrfToken} />
         {/* CSP handled by middleware - removed conflicting meta tag */}
+
+        {/* Resource hints for instant loading */}
+        <link rel="preload" href="/Assalamu-aleykum-black.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="/images/WEB/brothers/IMG_9262.JPG" as="image" />
+        <link rel="preload" href="/images/WEB/brothers/IMG_9980.JPG" as="image" />
+        <link rel="preload" href="/images/WEB/sisters/sister3.jpeg" as="image" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
