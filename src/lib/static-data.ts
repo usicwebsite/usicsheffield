@@ -424,7 +424,7 @@ export const staticData = {
         name: "Lifetime",
         price: "£30",
         period: "one-time",
-        description: "Be a part of the community forever",
+        description: "Be a part of the community for the duration of your course",
         popular: true,
         features: [
           "Lifetime membership card",
