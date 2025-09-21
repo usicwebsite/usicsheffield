@@ -42,7 +42,7 @@ export default function Hero() {
           return (
             <div
               key={image}
-              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
                 isCurrentImage ? 'opacity-100' : 'opacity-0'
               }`}
             >
