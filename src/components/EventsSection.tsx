@@ -4,10 +4,70 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+// Hook for predictive image preloading based on scroll direction
+function usePredictiveImagePreloading(images: Array<{id: number, imagePath: string}>, containerRef: React.RefObject<HTMLDivElement | null>) {
+  const [preloadedImages, setPreloadedImages] = useState<Set<number>>(new Set());
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
+  const preloadPromisesRef = useRef<Map<number, Promise<void>>>(new Map());
+
+  // Aggressive preload function for critical images
+  const preloadCriticalImages = useCallback(async (startIndex: number, count: number = 10) => {
+    const preloadPromises: Promise<void>[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const imageIndex = (startIndex + i) % images.length;
+      const image = images[imageIndex];
+
+      if (preloadPromisesRef.current.has(image.id)) continue; // Already preloading
+
+      const preloadPromise = new Promise<void>((resolve) => {
+        const img = new window.Image();
+        img.onload = () => {
+          setPreloadedImages(prev => new Set([...prev, image.id]));
+          resolve();
+        };
+        img.onerror = () => {
+          setFailedImages(prev => new Set([...prev, image.id]));
+          resolve(); // Resolve even on error
+        };
+        img.src = image.imagePath;
+      });
+
+      preloadPromisesRef.current.set(image.id, preloadPromise);
+      preloadPromises.push(preloadPromise);
+    }
+
+    await Promise.all(preloadPromises);
+  }, [images]);
+
+  // Preload images based on scroll position and direction
+  const preloadBasedOnScroll = useCallback((scrollLeft: number, containerWidth: number) => {
+    if (!containerRef.current) return;
+
+    const totalWidth = containerRef.current.scrollWidth / 3; // Account for tripling
+    const imagesPerRow = Math.ceil(containerWidth / 200); // Approximate images visible
+    const currentImageIndex = Math.floor((scrollLeft / totalWidth) * images.length);
+
+    // Preload current visible images + next batch
+    preloadCriticalImages(currentImageIndex, imagesPerRow * 2);
+  }, [images.length, preloadCriticalImages, containerRef]);
+
+  return {
+    preloadedImages,
+    failedImages,
+    preloadCriticalImages,
+    preloadBasedOnScroll,
+    getImageLoadingState: (id: number) => {
+      if (preloadedImages.has(id)) return 'loaded';
+      if (failedImages.has(id)) return 'failed';
+      return 'loading';
+    }
+  };
+}
+
 export default function EventsSection() {
   const [visibleImages, setVisibleImages] = useState<Set<number>>(new Set());
-  // const [loadedImages] = useState<Set<number>>(new Set());
-  
+
   // Event images data - alternating between brothers and sisters
   const eventImages = [
     {
@@ -375,11 +435,15 @@ export default function EventsSection() {
       alt: "USIC community gathering"
     }
   ];
-  
+
   // Create references for the scrolling rows
   const topRowRef = useRef<HTMLDivElement>(null);
   const bottomRowRef = useRef<HTMLDivElement>(null);
-  
+
+  // Initialize predictive preloading for both sliders
+  const topSliderPreloader = usePredictiveImagePreloading(eventImages, topRowRef);
+  const bottomSliderPreloader = usePredictiveImagePreloading(bottomSliderImages, bottomRowRef);
+
   // Intersection Observer for lazy loading
   const imageObserver = useCallback((node: HTMLDivElement) => {
     if (node) {
@@ -403,11 +467,23 @@ export default function EventsSection() {
     }
   }, []);
   
-  // Auto-scroll effect with constant speed
+  // Delayed preloading of event slider images (wait 1 second)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only preload first 6 images per slider after 1 second delay
+      topSliderPreloader.preloadCriticalImages(0, 6);
+      bottomSliderPreloader.preloadCriticalImages(0, 6);
+      // Background loading will handle the rest
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Auto-scroll effect with constant speed and predictive preloading
   useEffect(() => {
     const topRow = topRowRef.current;
     const bottomRow = bottomRowRef.current;
-    
+
     if (!topRow || !bottomRow) {
       return;
     }
@@ -415,7 +491,7 @@ export default function EventsSection() {
     // Browser detection for debugging
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isChrome = /chrome/i.test(navigator.userAgent);
-    
+
     // Speed in pixels per frame
     const SCROLL_SPEED = 0.3;
     
@@ -477,8 +553,13 @@ export default function EventsSection() {
         }
         
         topFrameCount++;
-        
-        
+
+        // Predictive preloading every 30 frames (less aggressive)
+        if (topFrameCount % 30 === 0) {
+          const scrollPos = useTransformForTop ? topTransformX : topRow.scrollLeft;
+          topSliderPreloader.preloadBasedOnScroll(scrollPos, topRow.clientWidth);
+        }
+
         // Reset when reaching the end (accounting for the tripled content) - Chrome/other browsers
         if (!useTransformForTop) {
           const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
@@ -530,8 +611,13 @@ export default function EventsSection() {
         }
         
         bottomFrameCount++;
-        
-        
+
+        // Predictive preloading every 30 frames (less aggressive)
+        if (bottomFrameCount % 30 === 0) {
+          const scrollPos = useTransformForBottom ? bottomTransformX : bottomRow.scrollLeft;
+          bottomSliderPreloader.preloadBasedOnScroll(scrollPos, bottomRow.clientWidth);
+        }
+
         // Reset when reaching the beginning - Chrome/other browsers
         if (!useTransformForBottom) {
           if (bottomRow.scrollLeft <= 0) {
@@ -687,32 +773,52 @@ export default function EventsSection() {
           {[...eventImages, ...eventImages, ...eventImages].map((image, index) => {
             const originalIndex = index % eventImages.length;
             const isVisible = visibleImages.has(originalIndex);
-            
+            const loadingState = topSliderPreloader.getImageLoadingState(image.id);
+            const fallbackImage = '/images/WEB/usic-logo.png';
+            const imageSrc = loadingState === 'failed' ? fallbackImage : image.imagePath;
+
             return (
-              <div 
-                key={`top-${image.id}-${index}`} 
+              <div
+                key={`top-${image.id}-${index}`}
                 ref={index < eventImages.length ? imageObserver : undefined}
                 data-image-index={originalIndex}
                 className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                {isVisible ? (
+                {loadingState === 'loaded' || isVisible ? (
                   <Image
-                    src={image.imagePath}
+                    src={imageSrc}
                     alt={image.alt}
                     fill
                     sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                    style={{ 
-                      objectFit: 'cover'
+                    style={{
+                      objectFit: 'cover',
+                      filter: loadingState === 'failed' ? 'brightness(0.3)' : 'none'
                     }}
                     className="transition-transform duration-500 hover:scale-105"
                     loading="lazy"
                     quality={80}
-                    onLoad={() => {}}
+                    onError={(e) => {
+                      // Fallback to logo if image fails to load
+                      if (e.currentTarget.src !== fallbackImage) {
+                        e.currentTarget.src = fallbackImage;
+                      }
+                    }}
                   />
+                ) : loadingState === 'loading' ? (
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  </div>
                 ) : (
-                  <div className="w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  // Failed state - show fallback
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <Image
+                      src={fallbackImage}
+                      alt="USIC logo fallback"
+                      width={40}
+                      height={40}
+                      className="opacity-50"
+                    />
                   </div>
                 )}
               </div>
@@ -733,32 +839,52 @@ export default function EventsSection() {
           {[...bottomSliderImages, ...bottomSliderImages, ...bottomSliderImages].map((image, index) => {
             const originalIndex = index % bottomSliderImages.length;
             const isVisible = visibleImages.has(originalIndex);
-            
+            const loadingState = bottomSliderPreloader.getImageLoadingState(image.id);
+            const fallbackImage = '/images/WEB/usic-logo.png';
+            const imageSrc = loadingState === 'failed' ? fallbackImage : image.imagePath;
+
             return (
-              <div 
-                key={`bottom-${image.id}-${index}`} 
+              <div
+                key={`bottom-${image.id}-${index}`}
                 ref={index < bottomSliderImages.length ? imageObserver : undefined}
                 data-image-index={originalIndex}
                 className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                {isVisible ? (
+                {loadingState === 'loaded' || isVisible ? (
                   <Image
-                    src={image.imagePath}
+                    src={imageSrc}
                     alt={image.alt}
                     fill
                     sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                    style={{ 
-                      objectFit: 'cover'
+                    style={{
+                      objectFit: 'cover',
+                      filter: loadingState === 'failed' ? 'brightness(0.3)' : 'none'
                     }}
                     className="transition-transform duration-500 hover:scale-105"
                     loading="lazy"
                     quality={80}
-                    onLoad={() => {}}
+                    onError={(e) => {
+                      // Fallback to logo if image fails to load
+                      if (e.currentTarget.src !== fallbackImage) {
+                        e.currentTarget.src = fallbackImage;
+                      }
+                    }}
                   />
+                ) : loadingState === 'loading' ? (
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  </div>
                 ) : (
-                  <div className="w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                  // Failed state - show fallback
+                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <Image
+                      src={fallbackImage}
+                      alt="USIC logo fallback"
+                      width={40}
+                      height={40}
+                      className="opacity-50"
+                    />
                   </div>
                 )}
               </div>

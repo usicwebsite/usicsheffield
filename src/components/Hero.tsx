@@ -11,7 +11,11 @@ import ScrollArrow from '@/components/ui/ScrollArrow';
  */
 export default function Hero() {
   const images = staticData.homepage.hero.images;
-  const { currentImageIndex, shouldRenderImage } = useImageSlideshow({ images });
+  const { currentImageIndex, shouldRenderImage, getImageLoadingState } = useImageSlideshow({
+    images,
+    preloadCount: 5, // Preload more images for smoother transitions
+    initialInterval: 5000 // 5 seconds for first image
+  });
 
   // Scroll to next section
   const scrollToNextSection = () => {
@@ -21,33 +25,52 @@ export default function Hero() {
     });
   };
 
+  // Fallback image for failed loads
+  const fallbackImage = '/images/WEB/usic-logo.png';
+
   return (
     <div className="relative overflow-hidden w-full h-screen">
       {/* Image slideshow background */}
       <div className="absolute inset-0 z-0">
         {images.map((image, index) => {
           if (!shouldRenderImage(index)) return null;
-          
+
+          const loadingState = getImageLoadingState(index);
+          const isCurrentImage = index === currentImageIndex;
+          const imageSrc = loadingState === 'failed' ? fallbackImage : image;
+
           return (
             <div
               key={image}
               className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
-                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                isCurrentImage ? 'opacity-100' : 'opacity-0'
               }`}
             >
               <Image
-                src={image}
+                src={imageSrc}
                 alt={`Slideshow image ${index + 1}`}
                 fill
                 sizes="100vw"
-                style={{ 
+                style={{
                   objectFit: 'cover',
-                  filter: 'brightness(0.5)'
+                  filter: loadingState === 'failed' ? 'brightness(0.3)' : 'brightness(0.5)'
                 }}
-                priority={index === 0}
-                loading={index === 0 ? 'eager' : 'lazy'}
+                priority={index < 3} // Prioritize first 3 images
+                loading={index < 3 ? 'eager' : 'lazy'}
                 quality={85}
+                onError={(e) => {
+                  // Fallback to logo if image fails to load
+                  if (e.currentTarget.src !== fallbackImage) {
+                    e.currentTarget.src = fallbackImage;
+                  }
+                }}
               />
+              {/* Show subtle loading indicator for current image if not loaded */}
+              {isCurrentImage && loadingState === 'loading' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div className="w-8 h-8 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                </div>
+              )}
             </div>
           );
         })}
