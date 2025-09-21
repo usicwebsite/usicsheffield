@@ -196,10 +196,10 @@ export default function PricingPage() {
                   "Calis": '/images/sponsors/logos/calis.png',
                   "Cha Cha Chai": '/images/sponsors/logos/cha cha chai.png',
                   "Damascus Bakery": '/images/sponsors/logos/damascus bakery.png',
-                  "Noori Charms": '/images/sponsors/logos/noori charms.png',
+                  "Noori Charms": '/images/sponsors/logos/noori charms.jpg',
                   "Frog": '/images/sponsors/logos/frog.png',
-                  "Regen Therapy": '/images/sponsors/logos/regen therapy.png',
-                  "Iqra Store": '/images/sponsors/iqrastore.jpg'
+                  "Regen Therapy": '/images/sponsors/logos/regen therapy.jpg',
+                  "Unit": '/images/sponsors/logos/unit.jpg'
                 };
                 return logoMap[name] || null;
               };
@@ -222,16 +222,49 @@ export default function PricingPage() {
                   "Calis": '/images/sponsors/pics/calis.jpg',
                   "Cha Cha Chai": '/images/sponsors/pics/cha cha chai.jpeg',
                   "Damascus Bakery": '/images/sponsors/pics/damascus bakery.webp',
-                  "Frog": '/images/sponsors/pics/frog.jpeg',
-                  "Iqra Store": '/images/sponsors/iqrastore.jpg'
+                  "Noori Charms": '/images/sponsors/pics/noori charms.webp',
+                  "Frog": '/images/sponsors/pics/frog.jpg',
+                  "Regen Therapy": '/images/sponsors/pics/regen therapy.jpg',
+                  "Unit": '/images/sponsors/pics/unit.webp'
                 };
                 return photoMap[name] || null;
               };
+
+              // Map business names to their website URLs
+              const getBusinessUrl = (name: string) => {
+                const urlMap: { [key: string]: string } = {
+                  "Sabir's Grill": 'https://www.sabirs.co.uk/',
+                  "5 Akhis": 'https://www.fiveakhis.com/stores/7/five-akhis-sheffield?utm_source=google&utm_medium=local&utm_campaign=gbplisting',
+                  "Karak Chai": 'https://karakchaii.co.uk/?utm_source=google&utm_medium=local&utm_campaign=gbplisting',
+                  "Big Daddy's": 'https://wicker.bigdaddysfastfood.co.uk/',
+                  "Mighty Bites": 'https://www.mightybites.co.uk/',
+                  "Insomnia Cookies": 'https://insomniacookies.com/uk',
+                  "Ohannes": 'https://insomniacookies.com/uk',
+                  "Al Maghrib Faith Essentials": 'https://www.almaghrib.org/',
+                  "Shakebees": 'https://www.shakebee.uk/',
+                  "Heavenly Desserts": 'https://www.heavenlydesserts.co.uk/stores/sheffield',
+                  "M.A.K Halal": 'https://www.makhalal.co.uk/',
+                  "Kebabish Original": 'https://kosheffield.co.uk/',
+                  "Calis": 'https://www.calis.uk/',
+                  "Cha Cha Chai": 'https://www.lovemychai.co.uk/',
+                  "Damascus Bakery": 'https://damascusbakery.co.uk/',
+                  "Noori Charms": 'https://www.instagram.com/nooricharms?igsh=cmF2bXE2azJnZzQ5',
+                  "Frog": 'https://www.instagram.com/frog_sheffield/?hl=en',
+                  "Regen Therapy": 'https://www.instagram.com/re.gentherapy?igsh=MXkxNmh1M2YxNWVzeQ==',
+                  "Unit": 'https://www.unitsheffield.com/'
+                };
+                return urlMap[name] || null;
+              };
+              
+              const businessUrl = getBusinessUrl(businessName);
               
               return (
-                <div
+                <a
                   key={index}
-                  className="bg-gradient-to-br from-gray-800/70 via-gray-900/50 to-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl border border-gray-600/40 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 relative group"
+                  href={businessUrl || '#'}
+                  target={businessUrl ? '_blank' : undefined}
+                  rel={businessUrl ? 'noopener noreferrer' : undefined}
+                  className={`block bg-gradient-to-br from-gray-800/70 via-gray-900/50 to-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl border border-gray-600/40 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 relative group ${businessUrl ? 'cursor-pointer' : 'cursor-default'}`}
                 >
 
                   {/* Business Image */}
@@ -240,7 +273,9 @@ export default function PricingPage() {
                       <img 
                         src={getBusinessPhoto(businessName)!} 
                         alt={`${businessName} photo`}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${
+                          businessName === 'Frog' ? 'object-[center_80%]' : ''
+                        }`}
                       />
                     ) : (
                       <div className={`w-full h-full ${businessStyle.bg} flex items-center justify-center`}>
@@ -258,15 +293,15 @@ export default function PricingPage() {
                     
                     {/* Brand Logo */}
                     <div className="absolute bottom-3 left-3">
-                      <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border-2 border-white/70 overflow-hidden">
+                      <div className="w-12 h-12 rounded-full shadow-lg overflow-hidden">
                         {getBusinessLogo(businessName) ? (
                           <img 
                             src={getBusinessLogo(businessName)!} 
                             alt={`${businessName} logo`}
-                            className="w-8 h-8 object-contain rounded-full"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className={`w-8 h-8 bg-gradient-to-br ${businessStyle.logoBg} rounded-full flex items-center justify-center`}>
+                          <div className={`w-full h-full bg-gradient-to-br ${businessStyle.logoBg} rounded-full flex items-center justify-center`}>
                             <span className="text-white text-xs font-bold">
                               {businessName.split(' ').map(word => word.charAt(0)).join('').slice(0, 2)}
                             </span>
@@ -287,7 +322,7 @@ export default function PricingPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </a>
               );
             })}
           </div>
