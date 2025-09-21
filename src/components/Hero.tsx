@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { staticData } from '@/lib/static-data';
 import { useImageSlideshow } from '@/hooks/useImageSlideshow';
@@ -11,10 +12,32 @@ import ScrollArrow from '@/components/ui/ScrollArrow';
  */
 export default function Hero() {
   const images = staticData.homepage.hero.images;
+  const swiperImages = staticData.homepage.slideshow.slides.map(slide => slide.thumbnailImage);
+  const eventImages = staticData.homepage.eventImages;
   const { currentImageIndex, shouldRenderImage, getImageLoadingState } = useImageSlideshow({
     images,
-    preloadCount: 5 // Preload more images for smoother transitions
+    preloadCount: 3, // Reduced preload count to minimize re-renders
+    swiperImages,
+    eventImages
   });
+
+  // Use refs to prevent loading state changes from causing re-renders
+  const loadingStatesRef = useRef<Map<number, string>>(new Map());
+
+  // Stable loading state getter that caches results to prevent re-renders
+  const getStableLoadingState = useCallback((index: number) => {
+    const cached = loadingStatesRef.current.get(index);
+    if (cached !== undefined) return cached;
+
+    const current = getImageLoadingState(index);
+    loadingStatesRef.current.set(index, current);
+    return current;
+  }, [getImageLoadingState]);
+
+  // Update cached loading states only when current image changes
+  React.useEffect(() => {
+    loadingStatesRef.current.clear(); // Clear cache on image change
+  }, [currentImageIndex]);
 
   // Scroll to next section
   const scrollToNextSection = () => {
@@ -34,14 +57,14 @@ export default function Hero() {
         {images.map((image, index) => {
           if (!shouldRenderImage(index)) return null;
 
-          const loadingState = getImageLoadingState(index);
+          const loadingState = getStableLoadingState(index);
           const isCurrentImage = index === currentImageIndex;
           const imageSrc = loadingState === 'failed' ? fallbackImage : image;
 
           return (
             <div
               key={image}
-              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
                 isCurrentImage ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -67,7 +90,7 @@ export default function Hero() {
               {/* Show subtle loading indicator for current image if not loaded */}
               {isCurrentImage && loadingState === 'loading' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <div className="w-8 h-8 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
                 </div>
               )}
             </div>

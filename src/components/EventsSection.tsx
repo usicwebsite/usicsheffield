@@ -467,12 +467,11 @@ export default function EventsSection() {
     }
   }, []);
   
-  // Initial preloading of minimal critical images
+  // Minimal initial preloading (most images loaded during 10s hero window)
   useEffect(() => {
-    // Only preload first 6 images per slider for fast initial load (enough for viewport)
-    topSliderPreloader.preloadCriticalImages(0, 6);
-    bottomSliderPreloader.preloadCriticalImages(0, 6);
-    // Background loading will handle the rest
+    // Only preload first 2 images per slider since most are loaded during hero slideshow
+    topSliderPreloader.preloadCriticalImages(0, 2);
+    bottomSliderPreloader.preloadCriticalImages(0, 2);
   }, []);
 
   // Auto-scroll effect with constant speed and predictive preloading

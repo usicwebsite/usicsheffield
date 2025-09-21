@@ -121,7 +121,41 @@ export const staticData = {
           fallbackImage: "/images/WEB/usic-logo.png"
         }
       ]
-    }
+    },
+
+    // Event section images for preloading
+    eventImages: [
+      "/images/WEB/sisters/sister3.jpeg",
+      "/images/WEB/brothers/brother1.jpeg",
+      "/images/WEB/brothers/brother2.jpeg",
+      "/images/WEB/sisters/sister6.jpeg",
+      "/images/WEB/brothers/brother3.jpeg",
+      "/images/WEB/sisters/sister7.jpeg",
+      "/images/WEB/brothers/brother4.jpeg",
+      "/images/WEB/sisters/sister8.jpeg",
+      "/images/WEB/brothers/brother5.jpeg",
+      "/images/WEB/sisters/sister9.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-2.jpg",
+      "/images/WEB/sisters/sister10.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-6.jpg",
+      "/images/WEB/sisters/sister11.jpeg",
+      "/images/WEB/sisters/sister12.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg",
+      "/images/WEB/sisters/sister24.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-21.jpg",
+      "/images/WEB/sisters/sister25.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-25.jpg",
+      "/images/WEB/sisters/sister26.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-45.jpg",
+      "/images/WEB/sisters/sister27.jpeg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg",
+      "/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg",
+      "/images/WEB/brothers/IMG_0006.JPG",
+      "/images/WEB/brothers/IMG_0028.JPG",
+      "/images/WEB/brothers/IMG_9262.JPG",
+      "/images/WEB/brothers/IMG_9980.JPG"
+    ]
   },
 
   // Events data
