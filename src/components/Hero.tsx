@@ -12,9 +12,8 @@ import ScrollArrow from '@/components/ui/ScrollArrow';
  */
 export default function Hero() {
   const images = staticData.homepage.hero.images;
-  const { currentImageIndex, shouldRenderImage } = useImageSlideshow({
-    images,
-    preloadCount: 3 // Preload nearby images for smooth transitions
+  const { currentImageIndex } = useImageSlideshow({
+    images
   });
 
   // Scroll to next section
@@ -35,17 +34,17 @@ export default function Hero() {
         {/* Skeleton background - instant loading */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A1219] via-[#18384D] to-[#0F1E2C]" />
 
-        {/* Images load invisibly and appear seamlessly */}
+        {/* Smooth slideshow with scale + fade transitions */}
         {images.map((image, index) => {
-          if (!shouldRenderImage(index)) return null;
-
           const isCurrentImage = index === currentImageIndex;
 
           return (
             <div
               key={image}
-              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
-                isCurrentImage ? 'opacity-100' : 'opacity-0'
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                isCurrentImage 
+                  ? 'opacity-100 scale-100' 
+                  : 'opacity-0 scale-105'
               }`}
             >
               <Image
