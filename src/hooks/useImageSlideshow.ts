@@ -9,9 +9,8 @@ interface UseImageSlideshowProps {
 export function useImageSlideshow({
   images,
   interval = 3000,
-  preloadCount = 2,
   initialInterval = 5000 // 5 seconds for first image
-}: UseImageSlideshowProps & { initialInterval?: number }) {
+}: Omit<UseImageSlideshowProps, 'preloadCount'> & { initialInterval?: number }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [preloadedImages, setPreloadedImages] = useState<Set<number>>(new Set());
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
@@ -115,19 +114,28 @@ export function useImageSlideshow({
     }
   }, [currentImageIndex]);
 
-  // Check if image should be rendered - conservative to prevent flickering
+  // Check if image should be rendered - aggressive anti-flickering
   const shouldRenderImage = (index: number) => {
-    // Always show current image (even if loading) to prevent blanks
+    // CRITICAL: Only show current image until all critical images are loaded
+    // This prevents ANY flickering during the initial loading phase
+    const criticalImagesLoaded = preloadedImages.size >= Math.min(5, images.length);
+
+    if (!criticalImagesLoaded) {
+      // During loading phase: only show current image
+      return index === currentImageIndex;
+    }
+
+    // After loading phase: normal slideshow behavior
+    // Always show current image
     if (index === currentImageIndex) return true;
 
-    // Only show preloaded images that are close to current image
-    // This prevents random images from appearing during slideshow
-    const distance = Math.abs(index - currentImageIndex);
-    if (distance <= preloadCount && preloadedImages.has(index) && !failedImages.has(index)) {
+    // Show next image if preloaded (for smooth transitions)
+    const nextIndex = (currentImageIndex + 1) % images.length;
+    if (index === nextIndex && preloadedImages.has(index) && !failedImages.has(index)) {
       return true;
     }
 
-    // Don't show images that loaded in background randomly
+    // Don't show any other images to prevent flickering
     return false;
   };
 

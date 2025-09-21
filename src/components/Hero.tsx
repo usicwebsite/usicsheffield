@@ -13,7 +13,6 @@ export default function Hero() {
   const images = staticData.homepage.hero.images;
   const { currentImageIndex, shouldRenderImage, getImageLoadingState } = useImageSlideshow({
     images,
-    preloadCount: 5, // Preload more images for smoother transitions
     initialInterval: 5000 // 5 seconds for first image
   });
 
