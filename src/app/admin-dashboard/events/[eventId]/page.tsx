@@ -847,10 +847,10 @@ export default function EventDetailPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Date</label>
                       <input
-                        type="text"
+                        type="date"
                         value={editForm.date}
                         onChange={(e) => setEditForm({...editForm, date: e.target.value})}
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -1226,8 +1226,8 @@ export default function EventDetailPage() {
                     </div>
                   )}
 
-                  {/* Form Fields Selection - Only show if website signup is selected */}
-                  {editForm.signupMethod === 'website' && (
+                  {/* Form Fields Selection - Only show if website signup is selected and no external URL is provided */}
+                  {editForm.signupMethod === 'website' && !editForm.signupFormUrl?.trim() && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Signup Form Fields *
@@ -1360,7 +1360,7 @@ export default function EventDetailPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={handleSaveEvent}
-                      disabled={uploadingImage || (editForm.signupMethod === 'website' && editForm.formFields.length === 0)}
+                      disabled={uploadingImage || (editForm.signupMethod === 'website' && !editForm.signupFormUrl?.trim() && editForm.formFields.length === 0)}
                       className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition duration-300 flex items-center gap-2"
                     >
                       {uploadingImage ? (

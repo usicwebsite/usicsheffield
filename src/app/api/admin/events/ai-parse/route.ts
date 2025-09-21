@@ -8,7 +8,11 @@ interface ParsedEvent {
   startTime: string | null;
   endTime: string | null;
   location: string | null;
-  price: string | null;
+  price: string | null; // Member price (legacy field, now used for member price)
+  nonMemberPrice: string | null;
+  meetUpTime: string | null;
+  meetUpLocation: string | null;
+  signupFormUrl: string | null;
   description: string | null;
 }
 
@@ -75,25 +79,33 @@ export async function POST(request: NextRequest) {
 
     // Create the prompt for parsing event details
     const prompt = `
-You are an AI assistant that extracts structured event information from unstructured text.
+You are an AI assistant that extracts structured event information from unstructured text for a university Islamic society event management system.
 
 ${isMultipleEvents ? `Parse the following ${eventSections.length} events and return a JSON array of objects.` : 'Parse the following event information and return a JSON object.'}
 
 ${isMultipleEvents ? 'Each object should have these exact fields:' : 'Return a JSON object with these exact fields:'}
 - title: The event title/name
-- date: Date in YYYY-MM-DD format
-- startTime: Start time in HH:MM format (24-hour)
+- date: Date in YYYY-MM-DD format (parse various date formats like "Wednesday 24th Oct", "24th October 2024", etc.)
+- startTime: Start time in HH:MM format (24-hour) - parse various formats like "5:00pm", "17:00", "5pm"
 - endTime: End time in HH:MM format (24-hour) - can be null if not specified
-- location: Event location/venue
-- price: Price as string (e.g., "Free", "10", "15-20") - use "Free" if not mentioned
-- description: A clean, detailed description of the event
+- location: Main event location/venue
+- price: Price for members (e.g., "2.50", "Free", "£2.50", "5 GBP") - extract member price specifically
+- nonMemberPrice: Price for non-members (e.g., "3.50", "£3.50", "10 GBP") - extract non-member price specifically
+- meetUpTime: Meetup time in HH:MM format (24-hour) - different from main event time, can be null
+- meetUpLocation: Meetup location - different from main event location, can be null
+- signupFormUrl: External signup link/URL (e.g., Google Forms, Eventbrite links) - can be null
+- description: A clean, detailed description of the event (exclude pricing, links, and logistics info)
 
 Rules:
 1. If any required field (title, date, startTime, location, description) cannot be determined, set it to null
-2. Convert all times to 24-hour format
-3. Convert dates to YYYY-MM-DD format
-4. Keep the description informative but concise
-${isMultipleEvents ? '5. Return ONLY a valid JSON array of objects, no additional text or formatting' : '5. Return ONLY valid JSON, no additional text or formatting'}
+2. Convert all times to 24-hour format (e.g., "5:00pm" -> "17:00", "5pm" -> "17:00")
+3. Convert dates to YYYY-MM-DD format (assume current year if not specified, handle formats like "24th Oct", "October 24", "24/10/2024")
+4. Extract member and non-member prices separately - look for phrases like "£2.50 for members", "members: £2.50", "non-members: £3.50"
+5. Only set meetUpTime/meetUpLocation if they are explicitly different from the main event time/location
+6. Extract signup URLs from phrases like "Sign up form:", "Register here:", or standalone URLs
+7. Keep the description focused on event content, remove administrative details like pricing, links, and logistics
+8. Clean URLs to remove extra text - only keep the actual URL
+${isMultipleEvents ? '9. Return ONLY a valid JSON array of objects, no additional text or formatting' : '9. Return ONLY valid JSON, no additional text or formatting'}
 
 ${isMultipleEvents ? 'Events to parse (separated by content):' : 'Event text to parse:'}
 ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index + 1} ---\n${section}` : section).join('\n')}

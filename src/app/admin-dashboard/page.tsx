@@ -864,21 +864,21 @@ export default function AdminDashboard() {
             startTime: singleEvent.startTime || '',
             endTime: singleEvent.endTime || '',
             location: singleEvent.location || '',
-            price: singleEvent.price || '', // Member price
-            nonMemberPrice: singleEvent.price || '', // Use same price for non-members by default
-            memberPrice: singleEvent.price || '',
-            meetUpTime: '',
-            meetUpLocation: '',
+            price: singleEvent.price || '', // Member price (legacy field, now used for member price)
+            nonMemberPrice: singleEvent.nonMemberPrice || '',
+            memberPrice: singleEvent.price || '', // Member price from AI extraction
+            meetUpTime: singleEvent.meetUpTime || '',
+            meetUpLocation: singleEvent.meetUpLocation || '',
             description: singleEvent.description || aiEventText,
             formFields: ['name', 'email'], // Default form fields
             signupOpen: true,
             noSignupNeeded: false, // Keep for backwards compatibility
-            signupMethod: 'website', // Default to website signup
+            signupMethod: singleEvent.signupFormUrl ? 'external' : 'website', // Auto-select external if URL found
             isPublic: true, // Default to public
             maxSignups: 50, // Default to 50 signups
             imageFile: undefined,
             tags: [], // Default to empty array
-            signupFormUrl: '' // Default to empty string
+            signupFormUrl: singleEvent.signupFormUrl || '' // Extracted signup URL
           });
 
           // Set missing fields for visual indication
@@ -2435,8 +2435,8 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Form Fields Selection - Only show if website signup is selected */}
-                  {eventFormData.signupMethod === 'website' && (
+                  {/* Form Fields Selection - Only show if website signup is selected and no external URL is provided */}
+                  {eventFormData.signupMethod === 'website' && !eventFormData.signupFormUrl?.trim() && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Signup Form Fields *
@@ -2570,8 +2570,8 @@ export default function AdminDashboard() {
                     )}
                   </div>
 
-                  {/* Form Fields Selection - Only show if signup is needed */}
-                  {!eventFormData.noSignupNeeded && (
+                  {/* Form Fields Selection - Only show if website signup is selected and no external URL is provided */}
+                  {eventFormData.signupMethod === 'website' && !eventFormData.signupFormUrl?.trim() && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Signup Form Fields *
@@ -2701,7 +2701,7 @@ export default function AdminDashboard() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isCreatingEvent || (!eventFormData.noSignupNeeded && eventFormData.formFields.length === 0)}
+                      disabled={isCreatingEvent || (eventFormData.signupMethod === 'website' && !eventFormData.signupFormUrl?.trim() && eventFormData.formFields.length === 0)}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-md transition duration-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isCreatingEvent ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { faqData } from '@/lib/faq-data';
 
@@ -46,6 +46,7 @@ type AdminEvent = {
 export default function EventsPage() {
   const [adminEvents, setAdminEvents] = useState<AdminEvent[]>([]);
   const [, setLoadingAdminEvents] = useState(true);
+  const timelineRef = useRef<HTMLDivElement>(null);
 
   // Function to get day of the week
   const getDayOfWeek = (date: Date): string => {
@@ -485,6 +486,53 @@ export default function EventsPage() {
     fetchAdminEvents();
   }, []);
 
+  // Scroll timeline to today's date when events are loaded
+  useEffect(() => {
+    if (adminEvents.length > 0 && timelineRef.current) {
+      const organizedDates = organizeEventsByDate(allEvents, adminEvents);
+      const today = new Date();
+      const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      // Find today's position in the timeline
+      const todayIndex = organizedDates.findIndex(dateItem => dateItem.dateKey === todayKey);
+
+      if (todayIndex !== -1) {
+        // Today has events - scroll to that position
+        const timelineItem = timelineRef.current.children[todayIndex] as HTMLElement;
+        if (timelineItem) {
+          timelineItem.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      } else if (organizedDates.length > 0) {
+        // Today has no events - find closest date
+        const todayTime = today.getTime();
+        let closestIndex = 0;
+        let minDiff = Math.abs(todayTime - new Date(organizedDates[0].dateKey).getTime());
+
+        organizedDates.forEach((dateItem, index) => {
+          const diff = Math.abs(todayTime - new Date(dateItem.dateKey).getTime());
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = index;
+          }
+        });
+
+        // Scroll to closest date
+        const timelineItem = timelineRef.current.children[closestIndex] as HTMLElement;
+        if (timelineItem) {
+          timelineItem.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }
+    }
+  }, [adminEvents, allEvents]);
+
   // Use centralized FAQ data for events
   const eventsFAQData = faqData.events;
 
@@ -567,7 +615,7 @@ export default function EventsPage() {
               WebkitScrollbarColor: 'transparent transparent'
             } as React.CSSProperties}
           >
-            <div className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8 relative">
+            <div ref={timelineRef} className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8 relative">
               {/* Today's yellow indicator dot - only show when no event on today's date */}
               {(() => {
                 const organizedDates = organizeEventsByDate(allEvents, adminEvents);
