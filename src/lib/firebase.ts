@@ -4,22 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from "firebase/auth";
 
-// Validate required Firebase environment variables (log warnings but don't throw)
-const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
-  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-  'NEXT_PUBLIC_FIREBASE_APP_ID'
-];
-
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  const warningMessage = `Missing Firebase environment variables: ${missingEnvVars.join(', ')}. Firebase features will be disabled.`;
-  console.warn(warningMessage);
-}
+// Firebase environment variables are validated at runtime through error handling
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -62,7 +47,12 @@ export function getFirestoreDb(): Firestore | null {
 
     // Check if Firebase app was initialized successfully
     if (!app) {
-      console.warn('Firebase app not initialized, skipping Firestore');
+      // Only warn in development environments
+      const isDevelopment = process.env.NODE_ENV === 'development' ||
+                           (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+      if (isDevelopment) {
+        console.warn('Firebase app not initialized, skipping Firestore');
+      }
       return null;
     }
 
@@ -81,7 +71,12 @@ export function getFirebaseAuth(): Auth | null {
   try {
     // Check if Firebase app was initialized successfully
     if (!app) {
-      console.warn('Firebase app not initialized, skipping Auth');
+      // Only warn in development environments
+      const isDevelopment = process.env.NODE_ENV === 'development' ||
+                           (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+      if (isDevelopment) {
+        console.warn('Firebase app not initialized, skipping Auth');
+      }
       return null;
     }
 
@@ -98,12 +93,21 @@ export function getFirebaseAuth(): Auth | null {
 // Initialize services (only if app is available)
 try {
   if (app) {
-    analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+    // Try to initialize analytics, but don't fail if it's blocked by content blockers
+    try {
+      analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+    } catch {
+      // Analytics failed to initialize (likely due to content blockers)
+      analytics = null;
+    }
+  } else {
+    analytics = null;
   }
   db = getFirestoreDb();
   auth = getFirebaseAuth();
 } catch (error) {
   console.error('Error initializing Firebase services:', error);
+  analytics = null;
 }
 
 export { analytics, db, auth };

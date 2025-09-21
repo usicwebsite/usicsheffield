@@ -87,12 +87,6 @@ export default function Hero() {
                   }
                 }}
               />
-              {/* Show subtle loading indicator for current image if not loaded */}
-              {isCurrentImage && loadingState === 'loading' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-                </div>
-              )}
             </div>
           );
         })}

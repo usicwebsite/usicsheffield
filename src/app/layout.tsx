@@ -77,7 +77,19 @@ export default async function RootLayout({
             __html: `
               // Ensure CSRF token is available globally
               window.__CSRF_TOKEN__ = "${csrfToken}";
-              
+
+            `,
+          }}
+        />
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-89TTHBQJ6Z"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-89TTHBQJ6Z');
             `,
           }}
         />
