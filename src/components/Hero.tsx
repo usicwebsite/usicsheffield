@@ -34,7 +34,7 @@ export default function Hero() {
         {/* Skeleton background - instant loading */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A1219] via-[#18384D] to-[#0F1E2C]" />
 
-        {/* Smooth slideshow with scale + fade transitions */}
+        {/* Smooth slideshow with blur + fade transitions */}
         {images.map((image, index) => {
           const isCurrentImage = index === currentImageIndex;
 
@@ -43,8 +43,8 @@ export default function Hero() {
               key={image}
               className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                 isCurrentImage 
-                  ? 'opacity-100 scale-100' 
-                  : 'opacity-0 scale-105'
+                  ? 'opacity-100 blur-0' 
+                  : 'opacity-0 blur-sm'
               }`}
             >
               <Image
