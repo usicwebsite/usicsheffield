@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { checkRateLimit } from '@/lib/rateLimit';
 
 // POST /api/events/signup - Submit event signup
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const rateLimitResult = checkRateLimit(request, 'questions');
-    if (!rateLimitResult.success) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-    }
-
     if (!adminDb) {
       return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
     }

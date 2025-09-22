@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/csrf';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 // Security headers configuration
 const securityHeaders: Record<string, string> = {
@@ -58,9 +59,33 @@ const noCachePaths = [
 ];
 
 // This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Get the pathname of the request (e.g. /, /admin, /admin/dashboard)
   const path = request.nextUrl.pathname;
+
+  // Handle image rate limiting for Next.js image optimization and static images
+  if (path.startsWith('/_next/image') || path.startsWith('/images/')) {
+    const rateLimitResult = checkRateLimit(request, 'images');
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json({
+        error: 'Rate limit exceeded',
+        message: 'Too many image requests. Please try again later.',
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime,
+        retryAfter: rateLimitResult.retryAfter
+      }, {
+        status: 429,
+        headers: {
+          'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+        }
+      });
+    }
+  }
 
   // Create response object - admin authentication is now handled client-side
   const response = NextResponse.next();
@@ -94,12 +119,15 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api (API routes - handled by middleware-api.ts)
      * - _next/static (static files)
-     * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder files
+     * - public folder files (except /images/)
+     *
+     * But INCLUDE:
+     * - _next/image (for rate limiting)
+     * - images/ (for rate limiting)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|favicon.ico|public(?!/images)).*)',
   ],
 } 

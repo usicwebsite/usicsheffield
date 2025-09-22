@@ -45,6 +45,24 @@ const RATE_LIMIT_CONFIGS = {
   'admin-operations': {
     windowMs: parseInt(process.env.RATE_LIMIT_ADMIN_WINDOW_MS || '3600000'), // 1 hour
     maxRequests: parseInt(process.env.RATE_LIMIT_ADMIN_OPERATIONS || '50')
+  },
+  // New global API rate limiting categories
+  'api-global': {
+    windowMs: parseInt(process.env.RATE_LIMIT_API_GLOBAL_WINDOW_MS || '60000'), // 1 minute
+    maxRequests: parseInt(process.env.RATE_LIMIT_API_GLOBAL_PER_MINUTE || '30')
+  },
+  'api-auth': {
+    windowMs: parseInt(process.env.RATE_LIMIT_API_AUTH_WINDOW_MS || '60000'), // 1 minute
+    maxRequests: parseInt(process.env.RATE_LIMIT_API_AUTH_PER_MINUTE || '10')
+  },
+  'api-public-read': {
+    windowMs: parseInt(process.env.RATE_LIMIT_API_PUBLIC_READ_WINDOW_MS || '60000'), // 1 minute
+    maxRequests: parseInt(process.env.RATE_LIMIT_API_PUBLIC_READ_PER_MINUTE || '50')
+  },
+  // Image rate limiting
+  'images': {
+    windowMs: parseInt(process.env.RATE_LIMIT_IMAGES_WINDOW_MS || '60000'), // 1 minute
+    maxRequests: parseInt(process.env.RATE_LIMIT_IMAGES_PER_MINUTE || '100')
   }
 };
 
@@ -213,7 +231,7 @@ export async function checkPostRateLimit(
  */
 export function checkRateLimit(
   request: NextRequest,
-  endpoint: 'questions' | 'posts' | 'posts-admin' | 'auth-login' | 'auth-attempts' | 'auth-refresh' | 'admin-operations'
+  endpoint: 'questions' | 'posts' | 'posts-admin' | 'auth-login' | 'auth-attempts' | 'auth-refresh' | 'admin-operations' | 'api-global' | 'api-auth' | 'api-public-read' | 'images'
 ): RateLimitResult {
   const config = RATE_LIMIT_CONFIGS[endpoint];
   const clientIP = getClientIP(request);
@@ -272,7 +290,7 @@ export function checkRateLimit(
  */
 export function getRateLimitStatus(
   request: NextRequest,
-  endpoint: 'questions' | 'posts' | 'posts-admin' | 'auth-login' | 'auth-attempts' | 'auth-refresh' | 'admin-operations'
+  endpoint: 'questions' | 'posts' | 'posts-admin' | 'auth-login' | 'auth-attempts' | 'auth-refresh' | 'admin-operations' | 'api-global' | 'api-auth' | 'api-public-read' | 'images'
 ): Omit<RateLimitResult, 'success'> {
   const config = RATE_LIMIT_CONFIGS[endpoint];
   const clientIP = getClientIP(request);
@@ -309,7 +327,7 @@ export function getRateLimitStatus(
 /**
  * Clear rate limit for a specific IP and endpoint (for testing/admin use)
  */
-export function clearRateLimit(clientIP: string, endpoint: 'questions' | 'posts' | 'posts-admin' | 'auth-login' | 'auth-attempts' | 'auth-refresh' | 'admin-operations'): void {
+export function clearRateLimit(clientIP: string, endpoint: 'questions' | 'posts' | 'posts-admin' | 'auth-login' | 'auth-attempts' | 'auth-refresh' | 'admin-operations' | 'api-global' | 'api-auth' | 'api-public-read' | 'images'): void {
   const key = `${clientIP}:${endpoint}`;
   rateLimitStore.delete(key);
 }

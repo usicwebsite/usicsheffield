@@ -1,38 +1,10 @@
 import { NextResponse } from 'next/server';
 import { withAuth, UserAuthenticatedRequest } from '@/lib/auth-api';
 import { createPost } from '@/lib/firebase-admin-utils';
-import { checkPostRateLimit } from '@/lib/rateLimit';
 import { categoryUtils } from '@/lib/static-data';
 
 export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
   try {
-    // Rate limiting: Admin users get 10 posts per hour, regular users get 1 post per hour
-    if (process.env.NODE_ENV === 'production') {
-      const rateLimitResult = await checkPostRateLimit(request, request.user.uid);
-
-      if (!rateLimitResult.success) {
-        const isAdminLimit = rateLimitResult.limit === 10; // Admin limit is 10 posts per hour
-        const message = isAdminLimit
-          ? 'You can only submit 10 posts per hour. Please try again later.'
-          : 'You can only submit 1 post per hour. Please try again later.';
-
-        return NextResponse.json({
-          success: false,
-          error: 'Rate limit exceeded',
-          message,
-          limit: rateLimitResult.limit,
-          remaining: rateLimitResult.remaining,
-          resetTime: rateLimitResult.resetTime,
-          retryAfter: rateLimitResult.retryAfter
-        }, {
-          status: 429,
-          headers: {
-            'Retry-After': rateLimitResult.retryAfter?.toString() || '3600'
-          }
-        });
-      }
-    }
-
     const body = await request.json();
     const { title, content, category, author, authorId } = body;
 
