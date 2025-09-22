@@ -1,7 +1,47 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/csrf';
-import { checkRateLimit } from '@/lib/rateLimit';
+
+// Simple in-memory rate limiting for Edge Runtime compatibility
+const imageRateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const IMAGE_RATE_LIMIT = { maxRequests: 100, windowMs: 60000 }; // 100 per minute
+
+function getClientIP(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  if (realIP) return realIP;
+  if (cfConnectingIP) return cfConnectingIP;
+
+  return 'unknown';
+}
+
+function checkImageRateLimit(clientIP: string): boolean {
+  const now = Date.now();
+  const key = `image:${clientIP}`;
+
+  const entry = imageRateLimitStore.get(key);
+
+  if (!entry || now > entry.resetTime) {
+    // Reset or create new entry
+    imageRateLimitStore.set(key, {
+      count: 1,
+      resetTime: now + IMAGE_RATE_LIMIT.windowMs
+    });
+    return true;
+  }
+
+  if (entry.count >= IMAGE_RATE_LIMIT.maxRequests) {
+    return false;
+  }
+
+  entry.count++;
+  return true;
+}
 
 // Security headers configuration
 const securityHeaders: Record<string, string> = {
@@ -65,23 +105,17 @@ export async function middleware(request: NextRequest) {
 
   // Handle image rate limiting for Next.js image optimization and static images
   if (path.startsWith('/_next/image') || path.startsWith('/images/')) {
-    const rateLimitResult = checkRateLimit(request, 'images');
+    const clientIP = getClientIP(request);
+    const isAllowed = checkImageRateLimit(clientIP);
 
-    if (!rateLimitResult.success) {
+    if (!isAllowed) {
       return NextResponse.json({
         error: 'Rate limit exceeded',
-        message: 'Too many image requests. Please try again later.',
-        limit: rateLimitResult.limit,
-        remaining: rateLimitResult.remaining,
-        resetTime: rateLimitResult.resetTime,
-        retryAfter: rateLimitResult.retryAfter
+        message: 'Too many image requests. Please try again later.'
       }, {
         status: 429,
         headers: {
-          'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
-          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-          'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+          'Retry-After': '60',
         }
       });
     }

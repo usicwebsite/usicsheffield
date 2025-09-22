@@ -1,21 +1,65 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { checkRateLimit } from '@/lib/rateLimit';
+
+// Simple in-memory rate limiting for Edge Runtime compatibility
+// Note: This is a basic implementation. For production, consider using Vercel KV or Redis
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+const RATE_LIMITS = {
+  'api-auth': { maxRequests: 10, windowMs: 60000 }, // 10 per minute for auth
+  'api-global': { maxRequests: 30, windowMs: 60000 }, // 30 per minute global
+  'api-public-read': { maxRequests: 50, windowMs: 60000 }, // 50 per minute for reads
+};
+
+function getClientIP(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  if (realIP) return realIP;
+  if (cfConnectingIP) return cfConnectingIP;
+
+  return 'unknown';
+}
+
+function checkSimpleRateLimit(clientIP: string, limitType: keyof typeof RATE_LIMITS): boolean {
+  const now = Date.now();
+  const key = `${clientIP}:${limitType}`;
+  const limit = RATE_LIMITS[limitType];
+
+  const entry = rateLimitStore.get(key);
+
+  if (!entry || now > entry.resetTime) {
+    // Reset or create new entry
+    rateLimitStore.set(key, {
+      count: 1,
+      resetTime: now + limit.windowMs
+    });
+    return true;
+  }
+
+  if (entry.count >= limit.maxRequests) {
+    return false;
+  }
+
+  entry.count++;
+  return true;
+}
 
 // Define endpoint patterns and their rate limit categories
 const API_RATE_LIMIT_RULES = [
   // Auth endpoints - strictest limits
   { pattern: /^\/api\/auth\//, category: 'api-auth' as const },
-
-  // Admin operations - allow existing admin-specific logic to handle
-  { pattern: /^\/api\/admin\//, category: null }, // Skip global rate limiting for admin routes
-
+  // Admin operations - skip rate limiting
+  { pattern: /^\/api\/admin\//, category: null },
   // Public read operations
   { pattern: /^\/api\/events$/, category: 'api-public-read' as const },
   { pattern: /^\/api\/posts$/, category: 'api-public-read' as const },
   { pattern: /^\/api\/events\/[^\/]+$/, category: 'api-public-read' as const },
   { pattern: /^\/api\/posts\/[^\/]+$/, category: 'api-public-read' as const },
-
   // Everything else gets global API limit
   { pattern: /^\/api\//, category: 'api-global' as const },
 ];
@@ -34,7 +78,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Find the matching rate limit rule
-  let rateLimitCategory: typeof API_RATE_LIMIT_RULES[0]['category'] = null;
+  let rateLimitCategory: keyof typeof RATE_LIMITS | null = null;
   for (const rule of API_RATE_LIMIT_RULES) {
     if (rule.pattern.test(path)) {
       rateLimitCategory = rule.category;
@@ -42,47 +86,29 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // If no category matched, allow the request (shouldn't happen with our catch-all rule)
+  // If no category matched or category is null (skip), allow the request
   if (!rateLimitCategory) {
     return NextResponse.next();
   }
 
-  // For now, apply the same limits regardless of auth status
-  // This can be extended later if needed to differentiate between authenticated and anonymous users
-  const rateLimitResult = checkRateLimit(request, rateLimitCategory);
+  const clientIP = getClientIP(request);
+  const isAllowed = checkSimpleRateLimit(clientIP, rateLimitCategory);
 
-  if (!rateLimitResult.success) {
-    // Return rate limit exceeded response
-    const response = NextResponse.json({
+  if (!isAllowed) {
+    return NextResponse.json({
       success: false,
       error: 'Rate limit exceeded',
-      message: `Too many requests. Please try again later.`,
-      limit: rateLimitResult.limit,
-      remaining: rateLimitResult.remaining,
-      resetTime: rateLimitResult.resetTime,
-      retryAfter: rateLimitResult.retryAfter
+      message: 'Too many requests. Please try again later.'
     }, {
       status: 429,
       headers: {
-        'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
-        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+        'Retry-After': '60',
       }
     });
-
-    return response;
   }
 
   // Allow the request to proceed
-  const response = NextResponse.next();
-
-  // Add rate limit headers to successful responses
-  response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
-  response.headers.set('X-RateLimit-Remaining', (rateLimitResult.remaining - 1).toString());
-  response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toISOString());
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
