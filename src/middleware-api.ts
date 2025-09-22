@@ -20,50 +20,6 @@ const API_RATE_LIMIT_RULES = [
   { pattern: /^\/api\//, category: 'api-global' as const },
 ];
 
-/**
- * Check if user is authenticated by looking for session cookie
- */
-async function isAuthenticated(request: NextRequest): Promise<boolean> {
-  try {
-    const sessionCookie = request.cookies.get('session');
-    if (!sessionCookie?.value) {
-      return false;
-    }
-
-    const sessionData = JSON.parse(sessionCookie.value);
-    return !!(sessionData?.uid && sessionData?.email);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Check if user is admin
- */
-async function isAdmin(request: NextRequest): Promise<boolean> {
-  try {
-    const sessionCookie = request.cookies.get('session');
-    if (!sessionCookie?.value) {
-      return false;
-    }
-
-    const sessionData = JSON.parse(sessionCookie.value);
-    if (!sessionData?.uid) {
-      return false;
-    }
-
-    // Import admin check dynamically to avoid circular dependencies
-    const { getFirestore, doc, getDoc } = await import('firebase/firestore');
-    const db = getFirestore();
-    const adminDocRef = doc(db, 'admins', sessionData.uid);
-    const adminDocSnap = await getDoc(adminDocRef);
-    return adminDocSnap.exists();
-  } catch (error) {
-    console.warn('[API Middleware] Error checking admin status:', error);
-    return false;
-  }
-}
-
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
@@ -91,12 +47,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check authentication status for potential user-specific limits
-  const authenticated = await isAuthenticated(request);
-  // const admin = authenticated ? await isAdmin(request) : false; // Reserved for future admin-specific limits
-
   // For now, apply the same limits regardless of auth status
-  // This can be extended later if needed
+  // This can be extended later if needed to differentiate between authenticated and anonymous users
   const rateLimitResult = checkRateLimit(request, rateLimitCategory);
 
   if (!rateLimitResult.success) {
