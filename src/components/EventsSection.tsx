@@ -1,25 +1,35 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { BROTHERS_IMAGES, SISTERS_IMAGES } from '../lib/about-data';
+import { optimizeCloudinaryUrls } from '../lib/cloudinary-optimizer';
 
 // Removed predictive preloading hook - Next.js Image component handles all optimization
 
 export default function EventsSection() {
 
+  // Optimize images at runtime using useMemo
+  const optimizedBrothersImages = useMemo(() => {
+    return optimizeCloudinaryUrls(BROTHERS_IMAGES, 'events');
+  }, []);
+
+  const optimizedSistersImages = useMemo(() => {
+    return optimizeCloudinaryUrls(SISTERS_IMAGES, 'events');
+  }, []);
+
   // Function to generate event images alternating between brothers and sisters
   const generateEventImages = () => {
-    const brothersImages = BROTHERS_IMAGES.map((imagePath, index) => ({
+    const brothersImages = optimizedBrothersImages.map((imagePath, index) => ({
       id: index + 1,
       title: "USIC Brothers",
       imagePath,
       alt: "USIC brothers community"
     }));
 
-    const sistersImages = SISTERS_IMAGES.map((imagePath, index) => ({
-      id: BROTHERS_IMAGES.length + index + 1,
+    const sistersImages = optimizedSistersImages.map((imagePath, index) => ({
+      id: optimizedBrothersImages.length + index + 1,
       title: "USIC Sisters",
       imagePath,
       alt: "USIC sisters community"
@@ -41,14 +51,21 @@ export default function EventsSection() {
     return alternatingImages;
   };
 
-  // Generate alternating event images for both rows
-  const alternatingImages = generateEventImages();
+  // Generate alternating event images for top row
+  const alternatingImages = useMemo(() => generateEventImages(), [optimizedBrothersImages, optimizedSistersImages]);
 
   // Top row: starts with brother, then sister, brother, sister, etc.
   const eventImages = alternatingImages;
 
-  // Bottom row: starts with sister, then brother, sister, brother, etc. (offset by 1)
-  const bottomSliderImages = [...alternatingImages.slice(1), alternatingImages[0]];
+  // Bottom row: randomized order to avoid same images appearing on top of each other
+  // Use state to avoid hydration mismatch from Math.random()
+  const [bottomSliderImages, setBottomSliderImages] = useState(alternatingImages);
+
+  useEffect(() => {
+    // Only randomize on client side to avoid SSR hydration mismatch
+    const shuffled = [...alternatingImages].sort(() => Math.random() - 0.5);
+    setBottomSliderImages(shuffled);
+  }, [alternatingImages]);
 
   // Create references for the scrolling rows
   const topRowRef = useRef<HTMLDivElement>(null);
@@ -355,7 +372,7 @@ export default function EventsSection() {
                   }}
                   className="transition-transform duration-500 hover:scale-105"
                   loading="lazy"
-                  quality={80}
+                  // Quality now optimized by Cloudinary URL transformations
                   onError={(e) => {
                     // Fallback to logo if image fails to load
                     if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
@@ -384,7 +401,7 @@ export default function EventsSection() {
                   }}
                   className="transition-transform duration-500 hover:scale-105"
                   loading="lazy"
-                  quality={80}
+                  // Quality now optimized by Cloudinary URL transformations
                   onError={(e) => {
                     // Fallback to logo if image fails to load
                     if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
@@ -424,7 +441,7 @@ export default function EventsSection() {
                   }}
                   className="transition-transform duration-500 hover:scale-105"
                   loading="lazy"
-                  quality={80}
+                  // Quality now optimized by Cloudinary URL transformations
                   onError={(e) => {
                     // Fallback to logo if image fails to load
                     if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
@@ -453,7 +470,7 @@ export default function EventsSection() {
                   }}
                   className="transition-transform duration-500 hover:scale-105"
                   loading="lazy"
-                  quality={80}
+                  // Quality now optimized by Cloudinary URL transformations
                   onError={(e) => {
                     // Fallback to logo if image fails to load
                     if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {

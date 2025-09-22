@@ -1,6 +1,38 @@
 // Static data for Server-Side Rendering and Static Generation
 // This improves performance and SEO by pre-rendering content
 
+import { optimizeCloudinaryUrls } from './cloudinary-optimizer';
+
+const heroImages = [
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-55_rk9wpd.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524316/brother1_clajgi.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524481/sister6_opysdf.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524419/brother3_zzxxbp.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524480/sister7_zavuxn.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524418/brother4_k0pft0.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524480/sister8_hi6u6z.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/brother5_pbcmli.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524479/sister9_wofoeq.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-2_l68nse.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524479/sister10_lldx5c.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-6_i0mxfq.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524475/sister11_xkalmd.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524475/sister12_bmqelf.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-16_nqlauo.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524478/sister24_fxbkeu.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister25_ap77jh.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-25_km4asl.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister26_ehsztk.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-45_p0w096.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister27_x1qgr5.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-81_qclhrm.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-107_imdoek.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0006_qzjpql.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0028_a1qjg4.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524415/IMG_9262_w8axs4.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/IMG_9980_caethj.jpg',
+];
+
 export const staticData = {
   // Homepage data
   homepage: {
@@ -10,35 +42,7 @@ export const staticData = {
       description: "Your university experience doesn't have to mean compromising your faith. Join our community of Muslim students.",
       ctaText: "Join USIC Today",
       ctaLink: "/membership",
-      images: [
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-55_rk9wpd.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524316/brother1_clajgi.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524481/sister6_opysdf.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524419/brother3_zzxxbp.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524480/sister7_zavuxn.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524418/brother4_k0pft0.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524480/sister8_hi6u6z.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/brother5_pbcmli.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524479/sister9_wofoeq.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-2_l68nse.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524479/sister10_lldx5c.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-6_i0mxfq.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524475/sister11_xkalmd.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524475/sister12_bmqelf.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-16_nqlauo.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524478/sister24_fxbkeu.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister25_ap77jh.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-25_km4asl.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister26_ehsztk.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-45_p0w096.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister27_x1qgr5.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-81_qclhrm.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-107_imdoek.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0006_qzjpql.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0028_a1qjg4.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524415/IMG_9262_w8axs4.jpg',
-        'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/IMG_9980_caethj.jpg',
-      ]
+      images: optimizeCloudinaryUrls(heroImages, 'hero')
     },
     slideshow: {
       title: "USIC",

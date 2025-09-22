@@ -20,6 +20,10 @@ interface Event {
   noSignupNeeded?: boolean; // Keep for backwards compatibility
   createdAt: Date;
   signupFormUrl?: string;
+  meetUpTime?: string;
+  meetUpLocation?: string;
+  maxSignups?: number;
+  signupCount?: number;
 }
 
 interface EventSignupForm {
@@ -279,7 +283,7 @@ export default function EventPage() {
                     alt={event.title}
                     width={600}
                     height={400}
-                    className="w-full h-64 object-cover rounded-lg"
+                    className="w-full object-cover rounded-lg"
                   />
                 </div>
               )}
@@ -323,7 +327,41 @@ export default function EventPage() {
                   </svg>
                   <span className="text-lg">{event.location}</span>
                 </div>
-                
+
+                {event.meetUpLocation && (
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-blue-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-lg">Meet up: {event.meetUpLocation}</span>
+                  </div>
+                )}
+
+                {event.meetUpTime && (
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-blue-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-lg">Meet up: {formatTimeRange(event.meetUpTime)}</span>
+                  </div>
+                )}
+
+                {event.maxSignups && event.signupCount !== undefined && (
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-blue-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-lg">
+                      {event.signupCount}/{event.maxSignups} registered
+                      {event.signupCount >= event.maxSignups ? (
+                        <span className="text-red-400 font-semibold"> (Full)</span>
+                      ) : (
+                        <span className="text-green-400"> ({event.maxSignups - event.signupCount} spots left)</span>
+                      )}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-center">
                   <svg className="w-5 h-5 text-blue-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />

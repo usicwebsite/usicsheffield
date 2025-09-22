@@ -88,23 +88,23 @@
   animation: blob 7s infinite;
 }
 
-/* Custom scrollbar styles */
+/* Custom scrollbar styles - transparent */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c5c5c5;
+  background: transparent;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: transparent;
 }
 
 /* Code block styles */

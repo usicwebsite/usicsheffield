@@ -48,6 +48,7 @@ export default function EventsPage() {
   const [, setLoadingAdminEvents] = useState(true);
   const timelineRef = useRef<HTMLDivElement>(null);
   const todayDotRef = useRef<HTMLDivElement>(null);
+  const hasScrolledToTodayRef = useRef(false);
 
   // Function to get day of the week
   const getDayOfWeek = (date: Date): string => {
@@ -487,9 +488,9 @@ export default function EventsPage() {
     fetchAdminEvents();
   }, []);
 
-  // Scroll timeline to today's date when events are loaded
+  // Scroll timeline to today's date when events are loaded (only on initial page load, not when clicking modals)
   useEffect(() => {
-    if (adminEvents.length > 0 && timelineRef.current) {
+    if (adminEvents.length > 0 && timelineRef.current && !hasScrolledToTodayRef.current) {
       const organizedDates = organizeEventsByDate(allEvents, adminEvents);
       const today = new Date();
       const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -548,6 +549,9 @@ export default function EventsPage() {
           });
         }
       }
+
+      // Mark that we've performed the initial scroll to prevent future auto-scrolls
+      hasScrolledToTodayRef.current = true;
     }
   }, [adminEvents, allEvents]);
 
@@ -1163,7 +1167,7 @@ export default function EventsPage() {
                     alt={selectedEvent.title}
                     width={800}
                     height={400}
-                    className="w-full max-h-96 object-contain"
+                    className="w-full object-contain"
                     style={{
                       objectPosition: 'center center',
                       aspectRatio: 'auto'
@@ -1226,6 +1230,16 @@ export default function EventsPage() {
                           {selectedEvent.memberPrice && <div>Members: £{selectedEvent.memberPrice}</div>}
                           {selectedEvent.nonMemberPrice && <div>Non-members: £{selectedEvent.nonMemberPrice}</div>}
                         </div>
+                      </div>
+                    </div>
+                  ) : (('price' in selectedEvent && selectedEvent.price && selectedEvent.price !== 'Free')) ? (
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-blue-300 mr-3 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
+                      </svg>
+                      <div>
+                        <h4 className="text-white font-semibold mb-1">Price</h4>
+                        <p className="text-blue-200">£{selectedEvent.price}</p>
                       </div>
                     </div>
                   ) : 'category' in selectedEvent ? (

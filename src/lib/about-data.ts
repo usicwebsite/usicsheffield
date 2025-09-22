@@ -11,7 +11,6 @@ export const BROTHERS_IMAGES = [
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0028_a1qjg4.jpg',
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524415/IMG_9262_w8axs4.jpg',
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/IMG_9980_caethj.jpg',
-  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/roots_lwb9gb.png',
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/sports_nhapdy.jpg',
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-107_imdoek.jpg',
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-16_nqlauo.jpg',

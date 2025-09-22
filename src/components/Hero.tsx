@@ -1,9 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import { staticData } from '@/lib/static-data';
 import { useImageSlideshow } from '@/hooks/useImageSlideshow';
+import { optimizeCloudinaryUrls } from '@/lib/cloudinary-optimizer';
 import CTAButton from '@/components/ui/CTAButton';
 import ScrollArrow from '@/components/ui/ScrollArrow';
 
@@ -11,7 +12,10 @@ import ScrollArrow from '@/components/ui/ScrollArrow';
  * Hero component for the USIC landing page with optimized image slideshow
  */
 export default function Hero() {
-  const images = staticData.homepage.hero.images;
+  const images = useMemo(() => {
+    return optimizeCloudinaryUrls(staticData.homepage.hero.images, 'hero');
+  }, []);
+
   const { currentImageIndex } = useImageSlideshow({
     images
   });
@@ -58,7 +62,7 @@ export default function Hero() {
                 }}
                 priority={index < 2} // Only prioritize first 2 images for above-the-fold content
                 loading={index < 2 ? "eager" : "lazy"} // Lazy load images after the first 2
-                quality={85}
+                // Quality now optimized by Cloudinary URL transformations
                 onError={(e) => {
                   // Fallback to logo if image fails to load
                   if (e.currentTarget.src !== fallbackImage) {
