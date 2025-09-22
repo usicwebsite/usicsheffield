@@ -11,6 +11,7 @@ const securityHeaders: Record<string, string> = {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: https: blob:",
+    "media-src 'self' https: blob:",
     "connect-src 'self' https://firebase.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://accounts.google.com https://oauth2.googleapis.com wss://firestore.googleapis.com wss://*.googleapis.com",
     "frame-src https://accounts.google.com https://*.firebaseapp.com",
     "object-src 'none'",
