@@ -19,13 +19,13 @@ export default function EventsSection() {
     {
       id: 2,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother1.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother1_clajgi",
       alt: "USIC brothers community"
     },
     {
       id: 3,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother2.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother2_qmuiwv",
       alt: "USIC brothers gathering"
     },
     {
@@ -37,7 +37,7 @@ export default function EventsSection() {
     {
       id: 5,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother3.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother3_zzxxbp",
       alt: "USIC brothers community"
     },
     {
@@ -49,7 +49,7 @@ export default function EventsSection() {
     {
       id: 7,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother4.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother4_k0pft0",
       alt: "USIC brothers gathering"
     },
     {
@@ -61,7 +61,7 @@ export default function EventsSection() {
     {
       id: 9,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother5.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother5_pbcmli",
       alt: "USIC brothers community"
     },
     {
@@ -73,7 +73,7 @@ export default function EventsSection() {
     {
       id: 11,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-2.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-2_l68nse",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
@@ -85,7 +85,7 @@ export default function EventsSection() {
     {
       id: 13,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-6.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-6_i0mxfq",
       alt: "USIC Annual Dinner 2025 gathering"
     },
     {
@@ -103,7 +103,7 @@ export default function EventsSection() {
     {
       id: 16,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-16_nqlauo",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
@@ -115,7 +115,7 @@ export default function EventsSection() {
     {
       id: 18,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-21.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-21_km4asl",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
@@ -127,7 +127,7 @@ export default function EventsSection() {
     {
       id: 20,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-25.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-25_km4asl",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
@@ -139,7 +139,7 @@ export default function EventsSection() {
     {
       id: 22,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-45.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-45_p0w096",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
@@ -151,43 +151,43 @@ export default function EventsSection() {
     {
       id: 24,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-55_rk9wpd",
       alt: "USIC Annual Dinner 2025 gathering"
     },
     {
       id: 25,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-81_qclhrm",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
       id: 26,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-107_imdoek",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
       id: 27,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_0006.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0006_qzjpql",
       alt: "USIC community gathering"
     },
     {
       id: 28,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_0028.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0028_a1qjg4",
       alt: "USIC community activity"
     },
     {
       id: 29,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_9262.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9262_w8axs4",
       alt: "USIC community celebration"
     },
     {
       id: 30,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_9980.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9980_caethj",
       alt: "USIC community gathering"
     }
   ];
@@ -197,7 +197,7 @@ export default function EventsSection() {
     {
       id: 1,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_9262.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9262_w8axs4",
       alt: "USIC community celebration"
     },
     {
@@ -209,7 +209,7 @@ export default function EventsSection() {
     {
       id: 3,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-107.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-107_imdoek",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
@@ -221,7 +221,7 @@ export default function EventsSection() {
     {
       id: 5,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother4.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother4_k0pft0",
       alt: "USIC brothers gathering"
     },
     {
@@ -233,7 +233,7 @@ export default function EventsSection() {
     {
       id: 7,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-21.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-21_km4asl",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
@@ -245,7 +245,7 @@ export default function EventsSection() {
     {
       id: 9,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother2.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother2_qmuiwv",
       alt: "USIC brothers gathering"
     },
     {
@@ -257,7 +257,7 @@ export default function EventsSection() {
     {
       id: 11,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-6.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-6_i0mxfq",
       alt: "USIC Annual Dinner 2025 gathering"
     },
     {
@@ -269,7 +269,7 @@ export default function EventsSection() {
     {
       id: 13,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_0006.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0006_qzjpql",
       alt: "USIC community gathering"
     },
     {
@@ -287,7 +287,7 @@ export default function EventsSection() {
     {
       id: 16,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-45.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-45_p0w096",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
@@ -299,7 +299,7 @@ export default function EventsSection() {
     {
       id: 18,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother5.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother5_pbcmli",
       alt: "USIC brothers community"
     },
     {
@@ -311,7 +311,7 @@ export default function EventsSection() {
     {
       id: 20,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-25.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-25_km4asl",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
@@ -323,7 +323,7 @@ export default function EventsSection() {
     {
       id: 22,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother1.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother1_clajgi",
       alt: "USIC brothers community"
     },
     {
@@ -335,43 +335,43 @@ export default function EventsSection() {
     {
       id: 24,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-55.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-55_rk9wpd",
       alt: "USIC Annual Dinner 2025 gathering"
     },
     {
       id: 25,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_0028.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0028_a1qjg4",
       alt: "USIC community activity"
     },
     {
       id: 26,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-2.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-2_l68nse",
       alt: "USIC Annual Dinner 2025 celebration"
     },
     {
       id: 27,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/brother3.jpeg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother3_zzxxbp",
       alt: "USIC brothers community"
     },
     {
       id: 28,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-81_qclhrm",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
       id: 29,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/USIC Annual Dinner 2025-16.jpg",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-16_nqlauo",
       alt: "USIC Annual Dinner 2025 event"
     },
     {
       id: 30,
       title: "USIC Brothers",
-      imagePath: "/images/WEB/brothers/IMG_9980.JPG",
+      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9980_caethj",
       alt: "USIC community gathering"
     }
   ];
