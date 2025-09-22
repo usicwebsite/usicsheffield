@@ -658,7 +658,7 @@ export default function EventsSection() {
 
       {/* Full-width image rows with no container constraints */}
       <div className="w-full mb-8">
-        {/* Top row - scrolls right */}
+        {/* Top row - scrolls right with CSS animation */}
         <div 
           ref={topRowRef}
           className="flex overflow-x-auto whitespace-nowrap mb-1"
@@ -668,38 +668,70 @@ export default function EventsSection() {
             willChange: 'transform' // Optimize for Safari transform animations
           }}
         >
-          {/* Triple the images for continuous scrolling effect */}
-          {[...eventImages, ...eventImages, ...eventImages].map((image, index) => {
-            return (
-              <div
-                key={`top-${image.id}-${index}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                <Image
-                  src={image.imagePath}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                  style={{
-                    objectFit: 'cover'
-                  }}
-                  className="transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                  quality={80}
-                  onError={(e) => {
-                    // Fallback to logo if image fails to load
-                    if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
-                      e.currentTarget.src = '/images/WEB/usic-logo.png';
-                    }
-                  }}
-                />
-              </div>
-            );
-          })}
+          {/* Duplicated images for seamless infinite scroll */}
+          <div className="flex animate-scroll-right">
+            {/* First set of images */}
+            {eventImages.map((image) => {
+              return (
+                <div
+                  key={`top-1-${image.id}`}
+                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                  <Image
+                    src={image.imagePath}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                    style={{
+                      objectFit: 'cover'
+                    }}
+                    className="transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                    quality={80}
+                    onError={(e) => {
+                      // Fallback to logo if image fails to load
+                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
+                        e.currentTarget.src = '/images/WEB/usic-logo.png';
+                      }
+                    }}
+                  />
+                </div>
+              );
+            })}
+            {/* Second set of images for seamless loop */}
+            {eventImages.map((image) => {
+              return (
+                <div
+                  key={`top-2-${image.id}`}
+                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                  <Image
+                    src={image.imagePath}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                    style={{
+                      objectFit: 'cover'
+                    }}
+                    className="transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                    quality={80}
+                    onError={(e) => {
+                      // Fallback to logo if image fails to load
+                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
+                        e.currentTarget.src = '/images/WEB/usic-logo.png';
+                      }
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
         
-        {/* Bottom row - scrolls left */}
+        {/* Bottom row - scrolls left with CSS animation */}
         <div 
           ref={bottomRowRef}
           className="flex overflow-x-auto whitespace-nowrap"
@@ -708,35 +740,67 @@ export default function EventsSection() {
             msOverflowStyle: 'none'
           }}
         >
-          {/* Triple the images for continuous scrolling effect */}
-          {[...bottomSliderImages, ...bottomSliderImages, ...bottomSliderImages].map((image, index) => {
-            return (
-              <div
-                key={`bottom-${image.id}-${index}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                <Image
-                  src={image.imagePath}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                  style={{
-                    objectFit: 'cover'
-                  }}
-                  className="transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                  quality={80}
-                  onError={(e) => {
-                    // Fallback to logo if image fails to load
-                    if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
-                      e.currentTarget.src = '/images/WEB/usic-logo.png';
-                    }
-                  }}
-                />
-              </div>
-            );
-          })}
+          {/* Duplicated images for seamless infinite scroll */}
+          <div className="flex animate-scroll-left">
+            {/* First set of images */}
+            {bottomSliderImages.map((image) => {
+              return (
+                <div
+                  key={`bottom-1-${image.id}`}
+                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                  <Image
+                    src={image.imagePath}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                    style={{
+                      objectFit: 'cover'
+                    }}
+                    className="transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                    quality={80}
+                    onError={(e) => {
+                      // Fallback to logo if image fails to load
+                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
+                        e.currentTarget.src = '/images/WEB/usic-logo.png';
+                      }
+                    }}
+                  />
+                </div>
+              );
+            })}
+            {/* Second set of images for seamless loop */}
+            {bottomSliderImages.map((image) => {
+              return (
+                <div
+                  key={`bottom-2-${image.id}`}
+                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                  <Image
+                    src={image.imagePath}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                    style={{
+                      objectFit: 'cover'
+                    }}
+                    className="transition-transform duration-500 hover:scale-105"
+                    loading="lazy"
+                    quality={80}
+                    onError={(e) => {
+                      // Fallback to logo if image fails to load
+                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
+                        e.currentTarget.src = '/images/WEB/usic-logo.png';
+                      }
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
       

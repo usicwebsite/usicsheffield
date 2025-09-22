@@ -56,8 +56,8 @@ export default function Hero() {
                   objectFit: 'cover',
                   filter: 'brightness(0.5)'
                 }}
-                priority={index < 5} // Prioritize first 5 hero images for above-the-fold content
-                loading="eager" // Let Next.js optimize loading based on priority
+                priority={index < 2} // Only prioritize first 2 images for above-the-fold content
+                loading={index < 2 ? "eager" : "lazy"} // Lazy load images after the first 2
                 quality={85}
                 onError={(e) => {
                   // Fallback to logo if image fails to load

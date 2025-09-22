@@ -258,3 +258,42 @@ html {
 .prose tr:nth-child(even) {
   background-color: #f9fafb;
 }
+
+/* Infinite scroll animations for EventsSection */
+@keyframes scroll-right {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll-right {
+  animation: scroll-right 120s linear infinite;
+  animation-delay: 0s;
+  display: flex;
+  width: 200%; /* Double width to accommodate seamless loop */
+}
+
+.animate-scroll-left {
+  animation: scroll-left 120s linear infinite;
+  animation-delay: 0s;
+  display: flex;
+  width: 200%; /* Double width to accommodate seamless loop */
+}
+
+/* Pause animation on hover */
+.animate-scroll-right:hover,
+.animate-scroll-left:hover {
+  animation-play-state: paused;
+}
