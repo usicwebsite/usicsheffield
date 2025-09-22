@@ -185,53 +185,53 @@ export default function PricingPage() {
               
               // Map business names to their logo files
               const getBusinessLogo = (name: string) => {
-                const logoMap: { [key: string]: string } = {
-                  "Sabir's Grill": '/images/sponsors/logos/sabir\'s grill.png',
-                  "5 Akhis": '/images/sponsors/logos/5 akhis.jpeg',
-                  "Karak Chai": '/images/sponsors/logos/karak chaii.jpeg',
-                  "Big Daddy's": '/images/sponsors/logos/big daddys.jpg',
-                  "Mighty Bites": '/images/sponsors/logos/mighty bites.jpg',
-                  "Insomnia Cookies": '/images/sponsors/logos/insomnia cookies.png',
-                  "Ohannes": '/images/sponsors/logos/ohannes.jpg',
-                  "Al Maghrib Faith Essentials": '/images/sponsors/logos/al maghrib.png',
-                  "Shakebees": '/images/sponsors/logos/shakebees.png',
-                  "Heavenly Desserts": '/images/sponsors/logos/heavenly.jpeg',
-                  "M.A.K Halal": '/images/sponsors/logos/makhalal.png',
-                  "Kebabish Original": '/images/sponsors/logos/kebabish original.png',
-                  "Calis": '/images/sponsors/logos/calis.png',
-                  "Cha Cha Chai": '/images/sponsors/logos/cha cha chai.png',
-                  "Damascus Bakery": '/images/sponsors/logos/damascus bakery.png',
-                  "Noori Charms": '/images/sponsors/logos/noori charms.jpg',
-                  "Frog": '/images/sponsors/logos/frog.png',
-                  "Regen Therapy": '/images/sponsors/logos/regen therapy.jpg',
-                  "Unit": '/images/sponsors/logos/unit.jpg'
-                };
+              const logoMap: { [key: string]: string } = {
+                "Sabir's Grill": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524588/sabir_s_grill_kkq0lm.png',
+                "5 Akhis": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524587/5_akhis_tcuf21.jpg',
+                "Karak Chai": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524585/karak_chaii_ezh817.jpg',
+                "Big Daddy's": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524586/big_daddys_dmx0w8.jpg',
+                "Mighty Bites": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524584/mighty_bites_bnri5a.jpg',
+                "Insomnia Cookies": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524590/insomnia_cookies_hpszcz.png',
+                "Ohannes": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524583/ohannes_v0kpk4.jpg',
+                "Al Maghrib Faith Essentials": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524592/al_maghrib_fru8wz.png',
+                "Shakebees": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524581/shakebees_bxjmq8.png',
+                "Heavenly Desserts": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524585/heavenly_zoz7gu.jpg',
+                "M.A.K Halal": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524589/makhalal_ppteqz.png',
+                "Kebabish Original": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524582/kebabish_original_i9veds.png',
+                "Calis": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524591/calis_pe34jj.png',
+                "Cha Cha Chai": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524580/cha_cha_chai_tzm2g1.png',
+                "Damascus Bakery": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524590/damascus_bakery_jtk4zl.png',
+                "Noori Charms": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524579/noori_charms_ockjdr.jpg',
+                "Frog": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524582/frog_hrclz7.png',
+                "Regen Therapy": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524579/regen_therapy_o7z22q.jpg',
+                "Unit": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524579/unit_tca78t.jpg'
+              };
                 return logoMap[name] || null;
               };
 
               // Map business names to their photo files
               const getBusinessPhoto = (name: string) => {
-                const photoMap: { [key: string]: string } = {
-                  "Sabir's Grill": '/images/sponsors/pics/sabirs grill.jpeg',
-                  "5 Akhis": '/images/sponsors/pics/5 akhis.jpeg',
-                  "Karak Chai": '/images/sponsors/pics/karak chaii.jpeg',
-                  "Big Daddy's": '/images/sponsors/pics/big daddys.jpeg',
-                  "Mighty Bites": '/images/sponsors/pics/mighty bites.jpeg',
-                  "Insomnia Cookies": '/images/sponsors/pics/insomnia cookies.webp',
-                  "Ohannes": '/images/sponsors/pics/ohannes.jpg',
-                  "Al Maghrib Faith Essentials": '/images/sponsors/pics/al maghrib.jpg',
-                  "Shakebees": '/images/sponsors/pics/shakebees.jpeg',
-                  "Heavenly Desserts": '/images/sponsors/pics/heavenly desserts.jpg',
-                  "M.A.K Halal": '/images/sponsors/pics/mak halal.jpeg',
-                  "Kebabish Original": '/images/sponsors/pics/kebabish original.jpeg',
-                  "Calis": '/images/sponsors/pics/calis.jpg',
-                  "Cha Cha Chai": '/images/sponsors/pics/cha cha chai.jpeg',
-                  "Damascus Bakery": '/images/sponsors/pics/damascus bakery.webp',
-                  "Noori Charms": '/images/sponsors/pics/noori charms.webp',
-                  "Frog": '/images/sponsors/pics/frog.jpg',
-                  "Regen Therapy": '/images/sponsors/pics/regen therapy.jpg',
-                  "Unit": '/images/sponsors/pics/unit.webp'
-                };
+              const photoMap: { [key: string]: string } = {
+                "Sabir's Grill": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524606/sabirs_grill_vlt4vx.jpg',
+                "5 Akhis": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524618/5_akhis_bx8pol.jpg',
+                "Karak Chai": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524611/karak_chaii_l4j8gf.jpg',
+                "Big Daddy's": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524615/big_daddys_p9rtm8.jpg',
+                "Mighty Bites": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524608/mighty_bites_szyljl.jpg',
+                "Insomnia Cookies": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524619/insomnia_cookies_cpmkph.webp',
+                "Ohannes": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524607/ohannes_uvvjkg.jpg',
+                "Al Maghrib Faith Essentials": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524616/al_maghrib_lwfkcy.jpg',
+                "Shakebees": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524605/shakebees_qrlqwt.jpg',
+                "Heavenly Desserts": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524612/heavenly_desserts_hxgwcs.jpg',
+                "M.A.K Halal": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524609/mak_halal_trmsvd.jpg',
+                "Kebabish Original": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524610/kebabish_original_hwolla.jpg',
+                "Calis": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524614/calis_so87d1.jpg',
+                "Cha Cha Chai": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524613/cha_cha_chai_bzpehu.jpg',
+                "Damascus Bakery": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524619/damascus_bakery_ejdf4x.webp',
+                "Noori Charms": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524604/noori_charms_c9uv67.webp',
+                "Frog": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524603/frog_cnblou.jpg',
+                "Regen Therapy": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524605/regen_therapy_xfk2bh.jpg',
+                "Unit": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524618/unit_oymloz.webp'
+              };
                 return photoMap[name] || null;
               };
 

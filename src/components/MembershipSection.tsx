@@ -49,7 +49,7 @@ export default function MembershipSection() {
                 {/* Thumbnail with play button */}
                 <div className="absolute inset-0 bg-black">
                   <Image
-                    src="/images/WEB/brothers/sports.jpeg"
+                    src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/sports_nhapdy.jpg"
                     alt="USIC Membership Video Thumbnail"
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -84,14 +84,14 @@ export default function MembershipSection() {
                   ref={videoRef}
                   className="h-full max-h-full object-contain"
                   controls
-                  src="/usichighlights.mp4"
+                  src="https://res.cloudinary.com/derjeh0m2/video/upload/v1758531293/usichighlights_ob6h4l.mp4"
                   style={{
                     // Maintain natural aspect ratio when in fullscreen
                     maxWidth: "100%",
                     maxHeight: "100%"
                   }}
                 >
-                  <source src="/usichighlights.mp4" type="video/mp4" />
+                  <source src="https://res.cloudinary.com/derjeh0m2/video/upload/v1758531293/usichighlights_ob6h4l.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>

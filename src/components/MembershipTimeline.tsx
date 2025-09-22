@@ -21,7 +21,7 @@ export default function MembershipTimeline() {
       {/* Background decorative image */}
       <div className="absolute inset-0 opacity-10">
         <Image
-          src="/images/WEB/brothers/USIC Annual Dinner 2025-81.jpg"
+          src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-81_qclhrm.jpg"
           alt=""
           fill
           sizes="100vw"

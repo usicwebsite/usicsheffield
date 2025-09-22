@@ -3,378 +3,52 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { BROTHERS_IMAGES, SISTERS_IMAGES } from '../lib/about-data';
 
 // Removed predictive preloading hook - Next.js Image component handles all optimization
 
 export default function EventsSection() {
 
-  // Event images data - alternating between brothers and sisters
-  const eventImages = [
-    {
-      id: 1,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister3.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 2,
+  // Function to generate event images alternating between brothers and sisters
+  const generateEventImages = () => {
+    const brothersImages = BROTHERS_IMAGES.map((imagePath, index) => ({
+      id: index + 1,
       title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother1_clajgi",
+      imagePath,
       alt: "USIC brothers community"
-    },
-    {
-      id: 3,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother2_qmuiwv",
-      alt: "USIC brothers gathering"
-    },
-    {
-      id: 4,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister6.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 5,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother3_zzxxbp",
-      alt: "USIC brothers community"
-    },
-    {
-      id: 6,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister7.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 7,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother4_k0pft0",
-      alt: "USIC brothers gathering"
-    },
-    {
-      id: 8,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister8.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 9,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother5_pbcmli",
-      alt: "USIC brothers community"
-    },
-    {
-      id: 10,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister9.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 11,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-2_l68nse",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 12,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister10.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 13,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-6_i0mxfq",
-      alt: "USIC Annual Dinner 2025 gathering"
-    },
-    {
-      id: 14,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister11.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 15,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister12.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 16,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-16_nqlauo",
-      alt: "USIC Annual Dinner 2025 event"
-    },
-    {
-      id: 17,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister24.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 18,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-21_km4asl",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 19,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister25.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 20,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-25_km4asl",
-      alt: "USIC Annual Dinner 2025 event"
-    },
-    {
-      id: 21,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister26.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 22,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-45_p0w096",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 23,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister27.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 24,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-55_rk9wpd",
-      alt: "USIC Annual Dinner 2025 gathering"
-    },
-    {
-      id: 25,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-81_qclhrm",
-      alt: "USIC Annual Dinner 2025 event"
-    },
-    {
-      id: 26,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-107_imdoek",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 27,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0006_qzjpql",
-      alt: "USIC community gathering"
-    },
-    {
-      id: 28,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0028_a1qjg4",
-      alt: "USIC community activity"
-    },
-    {
-      id: 29,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9262_w8axs4",
-      alt: "USIC community celebration"
-    },
-    {
-      id: 30,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9980_caethj",
-      alt: "USIC community gathering"
-    }
-  ];
+    }));
 
-  // Different order for bottom slider - shuffled to create visual variety
-  const bottomSliderImages = [
-    {
-      id: 1,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9262_w8axs4",
-      alt: "USIC community celebration"
-    },
-    {
-      id: 2,
+    const sistersImages = SISTERS_IMAGES.map((imagePath, index) => ({
+      id: BROTHERS_IMAGES.length + index + 1,
       title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister10.jpeg",
+      imagePath,
       alt: "USIC sisters community"
-    },
-    {
-      id: 3,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-107_imdoek",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 4,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister6.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 5,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother4_k0pft0",
-      alt: "USIC brothers gathering"
-    },
-    {
-      id: 6,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister25.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 7,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-21_km4asl",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 8,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister3.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 9,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother2_qmuiwv",
-      alt: "USIC brothers gathering"
-    },
-    {
-      id: 10,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister27.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 11,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-6_i0mxfq",
-      alt: "USIC Annual Dinner 2025 gathering"
-    },
-    {
-      id: 12,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister8.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 13,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0006_qzjpql",
-      alt: "USIC community gathering"
-    },
-    {
-      id: 14,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister11.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 15,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister12.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 16,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-45_p0w096",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 17,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister24.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 18,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother5_pbcmli",
-      alt: "USIC brothers community"
-    },
-    {
-      id: 19,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister7.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 20,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-25_km4asl",
-      alt: "USIC Annual Dinner 2025 event"
-    },
-    {
-      id: 21,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister26.jpeg",
-      alt: "USIC sisters community"
-    },
-    {
-      id: 22,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother1_clajgi",
-      alt: "USIC brothers community"
-    },
-    {
-      id: 23,
-      title: "USIC Sisters",
-      imagePath: "/images/WEB/sisters/sister9.jpeg",
-      alt: "USIC sisters gathering"
-    },
-    {
-      id: 24,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-55_rk9wpd",
-      alt: "USIC Annual Dinner 2025 gathering"
-    },
-    {
-      id: 25,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_0028_a1qjg4",
-      alt: "USIC community activity"
-    },
-    {
-      id: 26,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-2_l68nse",
-      alt: "USIC Annual Dinner 2025 celebration"
-    },
-    {
-      id: 27,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/brother3_zzxxbp",
-      alt: "USIC brothers community"
-    },
-    {
-      id: 28,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-81_qclhrm",
-      alt: "USIC Annual Dinner 2025 event"
-    },
-    {
-      id: 29,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/USIC_Annual_Dinner_2025-16_nqlauo",
-      alt: "USIC Annual Dinner 2025 event"
-    },
-    {
-      id: 30,
-      title: "USIC Brothers",
-      imagePath: "https://res.cloudinary.com/dkqbvreso/image/upload/w_auto,h_auto,q_auto,f_auto/v1/brothers/IMG_9980_caethj",
-      alt: "USIC community gathering"
+    }));
+
+    // Alternate between brothers and sisters images
+    const alternatingImages = [];
+    const maxLength = Math.max(brothersImages.length, sistersImages.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      if (i < brothersImages.length) {
+        alternatingImages.push(brothersImages[i]);
+      }
+      if (i < sistersImages.length) {
+        alternatingImages.push(sistersImages[i]);
+      }
     }
-  ];
+
+    return alternatingImages;
+  };
+
+  // Generate alternating event images for both rows
+  const alternatingImages = generateEventImages();
+
+  // Top row: starts with brother, then sister, brother, sister, etc.
+  const eventImages = alternatingImages;
+
+  // Bottom row: starts with sister, then brother, sister, brother, etc. (offset by 1)
+  const bottomSliderImages = [...alternatingImages.slice(1), alternatingImages[0]];
 
   // Create references for the scrolling rows
   const topRowRef = useRef<HTMLDivElement>(null);
@@ -438,19 +112,19 @@ export default function EventsSection() {
         if (useTransformForTop) {
           // Transform approach for Safari and Chrome fallback
           topTransformX += SCROLL_SPEED;
-          const maxScroll = topRow.scrollWidth / 3;
-          
+          const maxScroll = topRow.scrollWidth / 2; // Reset at midpoint (after first set)
+
           if (topTransformX >= maxScroll) {
             topTransformX = 0;
           }
-          
+
           // Use margin-left instead of transform to avoid clipping issues
           topRow.style.marginLeft = `-${topTransformX}px`;
         } else {
           // Standard approach for other browsers
           const beforeScrollLeft = topRow.scrollLeft;
           topRow.scrollLeft += SCROLL_SPEED;
-          
+
           // Chrome fallback: If scrollLeft didn't change, switch to margin-left
           if (topRow.scrollLeft === beforeScrollLeft && topFrameCount > 60) {
             useTransformForTop = true;
@@ -458,15 +132,13 @@ export default function EventsSection() {
             topRow.style.marginLeft = `-${topTransformX}px`;
           }
         }
-        
+
         topFrameCount++;
 
-        // Let Next.js Image component handle loading optimization - removed predictive preloading
-
-        // Reset when reaching the end (accounting for the tripled content) - Chrome/other browsers
+        // Reset when reaching the midpoint (after first set of images)
         if (!useTransformForTop) {
-          const maxScroll = topRow.scrollWidth / 3; // Since we have 3 copies
-          if (topRow.scrollLeft >= maxScroll) {
+          const halfWidth = topRow.scrollWidth / 2;
+          if (topRow.scrollLeft >= halfWidth) {
             topRow.scrollLeft = 0;
           }
         }
@@ -492,19 +164,18 @@ export default function EventsSection() {
         if (useTransformForBottom) {
           // Transform approach for Safari and Chrome fallback
           bottomTransformX -= SCROLL_SPEED;
-          const maxScroll = bottomRow.scrollWidth / 3;
-          
+
           if (bottomTransformX <= 0) {
-            bottomTransformX = maxScroll;
+            bottomTransformX = bottomRow.scrollWidth / 2; // Reset to start of second set
           }
-          
+
           // Use margin-left instead of transform to avoid clipping issues
           bottomRow.style.marginLeft = `-${bottomTransformX}px`;
         } else {
           // Standard approach for other browsers
           const beforeScrollLeft = bottomRow.scrollLeft;
           bottomRow.scrollLeft -= SCROLL_SPEED;
-          
+
           // Chrome fallback: If scrollLeft didn't change, switch to margin-left
           if (bottomRow.scrollLeft === beforeScrollLeft && bottomFrameCount > 60) {
             useTransformForBottom = true;
@@ -512,16 +183,13 @@ export default function EventsSection() {
             bottomRow.style.marginLeft = `-${bottomTransformX}px`;
           }
         }
-        
-        bottomFrameCount++;
 
-        // Let Next.js Image component handle loading optimization - removed predictive preloading
+        bottomFrameCount++;
 
         // Reset when reaching the beginning - Chrome/other browsers
         if (!useTransformForBottom) {
           if (bottomRow.scrollLeft <= 0) {
-            const maxScroll = bottomRow.scrollWidth / 3; // Since we have 3 copies
-            bottomRow.scrollLeft = maxScroll;
+            bottomRow.scrollLeft = bottomRow.scrollWidth / 2; // Reset to start of second set
           }
         }
       } catch {
@@ -554,15 +222,16 @@ export default function EventsSection() {
           // Standard approach for other browsers
           topRow.scrollLeft = 0;
         }
-        
-        const maxScroll = bottomRow.scrollWidth / 3;
+
+        // Bottom row starts at the beginning of the second set (for leftward scrolling)
+        const bottomStartPosition = bottomRow.scrollWidth / 2;
         if (useTransformForBottom) {
           // Margin approach: Initialize margin for bottom row
-          bottomTransformX = maxScroll;
+          bottomTransformX = bottomStartPosition;
           bottomRow.style.marginLeft = `-${bottomTransformX}px`;
         } else {
           // Standard approach for other browsers
-          bottomRow.scrollLeft = maxScroll;
+          bottomRow.scrollLeft = bottomStartPosition;
         }
         
         // Mark as initialized
@@ -658,149 +327,143 @@ export default function EventsSection() {
 
       {/* Full-width image rows with no container constraints */}
       <div className="w-full mb-8">
-        {/* Top row - scrolls right with CSS animation */}
-        <div 
+        {/* Top row - scrolls right with JavaScript animation */}
+        <div
           ref={topRowRef}
           className="flex overflow-x-auto whitespace-nowrap mb-1"
-          style={{ 
-            scrollbarWidth: 'none', 
+          style={{
+            scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             willChange: 'transform' // Optimize for Safari transform animations
           }}
         >
-          {/* Duplicated images for seamless infinite scroll */}
-          <div className="flex animate-scroll-right">
-            {/* First set of images */}
-            {eventImages.map((image) => {
-              return (
-                <div
-                  key={`top-1-${image.id}`}
-                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                  <Image
-                    src={image.imagePath}
-                    alt={image.alt}
-                    fill
-                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                    style={{
-                      objectFit: 'cover'
-                    }}
-                    className="transition-transform duration-500 hover:scale-105"
-                    loading="lazy"
-                    quality={80}
-                    onError={(e) => {
-                      // Fallback to logo if image fails to load
-                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
-                        e.currentTarget.src = '/images/WEB/usic-logo.png';
-                      }
-                    }}
-                  />
-                </div>
-              );
-            })}
-            {/* Second set of images for seamless loop */}
-            {eventImages.map((image) => {
-              return (
-                <div
-                  key={`top-2-${image.id}`}
-                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                  <Image
-                    src={image.imagePath}
-                    alt={image.alt}
-                    fill
-                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                    style={{
-                      objectFit: 'cover'
-                    }}
-                    className="transition-transform duration-500 hover:scale-105"
-                    loading="lazy"
-                    quality={80}
-                    onError={(e) => {
-                      // Fallback to logo if image fails to load
-                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
-                        e.currentTarget.src = '/images/WEB/usic-logo.png';
-                      }
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          {/* First set of images */}
+          {eventImages.map((image) => {
+            return (
+              <div
+                key={`top-1-${image.id}`}
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                <Image
+                  src={image.imagePath}
+                  alt={image.alt}
+                  fill
+                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                  style={{
+                    objectFit: 'cover'
+                  }}
+                  className="transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                  quality={80}
+                  onError={(e) => {
+                    // Fallback to logo if image fails to load
+                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
+                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+                    }
+                  }}
+                />
+              </div>
+            );
+          })}
+          {/* Second set of images for seamless loop */}
+          {eventImages.map((image) => {
+            return (
+              <div
+                key={`top-2-${image.id}`}
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                <Image
+                  src={image.imagePath}
+                  alt={image.alt}
+                  fill
+                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                  style={{
+                    objectFit: 'cover'
+                  }}
+                  className="transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                  quality={80}
+                  onError={(e) => {
+                    // Fallback to logo if image fails to load
+                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
+                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+                    }
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
-        
-        {/* Bottom row - scrolls left with CSS animation */}
-        <div 
+
+        {/* Bottom row - scrolls left with JavaScript animation */}
+        <div
           ref={bottomRowRef}
           className="flex overflow-x-auto whitespace-nowrap"
-          style={{ 
-            scrollbarWidth: 'none', 
+          style={{
+            scrollbarWidth: 'none',
             msOverflowStyle: 'none'
           }}
         >
-          {/* Duplicated images for seamless infinite scroll */}
-          <div className="flex animate-scroll-left">
-            {/* First set of images */}
-            {bottomSliderImages.map((image) => {
-              return (
-                <div
-                  key={`bottom-1-${image.id}`}
-                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                  <Image
-                    src={image.imagePath}
-                    alt={image.alt}
-                    fill
-                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                    style={{
-                      objectFit: 'cover'
-                    }}
-                    className="transition-transform duration-500 hover:scale-105"
-                    loading="lazy"
-                    quality={80}
-                    onError={(e) => {
-                      // Fallback to logo if image fails to load
-                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
-                        e.currentTarget.src = '/images/WEB/usic-logo.png';
-                      }
-                    }}
-                  />
-                </div>
-              );
-            })}
-            {/* Second set of images for seamless loop */}
-            {bottomSliderImages.map((image) => {
-              return (
-                <div
-                  key={`bottom-2-${image.id}`}
-                  className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                  <Image
-                    src={image.imagePath}
-                    alt={image.alt}
-                    fill
-                    sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                    style={{
-                      objectFit: 'cover'
-                    }}
-                    className="transition-transform duration-500 hover:scale-105"
-                    loading="lazy"
-                    quality={80}
-                    onError={(e) => {
-                      // Fallback to logo if image fails to load
-                      if (e.currentTarget.src !== '/images/WEB/usic-logo.png') {
-                        e.currentTarget.src = '/images/WEB/usic-logo.png';
-                      }
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          {/* First set of images */}
+          {bottomSliderImages.map((image) => {
+            return (
+              <div
+                key={`bottom-1-${image.id}`}
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                <Image
+                  src={image.imagePath}
+                  alt={image.alt}
+                  fill
+                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                  style={{
+                    objectFit: 'cover'
+                  }}
+                  className="transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                  quality={80}
+                  onError={(e) => {
+                    // Fallback to logo if image fails to load
+                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
+                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+                    }
+                  }}
+                />
+              </div>
+            );
+          })}
+          {/* Second set of images for seamless loop */}
+          {bottomSliderImages.map((image) => {
+            return (
+              <div
+                key={`bottom-2-${image.id}`}
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+                <Image
+                  src={image.imagePath}
+                  alt={image.alt}
+                  fill
+                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+                  style={{
+                    objectFit: 'cover'
+                  }}
+                  className="transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                  quality={80}
+                  onError={(e) => {
+                    // Fallback to logo if image fails to load
+                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
+                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+                    }
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
       

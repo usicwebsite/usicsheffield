@@ -132,7 +132,7 @@ export default function AdminLogin() {
           <div className="flex items-center justify-center mb-6">
             <div className="relative h-16 w-16 overflow-hidden">
               <Image
-                src="/1. USIC Full Logo.svg"
+                src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758531324/1._USIC_Full_Logo_cr0kaw.svg"
                 alt="USIC Logo"
                 width={64}
                 height={64}

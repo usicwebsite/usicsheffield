@@ -56,7 +56,7 @@ export default function Navbar() {
           {/* Logo and site name */}
           <div className="flex-shrink-0 flex items-center space-x-3">
             <Image
-              src="/1. USIC Full Logo.svg"
+              src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758531324/1._USIC_Full_Logo_cr0kaw.svg"
               alt="USIC Logo"
               width={60}
               height={60}

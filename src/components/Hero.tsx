@@ -25,7 +25,7 @@ export default function Hero() {
   };
 
   // Fallback image for failed loads
-  const fallbackImage = '/images/WEB/usic-logo.png';
+  const fallbackImage = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
 
   return (
     <div className="relative overflow-hidden w-full h-screen">
@@ -81,7 +81,7 @@ export default function Hero() {
         {/* SVG heading */}
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-2xl mb-6 px-4">
           <Image
-            src="/Assalamu-aleykum-black.svg"
+            src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758531352/Assalamu-aleykum-black_tmoewl.svg"
             alt="Assalamu Aleykum"
             width={720}
             height={280}

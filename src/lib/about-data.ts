@@ -1,26 +1,48 @@
-// Available images for random selection from WEB folder
+// Available images for random selection from Cloudinary
 export const BROTHERS_IMAGES = [
-  'annualretreat.jpeg', 'brother1.jpeg', 'brother2.jpeg', 'brother3.jpeg',
-  'brother4.jpeg', 'brother5.jpeg', 'fridayfootball.jpeg', 'IMG_0006.JPG',
-  'IMG_0028.JPG', 'IMG_9262.JPG', 'IMG_9980.JPG', 'roots.png', 'sports.jpeg',
-  'USIC Annual Dinner 2025-107.jpg', 'USIC Annual Dinner 2025-16.jpg',
-  'USIC Annual Dinner 2025-2.jpg', 'USIC Annual Dinner 2025-21.jpg',
-  'USIC Annual Dinner 2025-25.jpg', 'USIC Annual Dinner 2025-45.jpg',
-  'USIC Annual Dinner 2025-55.jpg', 'USIC Annual Dinner 2025-6.jpg',
-  'USIC Annual Dinner 2025-81.jpg'
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524316/annualretreat_laws0o.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524316/brother1_clajgi.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524419/brother2_qmuiwv.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524419/brother3_zzxxbp.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524418/brother4_k0pft0.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/brother5_pbcmli.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/fridayfootball_uvckav.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0006_qzjpql.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524414/IMG_0028_a1qjg4.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524415/IMG_9262_w8axs4.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524417/IMG_9980_caethj.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/roots_lwb9gb.png',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/sports_nhapdy.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-107_imdoek.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-16_nqlauo.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-2_l68nse.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-25_km4asl.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-45_p0w096.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-55_rk9wpd.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/USIC_Annual_Dinner_2025-6_i0mxfq.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-81_qclhrm.jpg'
 ];
 
 export const SISTERS_IMAGES = [
-  'sister10.jpeg', 'sister11.jpeg', 'sister12.jpeg', 'sister24.jpeg', 
-  'sister25.jpeg', 'sister26.jpeg', 'sister27.jpeg', 'sister3.jpeg', 
-  'sister6.jpeg', 'sister7.jpeg', 'sister8.jpeg', 'sister9.jpeg'
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524479/sister10_lldx5c.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524475/sister11_xkalmd.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524475/sister12_bmqelf.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524478/sister24_fxbkeu.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister25_ap77jh.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister26_ehsztk.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524476/sister27_x1qgr5.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524482/sister3_bs3ahp.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524481/sister6_opysdf.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524480/sister7_zavuxn.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524480/sister8_hi6u6z.jpg',
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524479/sister9_wofoeq.jpg'
 ];
 
 // Function to get random images from the available pool
 export function getRandomImages(): string[] {
   const allImages = [
-    ...BROTHERS_IMAGES.map(img => `/images/WEB/brothers/${img}`),
-    ...SISTERS_IMAGES.map(img => `/images/WEB/sisters/${img}`)
+    ...BROTHERS_IMAGES,
+    ...SISTERS_IMAGES
   ];
 
   // Shuffle array and return 4 unique images

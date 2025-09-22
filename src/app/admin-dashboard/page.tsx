@@ -1101,7 +1101,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Image
-                  src="/1. USIC Full Logo.svg"
+                  src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758531324/1._USIC_Full_Logo_cr0kaw.svg"
                   alt="USIC Logo"
                   width={40}
                   height={40}
@@ -1161,7 +1161,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Image
-                src="/1. USIC Full Logo.svg"
+                src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758531324/1._USIC_Full_Logo_cr0kaw.svg"
                 alt="USIC Logo"
                 width={40}
                 height={40}

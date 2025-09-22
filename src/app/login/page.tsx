@@ -72,7 +72,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
             <Image
-              src="/1. USIC Full Logo.svg"
+              src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758531324/1._USIC_Full_Logo_cr0kaw.svg"
               alt="USIC Logo"
               width={120}
               height={120}

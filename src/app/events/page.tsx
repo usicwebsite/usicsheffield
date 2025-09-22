@@ -420,7 +420,7 @@ export default function EventsPage() {
       location: "Lecture Theatre 4, Arts Tower",
       category: "Other",
       description: "Our Tuesday evening classes cover different themes each semester, such as Qur'anic Tafsir/exegesis, Prophetic Seerah/biography, and methods of spiritual purification.",
-      image: "/images/WEB/brothers/roots.png",
+      image: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758524413/roots_lwb9gb.png",
       signupLink: "https://forms.google.com/roots-academy-signup",
       tags: ["weekly", "education"],
     },
@@ -432,7 +432,7 @@ export default function EventsPage() {
       location: "The Wave Pitches",
       category: "Other",
       description: "Brothers' special football sessions. A great way to end the week with physical activity and brotherhood. 14 spots open each week - don't miss out!",
-      image: "/images/WEB/brothers/brother3.jpeg",
+      image: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758524419/brother3_zzxxbp.jpg",
       signupLink: "https://forms.google.com/friday-football-signup",
       tags: ["brothers only", "weekly", "welfare", "sports"],
     }
