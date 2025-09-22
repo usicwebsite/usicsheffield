@@ -44,3 +44,8 @@ next-env.d.ts
 /docs/
 /fasal/
 /scripts/
+
+# Firebase service account keys (SECURITY)
+*.json
+firebase-adminsdk-*.json
+service-account-*.json
