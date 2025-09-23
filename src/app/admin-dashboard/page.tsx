@@ -582,43 +582,13 @@ export default function AdminDashboard() {
     return currentMethod === 'external' ? 'website' : currentMethod;
   };
 
-  // Helper function to check if a price is considered "free"
-  const isPriceFree = (price: string): boolean => {
-    if (!price || typeof price !== 'string') return false;
-    const normalizedPrice = price.trim().toLowerCase();
-    return normalizedPrice === 'free' ||
-           normalizedPrice === '0' ||
-           normalizedPrice === '0.0' ||
-           normalizedPrice === '0.00' ||
-           normalizedPrice === '0.000';
-  };
 
   const validateEventForm = (formData: EventFormData): string[] => {
     const errors: string[] = [];
 
-    // Required fields validation
+    // Only title is required
     if (!formData.title.trim()) {
       errors.push('Title');
-    }
-    if (!formData.date) {
-      errors.push('Date');
-    }
-    if (!formData.startTime) {
-      errors.push('Start Time');
-    }
-    if (!formData.location.trim()) {
-      errors.push('Location');
-    }
-
-    // Price fields are required unless they're free or no signup is needed
-    if (formData.signupMethod !== 'none' && !isPriceFree(formData.memberPrice) && !formData.memberPrice.trim()) {
-      errors.push('Member Price (unless it\'s free or no signup is needed)');
-    }
-    if (formData.signupMethod !== 'none' && !isPriceFree(formData.nonMemberPrice) && !formData.nonMemberPrice.trim()) {
-      errors.push('Non-Member Price (unless it\'s free or no signup is needed)');
-    }
-    if (!formData.description.trim()) {
-      errors.push('Description');
     }
 
     // Signup method validation
@@ -718,22 +688,9 @@ export default function AdminDashboard() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        // If server provides specific missing fields, format them nicely
-        if (errorData.missingFields && Array.isArray(errorData.missingFields)) {
-          const fieldNames = errorData.missingFields.map((field: string) => {
-            // Convert field names to user-friendly names
-            const fieldNameMap: { [key: string]: string } = {
-              title: 'Title',
-              date: 'Date',
-              startTime: 'Start Time',
-              location: 'Location',
-              price: 'Price',
-              description: 'Description',
-              createdBy: 'Created By'
-            };
-            return fieldNameMap[field] || field;
-          });
-          throw new Error(`Missing required fields: ${fieldNames.join(', ')}`);
+        // Handle the simplified error format - only title is required
+        if (errorData.message) {
+          throw new Error(errorData.message);
         }
         throw new Error(errorData.error || 'Failed to create event');
       }
@@ -934,11 +891,11 @@ export default function AdminDashboard() {
       for (let i = 0; i < parsedEvents.length; i++) {
         const event = parsedEvents[i];
 
-        // Skip if missing required fields
-        const requiredFields = ['title', 'date', 'startTime', 'location', 'description'] as const;
+        // Skip if missing required fields (only title is required)
+        const requiredFields = ['title'] as const;
         const missing = requiredFields.filter(field => !event[field as keyof Event]);
         if (missing.length > 0) {
-          errors[i] = `Missing required fields: ${missing.join(', ')}`;
+          errors[i] = `Missing required field: ${missing.join(', ')}`;
           setBatchCreationProgress(prev => ({ ...prev, [i]: 'failed' }));
           setBatchCreationErrors(prev => ({ ...prev, [i]: errors[i] }));
           continue;
@@ -1996,51 +1953,27 @@ export default function AdminDashboard() {
                   {/* Date and Time */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="eventDate" className={`block text-sm font-medium mb-2 ${
-                        missingFields.includes('date') ? 'text-red-600' : 'text-gray-700'
-                      }`}>
-                        Date * {missingFields.includes('date') && <span className="text-red-500">(Please fill)</span>}
+                      <label htmlFor="eventDate" className="block text-sm font-medium mb-2 text-gray-700">
+                        Date
                       </label>
                       <input
                         type="date"
                         id="eventDate"
                         value={eventFormData.date}
-                        onChange={(e) => {
-                          setEventFormData({...eventFormData, date: e.target.value});
-                          if (missingFields.includes('date') && e.target.value) {
-                            setMissingFields(missingFields.filter(f => f !== 'date'));
-                          }
-                        }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          missingFields.includes('date')
-                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
-                            : 'border-gray-300'
-                        }`}
-                        required
+                        onChange={(e) => setEventFormData({...eventFormData, date: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label htmlFor="startTime" className={`block text-sm font-medium mb-2 ${
-                        missingFields.includes('startTime') ? 'text-red-600' : 'text-gray-700'
-                      }`}>
-                        Start Time * {missingFields.includes('startTime') && <span className="text-red-500">(Please fill)</span>}
+                      <label htmlFor="startTime" className="block text-sm font-medium mb-2 text-gray-700">
+                        Start Time
                       </label>
                       <input
                         type="time"
                         id="startTime"
                         value={eventFormData.startTime}
-                        onChange={(e) => {
-                          setEventFormData({...eventFormData, startTime: e.target.value});
-                          if (missingFields.includes('startTime') && e.target.value) {
-                            setMissingFields(missingFields.filter(f => f !== 'startTime'));
-                          }
-                        }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          missingFields.includes('startTime')
-                            ? 'border-red-300 bg-red-50 focus:ring-red-500'
-                            : 'border-gray-300'
-                        }`}
-                        required
+                        onChange={(e) => setEventFormData({...eventFormData, startTime: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -2060,28 +1993,16 @@ export default function AdminDashboard() {
 
                   {/* Location */}
                   <div className="mb-4">
-                    <label htmlFor="eventLocation" className={`block text-sm font-medium mb-2 ${
-                      missingFields.includes('location') ? 'text-red-600' : 'text-gray-700'
-                    }`}>
-                      Location * {missingFields.includes('location') && <span className="text-red-500">(Please fill)</span>}
+                    <label htmlFor="eventLocation" className="block text-sm font-medium mb-2 text-gray-700">
+                      Location
                     </label>
                     <input
                       type="text"
                       id="eventLocation"
                       value={eventFormData.location}
-                      onChange={(e) => {
-                        setEventFormData({...eventFormData, location: e.target.value});
-                        if (missingFields.includes('location') && e.target.value.trim()) {
-                          setMissingFields(missingFields.filter(f => f !== 'location'));
-                        }
-                      }}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        missingFields.includes('location')
-                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
-                          : 'border-gray-300'
-                      }`}
+                      onChange={(e) => setEventFormData({...eventFormData, location: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter event location"
-                      required
                     />
                   </div>
 
@@ -2089,7 +2010,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-start">
                     <div className="flex flex-col h-full justify-between">
                       <label htmlFor="eventMemberPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                        Member Price *
+                        Member Price
                         <span className="text-gray-500 text-xs ml-2"></span>
                       </label>
                       <input
@@ -2099,12 +2020,11 @@ export default function AdminDashboard() {
                         onChange={(e) => setEventFormData({...eventFormData, price: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="(GBP symbol added automatically)"
-                        required
                       />
                     </div>
                     <div className="flex flex-col h-full justify-between">
                       <label htmlFor="eventNonMemberPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                        Non-Member Price *
+                        Non-Member Price
                       </label>
                       <input
                         type="text"
@@ -2113,7 +2033,6 @@ export default function AdminDashboard() {
                         onChange={(e) => setEventFormData({...eventFormData, nonMemberPrice: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="(GBP symbol added automatically)"
-                        required
                       />
                     </div>
                   </div>
@@ -2151,28 +2070,16 @@ export default function AdminDashboard() {
 
                   {/* Description */}
                   <div>
-                    <label htmlFor="eventDescription" className={`block text-sm font-medium mb-2 ${
-                      missingFields.includes('description') ? 'text-red-600' : 'text-gray-700'
-                    }`}>
-                      Description * {missingFields.includes('description') && <span className="text-red-500">(Please fill)</span>}
+                    <label htmlFor="eventDescription" className="block text-sm font-medium mb-2 text-gray-700">
+                      Description
                     </label>
                     <textarea
                       id="eventDescription"
                       value={eventFormData.description}
-                      onChange={(e) => {
-                        setEventFormData({...eventFormData, description: e.target.value});
-                        if (missingFields.includes('description') && e.target.value.trim()) {
-                          setMissingFields(missingFields.filter(f => f !== 'description'));
-                        }
-                      }}
+                      onChange={(e) => setEventFormData({...eventFormData, description: e.target.value})}
                       rows={4}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        missingFields.includes('description')
-                          ? 'border-red-300 bg-red-50 focus:ring-red-500'
-                          : 'border-gray-300'
-                      }`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter event description"
-                      required
                     />
                   </div>
 
@@ -2802,7 +2709,7 @@ Or use numbered lists:
                 {/* Events List */}
                 <div className="space-y-4 mb-6">
                   {parsedEvents.map((event, index) => {
-                    const requiredFields = ['title', 'date', 'startTime', 'location', 'description'] as const;
+                    const requiredFields = ['title'] as const;
                     const missing = requiredFields.filter(field => !event[field as keyof Event]);
                     const progress = batchCreationProgress[index] || 'pending';
                     const error = batchCreationErrors[index];

@@ -902,7 +902,7 @@ export default function EventDetailPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Non-Member Price *
+                        Non-Member Price
                       </label>
                       <input
                         type="text"
@@ -1232,7 +1232,7 @@ export default function EventDetailPage() {
                   {editForm.signupMethod === 'website' && !editForm.signupFormUrl?.trim() && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Signup Form Fields *
+                        Signup Form Fields
                         <span className="text-gray-500 text-xs ml-2">
                           (Select which information to collect from attendees)
                         </span>

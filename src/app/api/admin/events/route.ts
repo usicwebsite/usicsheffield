@@ -3,16 +3,6 @@ import { adminDb } from '@/lib/firebase-admin';
 import { verifyAdminToken } from '@/lib/firebase-admin-utils';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Helper function to check if a price is considered "free"
-const isPriceFree = (price: string): boolean => {
-  if (!price || typeof price !== 'string') return false;
-  const normalizedPrice = price.trim().toLowerCase();
-  return normalizedPrice === 'free' ||
-         normalizedPrice === '0' ||
-         normalizedPrice === '0.0' ||
-         normalizedPrice === '0.00' ||
-         normalizedPrice === '0.000';
-};
 
 // Configure Cloudinary
 cloudinary.config({
@@ -117,45 +107,11 @@ export async function POST(request: NextRequest) {
     const signupFormUrl = formData.get('signupFormUrl') as string;
     const signupMethod = formData.get('signupMethod') as string || 'website'; // Default to website for backwards compatibility
 
-    // Validate required fields and collect missing ones
-    const missingFields: string[] = [];
-
+    // Validate required fields - only title is required
     if (!title || typeof title !== 'string' || title.trim() === '') {
-      missingFields.push('title');
-    }
-    if (!date || typeof date !== 'string' || date.trim() === '') {
-      missingFields.push('date');
-    }
-    if (!startTime || typeof startTime !== 'string' || startTime.trim() === '') {
-      missingFields.push('startTime');
-    }
-    if (!location || typeof location !== 'string' || location.trim() === '') {
-      missingFields.push('location');
-    }
-    if (!price || typeof price !== 'string' || price.trim() === '') {
-      missingFields.push('price');
-    }
-
-    // Price fields are required unless they're free or no signup is needed
-    if (signupMethod !== 'none' && !isPriceFree(memberPrice) && (!memberPrice || typeof memberPrice !== 'string' || memberPrice.trim() === '')) {
-      missingFields.push('memberPrice');
-    }
-    if (signupMethod !== 'none' && !isPriceFree(nonMemberPrice) && (!nonMemberPrice || typeof nonMemberPrice !== 'string' || nonMemberPrice.trim() === '')) {
-      missingFields.push('nonMemberPrice');
-    }
-
-    if (!description || typeof description !== 'string' || description.trim() === '') {
-      missingFields.push('description');
-    }
-    if (!createdBy || typeof createdBy !== 'string' || createdBy.trim() === '') {
-      missingFields.push('createdBy');
-    }
-
-    if (missingFields.length > 0) {
       return NextResponse.json({
-        error: 'Missing required fields',
-        missingFields: missingFields,
-        message: `The following required fields are missing: ${missingFields.join(', ')}`
+        error: 'Missing required field',
+        message: 'Event title is required'
       }, { status: 400 });
     }
 
