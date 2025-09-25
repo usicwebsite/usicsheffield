@@ -72,7 +72,7 @@ export const staticData = {
           description: "Follow our journey on Instagram for daily updates",
           type: "instagram",
           thumbnailImage: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758529339/committee_qfdbkh.jpg",
-          externalUrl: "https://www.instagram.com/p/DORUV3lCDAg/",
+          externalUrl: "https://www.instagram.com/usicsheffield/",
           fallbackImage: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png"
         },
         {
@@ -109,7 +109,7 @@ export const staticData = {
           description: "Follow our journey on Instagram for daily updates",
           type: "instagram",
           thumbnailImage: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758529339/committee_qfdbkh.jpg",
-          externalUrl: "https://www.instagram.com/p/DORUV3lCDAg/",
+          externalUrl: "https://www.instagram.com/usicsheffield/",
           fallbackImage: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png"
         },
         {
