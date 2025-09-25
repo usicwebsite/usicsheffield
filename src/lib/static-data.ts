@@ -314,7 +314,7 @@ export const staticData = {
     sponsors: [
       {
         name: "Iqra Store",
-        logo: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758524316/iqra.png",
+        logo: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758531159/iqra_fh5jzg.png",
         description: "South Yorkshire's premier lifestyle store, committed to providing our customers with traditional & contemporary merchandise from around the world.",
         website: "https://www.instagram.com/iqralifestylestore/?hl=en-gb",
         tier: "gold"
