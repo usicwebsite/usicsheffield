@@ -122,6 +122,9 @@ export default function Navbar() {
             <Link href="/resources" className="text-white hover:text-blue-200 transition duration-300">
               Resources
             </Link>
+            <Link href="/fundraising" className="text-white hover:text-blue-200 transition duration-300">
+              Fundraising
+            </Link>
             <Link href="/blog" className="text-white hover:text-blue-200 transition duration-300">
               Forum
             </Link>
@@ -203,15 +206,22 @@ export default function Navbar() {
                 </Link>
               </div>
             </div>
-            <Link 
-              href="/resources" 
+            <Link
+              href="/resources"
               className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#234b64] hover:text-white"
               onClick={() => setIsMenuOpen(false)}
             >
               Resources
             </Link>
-            <Link 
-              href="/blog" 
+            <Link
+              href="/fundraising"
+              className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#234b64] hover:text-white"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Fundraising
+            </Link>
+            <Link
+              href="/blog"
               className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#234b64] hover:text-white"
               onClick={() => setIsMenuOpen(false)}
             >
