@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { AuthenticatedRequest } from '@/lib/auth-api';
+import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
 import { approvePost } from '@/lib/firebase-admin-utils';
 
-export async function POST(request: AuthenticatedRequest) {
+async function approvePostHandler(request: AuthenticatedRequest) {
   try {
     const body = await request.json();
     const { postId } = body;
@@ -31,7 +31,7 @@ export async function POST(request: AuthenticatedRequest) {
   } catch (error: unknown) {
     console.error('[Approve Post API] Error approving post:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to approve post',
         message: error instanceof Error ? error.message : 'Unknown error'
@@ -39,4 +39,6 @@ export async function POST(request: AuthenticatedRequest) {
       { status: 500 }
     );
   }
-} 
+}
+
+export const POST = withAdminAuth(approvePostHandler); 

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { AuthenticatedRequest } from '@/lib/auth-api';
+import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
 import { rejectPost } from '@/lib/firebase-admin-utils';
 
-export async function POST(request: AuthenticatedRequest) {
+async function rejectPostHandler(request: AuthenticatedRequest) {
   try {
 
     const body = await request.json();
@@ -55,4 +55,6 @@ export async function POST(request: AuthenticatedRequest) {
       { status: 500 }
     );
   }
-} 
+}
+
+export const POST = withAdminAuth(rejectPostHandler); 
