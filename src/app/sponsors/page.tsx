@@ -53,6 +53,8 @@ export default function SponsorsPage() {
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                 sponsor.tier === 'platinum' ? 'bg-purple-500/20 text-purple-300' :
                 sponsor.tier === 'gold' ? 'bg-yellow-500/20 text-yellow-300' :
+                sponsor.tier === 'silver' ? 'bg-gray-400/20 text-gray-200' :
+                sponsor.tier === 'bronze' ? 'bg-orange-500/20 text-orange-300' :
                 'bg-gray-500/20 text-gray-300'
               }`}>
                 {sponsors.tiers[sponsor.tier as keyof typeof sponsors.tiers]?.name}

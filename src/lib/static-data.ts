@@ -317,7 +317,7 @@ export const staticData = {
         logo: "https://res.cloudinary.com/derjeh0m2/image/upload/v1758531159/iqra_fh5jzg.png",
         description: "South Yorkshire's premier lifestyle store, committed to providing our customers with traditional & contemporary merchandise from around the world.",
         website: "https://www.instagram.com/iqralifestylestore/?hl=en-gb",
-        tier: "gold"
+        tier: "bronze"
       }
     ],
     tiers: {
@@ -326,12 +326,16 @@ export const staticData = {
         benefits: ["Logo on all materials", "Speaking opportunities", "VIP event access"]
       },
       gold: {
-        name: "Gold Sponsor", 
+        name: "Gold Sponsor",
         benefits: ["Logo on website", "Event sponsorship", "Recognition at events"]
       },
       silver: {
         name: "Silver Sponsor",
         benefits: ["Logo on website", "Event recognition"]
+      },
+      bronze: {
+        name: "Bronze Sponsor",
+        benefits: ["Logo on website", "Community recognition"]
       }
     }
   },
@@ -482,7 +486,8 @@ export const categoryUtils = {
     { id: "ANNOUNCEMENTS", name: "Announcements" },
     { id: "QUESTIONS", name: "Questions" },
     { id: "DISCUSSION", name: "Discussion" },
-    { id: "PODCAST_REFLECTIONS", name: "Podcast Reflections" }
+    { id: "PODCAST_REFLECTIONS", name: "Podcast Reflections" },
+    { id: "NEWSLETTER", name: "Newsletter" }
   ],
 
   // Convert category ID to display name
