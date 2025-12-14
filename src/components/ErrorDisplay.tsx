@@ -65,7 +65,7 @@ export function ErrorDisplay({
   return (
     <div className={`bg-white/5 backdrop-blur-sm border rounded-lg p-4 ${getBackgroundColor()} ${className}`}>
       <div className="flex items-start">
-        <div className="flex-shrink-0 mt-0.5">
+        <div className="shrink-0 mt-0.5">
           {getIcon()}
         </div>
         
@@ -83,7 +83,7 @@ export function ErrorDisplay({
             <div className="mt-3">
               <button
                 onClick={onRetry}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
               >
                 <RefreshCw className="w-3 h-3 mr-1" />
                 Try Again
@@ -96,7 +96,7 @@ export function ErrorDisplay({
           <div className="ml-auto pl-3">
             <button
               onClick={onDismiss}
-              className="inline-flex text-gray-400 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              className="inline-flex text-gray-400 hover:text-gray-300 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               <X className="w-4 h-4" />
             </button>

@@ -414,7 +414,7 @@ export default function EventPage() {
                         value={formData[field] || ''}
                         onChange={(e) => handleInputChange(field, e.target.value)}
                         rows={3}
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder={`Enter your ${getFieldLabel(field).toLowerCase()}`}
                         required
                       />
@@ -424,7 +424,7 @@ export default function EventPage() {
                         id={field}
                         value={formData[field] || ''}
                         onChange={(e) => handleInputChange(field, e.target.value)}
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder={`Enter your ${getFieldLabel(field).toLowerCase()}`}
                         required
                       />

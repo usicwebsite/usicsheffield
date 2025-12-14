@@ -53,7 +53,7 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <div className="text-center mb-8 flex-shrink-0">
+                <div className="text-center mb-8 shrink-0">
                   <h3 className="font-heading text-3xl font-bold mb-3 text-white">
                     {tier.name}
                   </h3>
@@ -78,7 +78,7 @@ export default function PricingPage() {
                 <ul className="space-y-4 mb-8 flex-1">
                   {tier.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start space-x-4">
-                      <div className={`flex-shrink-0 w-6 h-6 rounded-full ${
+                      <div className={`shrink-0 w-6 h-6 rounded-full ${
                         tier.name === 'Non-Member'
                           ? 'bg-red-500/20 border-2 border-red-500/50'
                           : tier.highlighted

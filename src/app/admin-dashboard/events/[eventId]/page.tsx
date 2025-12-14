@@ -760,7 +760,7 @@ export default function EventDetailPage() {
           {/* Navigation Help */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
             <div className="flex items-center gap-3">
-              <svg className="w-5 h-5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
@@ -850,7 +850,7 @@ export default function EventDetailPage() {
                         type="date"
                         value={editForm.date}
                         onChange={(e) => setEditForm({...editForm, date: e.target.value})}
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -1216,7 +1216,7 @@ export default function EventDetailPage() {
                           ...editForm,
                           maxSignups: parseInt(e.target.value)
                         })}
-                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         {Array.from({ length: 200 }, (_, i) => i + 1).map(num => (
                           <option key={num} value={num}>
@@ -1277,7 +1277,7 @@ export default function EventDetailPage() {
                             value={newCustomField}
                             onChange={(e) => setNewCustomField(e.target.value)}
                             placeholder="e.g., Allergies, Dietary Restrictions, etc."
-                            className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <button
                             type="button"

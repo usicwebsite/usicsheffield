@@ -18,7 +18,7 @@ export default function TimelineItem({ item, isActive, ref }: TimelineItemProps)
     >
       <div className="flex flex-col md:flex-row items-start gap-8">
         {/* Step Number and Progress Dot */}
-        <div className="flex flex-col items-center md:items-start md:w-32 flex-shrink-0">
+        <div className="flex flex-col items-center md:items-start md:w-32 shrink-0">
           <div className={`relative z-10 flex items-center justify-center w-16 h-16 rounded-full text-xl font-bold transition-all duration-300 ${
             isActive 
               ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' 

@@ -359,7 +359,7 @@ export default function EventsSection() {
             return (
               <div
                 key={`top-1-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
                 <Image
@@ -388,7 +388,7 @@ export default function EventsSection() {
             return (
               <div
                 key={`top-2-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
                 <Image
@@ -428,7 +428,7 @@ export default function EventsSection() {
             return (
               <div
                 key={`bottom-1-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
                 <Image
@@ -457,7 +457,7 @@ export default function EventsSection() {
             return (
               <div
                 key={`bottom-2-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative flex-shrink-0 mx-0.5 overflow-hidden"
+                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
                 <Image

@@ -1307,7 +1307,7 @@ export default function AdminDashboard() {
                         placeholder="Search by email, name, or UID..."
                         value={usersSearchTerm}
                         onChange={(e) => setUsersSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -1316,7 +1316,7 @@ export default function AdminDashboard() {
                     <select
                       value={usersFilterStatus}
                       onChange={(e) => setUsersFilterStatus(e.target.value as 'all' | 'restricted' | 'active')}
-                      className="px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       <option value="all">All Users</option>
                       <option value="active">Active Users</option>
@@ -1407,7 +1407,7 @@ export default function AdminDashboard() {
                                 type="text"
                                 value={editTitle}
                                 onChange={(e) => setEditTitle(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Enter post title..."
                               />
                             </div>
@@ -1423,7 +1423,7 @@ export default function AdminDashboard() {
                                 type="text"
                                 value={editCategory}
                                 onChange={(e) => setEditCategory(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Enter category..."
                               />
                             </div>
@@ -1442,7 +1442,7 @@ export default function AdminDashboard() {
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
                             rows={8}
-                            className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                            className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                             placeholder="Enter post content..."
                           />
                         </div>
@@ -1764,13 +1764,13 @@ export default function AdminDashboard() {
                     {/* Event Details */}
                     <div className="space-y-3 mb-4">
                       <div className="flex items-center text-gray-300 text-sm">
-                        <svg className="w-4 h-4 mr-3 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 mr-3 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="truncate">{event.date}</span>
                       </div>
                       <div className="flex items-center text-gray-300 text-sm">
-                        <svg className="w-4 h-4 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 mr-3 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="truncate">
@@ -1778,7 +1778,7 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                       <div className="flex items-center text-gray-300 text-sm">
-                        <svg className="w-4 h-4 mr-3 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 mr-3 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -1786,7 +1786,7 @@ export default function AdminDashboard() {
                       </div>
                       {event.price && (
                         <div className="flex items-center text-gray-300 text-sm">
-                          <svg className="w-4 h-4 mr-3 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 mr-3 text-yellow-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                           </svg>
                           <span className="truncate">
@@ -1820,7 +1820,7 @@ export default function AdminDashboard() {
 
         {/* Event Creation Modal */}
         {showEventForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -1849,7 +1849,7 @@ export default function AdminDashboard() {
                 {eventFormErrors.length > 0 && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
                     <div className="flex">
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                         </svg>
@@ -1940,7 +1940,7 @@ export default function AdminDashboard() {
                           setMissingFields(missingFields.filter(f => f !== 'title'));
                         }
                       }}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         missingFields.includes('title')
                           ? 'border-red-300 bg-red-50 focus:ring-red-500'
                           : 'border-gray-300'
@@ -1961,7 +1961,7 @@ export default function AdminDashboard() {
                         id="eventDate"
                         value={eventFormData.date}
                         onChange={(e) => setEventFormData({...eventFormData, date: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -1973,7 +1973,7 @@ export default function AdminDashboard() {
                         id="startTime"
                         value={eventFormData.startTime}
                         onChange={(e) => setEventFormData({...eventFormData, startTime: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -1986,7 +1986,7 @@ export default function AdminDashboard() {
                         id="endTime"
                         value={eventFormData.endTime || ''}
                         onChange={(e) => setEventFormData({...eventFormData, endTime: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -2001,7 +2001,7 @@ export default function AdminDashboard() {
                       id="eventLocation"
                       value={eventFormData.location}
                       onChange={(e) => setEventFormData({...eventFormData, location: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter event location"
                     />
                   </div>
@@ -2018,7 +2018,7 @@ export default function AdminDashboard() {
                         id="eventMemberPrice"
                         value={eventFormData.price}
                         onChange={(e) => setEventFormData({...eventFormData, price: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="(GBP symbol added automatically)"
                       />
                     </div>
@@ -2031,7 +2031,7 @@ export default function AdminDashboard() {
                         id="eventNonMemberPrice"
                         value={eventFormData.nonMemberPrice}
                         onChange={(e) => setEventFormData({...eventFormData, nonMemberPrice: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="(GBP symbol added automatically)"
                       />
                     </div>
@@ -2049,7 +2049,7 @@ export default function AdminDashboard() {
                         id="eventMeetUpTime"
                         value={eventFormData.meetUpTime}
                         onChange={(e) => setEventFormData({...eventFormData, meetUpTime: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -2062,7 +2062,7 @@ export default function AdminDashboard() {
                         id="eventMeetUpLocation"
                         value={eventFormData.meetUpLocation}
                         onChange={(e) => setEventFormData({...eventFormData, meetUpLocation: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter meet up location"
                       />
                     </div>
@@ -2078,7 +2078,7 @@ export default function AdminDashboard() {
                       value={eventFormData.description}
                       onChange={(e) => setEventFormData({...eventFormData, description: e.target.value})}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter event description"
                     />
                   </div>
@@ -2103,7 +2103,7 @@ export default function AdminDashboard() {
                           signupMethod: updateSignupMethodBasedOnUrl(url, eventFormData.signupMethod)
                         });
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="https://forms.google.com/your-form-link"
                     />
                   </div>
@@ -2345,7 +2345,7 @@ export default function AdminDashboard() {
                           ...eventFormData,
                           maxSignups: parseInt(e.target.value)
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         {Array.from({ length: 200 }, (_, i) => i + 1).map(num => (
                           <option key={num} value={num}>
@@ -2406,7 +2406,7 @@ export default function AdminDashboard() {
                           setImagePreview(previewUrl);
                         }
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <p className="text-xs text-gray-500 mt-1">Upload an event poster (optional, max 5MB)</p>
                     
@@ -2491,7 +2491,7 @@ export default function AdminDashboard() {
                             value={newCustomField}
                             onChange={(e) => setNewCustomField(e.target.value)}
                             placeholder="e.g., Allergies, Dietary Restrictions, etc."
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <button
                             type="button"
@@ -2603,7 +2603,7 @@ export default function AdminDashboard() {
                         value={aiEventText}
                         onChange={(e) => setAiEventText(e.target.value)}
                         rows={10}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder={`Examples:
 
 SINGLE EVENT:
@@ -2683,7 +2683,7 @@ Or use numbered lists:
 
         {/* Batch Events Review Modal */}
         {showBatchReview && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -2759,7 +2759,7 @@ Or use numbered lists:
                                 updatedEvents[index].title = e.target.value;
                                 setParsedEvents(updatedEvents);
                               }}
-                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-hidden focus:ring-2 ${
                                 !event.title ? 'border-red-300 bg-red-50' : 'border-gray-300'
                               }`}
                               placeholder="Event title"
@@ -2776,7 +2776,7 @@ Or use numbered lists:
                                 updatedEvents[index].date = e.target.value;
                                 setParsedEvents(updatedEvents);
                               }}
-                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-hidden focus:ring-2 ${
                                 !event.date ? 'border-red-300 bg-red-50' : 'border-gray-300'
                               }`}
                             />
@@ -2792,7 +2792,7 @@ Or use numbered lists:
                                 updatedEvents[index].startTime = e.target.value;
                                 setParsedEvents(updatedEvents);
                               }}
-                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-hidden focus:ring-2 ${
                                 !event.startTime ? 'border-red-300 bg-red-50' : 'border-gray-300'
                               }`}
                             />
@@ -2808,7 +2808,7 @@ Or use numbered lists:
                                 updatedEvents[index].location = e.target.value;
                                 setParsedEvents(updatedEvents);
                               }}
-                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                              className={`w-full px-3 py-2 text-sm border rounded focus:outline-hidden focus:ring-2 ${
                                 !event.location ? 'border-red-300 bg-red-50' : 'border-gray-300'
                               }`}
                               placeholder="Event location"
@@ -2899,7 +2899,7 @@ Or use numbered lists:
                               setParsedEvents(updatedEvents);
                             }}
                             rows={2}
-                            className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
+                            className={`w-full px-3 py-2 text-sm border rounded focus:outline-hidden focus:ring-2 ${
                               !event.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
                             }`}
                             placeholder="Event description"
@@ -2976,7 +2976,7 @@ Or use numbered lists:
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="Please provide a reason for rejecting this post..."
                   required
                 />

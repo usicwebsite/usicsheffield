@@ -80,7 +80,7 @@ export default function PricingCarousel() {
                 </div>
               )}
 
-              <div className="text-center mb-6 flex-shrink-0">
+              <div className="text-center mb-6 shrink-0">
                 <h3 className="font-heading text-2xl font-bold mb-2 text-white">
                   {tier.name}
                 </h3>
@@ -100,7 +100,7 @@ export default function PricingCarousel() {
               <ul className="space-y-3 mb-6 flex-1">
                 {tier.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-5 h-5 rounded-full ${
+                    <div className={`shrink-0 w-5 h-5 rounded-full ${
                       tier.name === 'Non-Member'
                         ? 'bg-red-500/20 border-2 border-red-500/50'
                         : shouldHighlightOnMobile(tier)

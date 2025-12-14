@@ -969,7 +969,7 @@ export default function EventsPage() {
                 }
               }}
             >
-              <div className="bg-[#102736] relative flex-shrink-0 h-48">
+              <div className="bg-[#102736] relative shrink-0 h-48">
                 {('image' in event ? event.image : (event as AdminEvent).imageUrl) ? (
                   <Image
                     src={'image' in event ? event.image! : (event as AdminEvent).imageUrl!}
