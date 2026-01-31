@@ -106,9 +106,9 @@ export default function Hero() {
         <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">Join The Islamic Circle for a vibrant community, spiritual growth, and unforgettable experiences. Don&apos;t miss out on <span className="text-white font-semibold">Sheffield&apos;s premier Islamic society!</span></p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <CTAButton href="/about">Learn More</CTAButton>
-          <CTAButton href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" external>
+        <div className="w-full flex flex-col sm:flex-row gap-8 justify-center items-center">
+          <CTAButton href="/about" className="w-full sm:w-auto min-w-[200px]">Learn More</CTAButton>
+          <CTAButton href="https://su.sheffield.ac.uk/activities/view/islamic-circle-society" external className="w-full sm:w-auto min-w-[200px]">
             Become a Member
           </CTAButton>
         </div>

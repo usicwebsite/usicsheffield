@@ -6,7 +6,7 @@ export default function ScrollArrow({ onClick }: ScrollArrowProps) {
   return (
     <button 
       onClick={onClick}
-      className="absolute bottom-8 left-2/5 transform -translate-x-1/2 text-white cursor-pointer animate-bounce"
+      className="absolute bottom-8 left-[49.5%] transform -translate-x-1/2 text-white cursor-pointer animate-bounce"
       aria-label="Scroll down"
     >
       <svg 
