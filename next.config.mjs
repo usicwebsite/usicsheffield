@@ -18,6 +18,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'sheffieldmasjids.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
     // Optimize image loading performance
     formats: ['image/webp', 'image/avif'],

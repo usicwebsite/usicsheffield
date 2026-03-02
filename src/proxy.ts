@@ -6,6 +6,24 @@ import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/csrf';
 const imageRateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const IMAGE_RATE_LIMIT = { maxRequests: 100, windowMs: 60000 }; // 100 per minute
 
+// API rate limiting (merged from middleware-api)
+const apiRateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const API_RATE_LIMITS = {
+  'api-auth': { maxRequests: 10, windowMs: 60000 },
+  'api-global': { maxRequests: 30, windowMs: 60000 },
+  'api-public-read': { maxRequests: 50, windowMs: 60000 },
+} as const;
+
+const API_RATE_LIMIT_RULES: { pattern: RegExp; category: keyof typeof API_RATE_LIMITS | null }[] = [
+  { pattern: /^\/api\/auth\//, category: 'api-auth' },
+  { pattern: /^\/api\/admin\//, category: null },
+  { pattern: /^\/api\/events$/, category: 'api-public-read' },
+  { pattern: /^\/api\/posts$/, category: 'api-public-read' },
+  { pattern: /^\/api\/events\/[^/]+$/, category: 'api-public-read' },
+  { pattern: /^\/api\/posts\/[^/]+$/, category: 'api-public-read' },
+  { pattern: /^\/api\//, category: 'api-global' },
+];
+
 function getClientIP(request: NextRequest): string {
   const forwardedFor = request.headers.get('x-forwarded-for');
   const realIP = request.headers.get('x-real-ip');
@@ -36,6 +54,29 @@ function checkImageRateLimit(clientIP: string): boolean {
   }
 
   if (entry.count >= IMAGE_RATE_LIMIT.maxRequests) {
+    return false;
+  }
+
+  entry.count++;
+  return true;
+}
+
+function checkApiRateLimit(clientIP: string, limitType: keyof typeof API_RATE_LIMITS): boolean {
+  const now = Date.now();
+  const key = `${clientIP}:${limitType}`;
+  const limit = API_RATE_LIMITS[limitType];
+
+  const entry = apiRateLimitStore.get(key);
+
+  if (!entry || now > entry.resetTime) {
+    apiRateLimitStore.set(key, {
+      count: 1,
+      resetTime: now + limit.windowMs,
+    });
+    return true;
+  }
+
+  if (entry.count >= limit.maxRequests) {
     return false;
   }
 
@@ -99,9 +140,33 @@ const noCachePaths = [
 ];
 
 // This function can be marked `async` if using `await` inside
-export async function middleware(request: NextRequest) {
-  // Get the pathname of the request (e.g. /, /admin, /admin/dashboard)
+export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  // API rate limiting (skip admin rate limit clearing)
+  if (path.startsWith('/api/') && path !== '/api/admin/security/clear-rate-limit') {
+    let rateLimitCategory: keyof typeof API_RATE_LIMITS | null = null;
+    for (const rule of API_RATE_LIMIT_RULES) {
+      if (rule.pattern.test(path)) {
+        rateLimitCategory = rule.category;
+        break;
+      }
+    }
+    if (rateLimitCategory) {
+      const clientIP = getClientIP(request);
+      if (!checkApiRateLimit(clientIP, rateLimitCategory)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Rate limit exceeded',
+            message: 'Too many requests. Please try again later.',
+          },
+          { status: 429, headers: { 'Retry-After': '60' } }
+        );
+      }
+    }
+    return NextResponse.next();
+  }
 
   // Handle image rate limiting for Next.js image optimization and static images
   if (path.startsWith('/_next/image') || path.startsWith('/images/')) {
@@ -152,16 +217,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes - handled by middleware-api.ts)
-     * - _next/static (static files)
-     * - favicon.ico (favicon file)
-     * - public folder files (except /images/)
-     *
-     * But INCLUDE:
-     * - _next/image (for rate limiting)
-     * - images/ (for rate limiting)
+     * Match all request paths except _next/static, favicon.ico.
+     * Includes: /api/* (rate limiting), pages, _next/image, images/
      */
-    '/((?!api|_next/static|favicon.ico|public(?!/images)).*)',
+    '/((?!_next/static|favicon.ico|public(?!/images)).*)',
   ],
 } 

@@ -246,6 +246,16 @@ export const staticData = {
         link: "https://fasalqa.com",
         isExternal: true,
         linkText: "VISIT SITE"
+      },
+      {
+        id: 6,
+        title: "Sheffield Masjids",
+        description: "Prayer times and information for masjids across Sheffield, including Muslim Welfare House and other local mosques.",
+        imagePath: "https://sheffieldmasjids.com/favicon.ico",
+        category: "NAVIGATION",
+        link: "https://sheffieldmasjids.com",
+        isExternal: true,
+        linkText: "VIEW PRAYER TIMES"
       }
     ],
     universityContacts: [
