@@ -11,7 +11,7 @@ export default function GroupchatModal({ isOpen, onClose }: GroupchatModalProps)
   if (!isOpen) return null;
 
   const handleJoinGroupchat = () => {
-    window.open('https://docs.google.com/forms/d/1UCennY5I_yQcKuDgKNBXOeggHDBl1IyFLkIg_dzl04g/edit', '_blank');
+    window.open('https://forms.gle/kZBaazWyj1Q9aQ339', '_blank');
     onClose();
   };
 
@@ -24,7 +24,7 @@ export default function GroupchatModal({ isOpen, onClose }: GroupchatModalProps)
           </h3>
 
           <p className="text-sm text-gray-600 leading-relaxed">
-          Join our WhatsApp groupchats for 2025/26 students, one for brothers and one for sisters. Feel free to ask any questions regarding your course 📚, accommodation 🏡, Sheffield 🏙, the University, and all things USIC ☪️ !
+            Join our WhatsApp groupchats for 2026/27 students, one for brothers and one for sisters. Feel free to ask any questions regarding your course 📚, accommodation 🏡, Sheffield 🏙, the University, and all things USIC ☪️ !
           </p>
 
           <div className="space-y-3">
