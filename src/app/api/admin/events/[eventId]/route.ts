@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { verifyAdminToken } from '@/lib/firebase-admin-utils';
 import { v2 as cloudinary } from 'cloudinary';
+import { formText } from '@/lib/form-data';
+
+// Fields written by PUT; text fields are null when the form omits them
+type EventUpdate = {
+  title: string;
+  date: string | null;
+  startTime: string | null;
+  location: string | null;
+  description: string | null;
+  formFields: string[];
+  signupOpen: boolean;
+  signupMethod: string;
+  isPublic: boolean;
+  tags: string[];
+  maxSignups: number;
+  updatedAt: Date;
+  endTime?: string;
+  imageUrl?: string | null;
+  signupFormUrl?: string;
+  price?: string;
+  memberPrice?: string;
+  nonMemberPrice?: string;
+  meetUpTime?: string;
+  meetUpLocation?: string;
+};
 
 
 // Configure Cloudinary
@@ -21,8 +46,9 @@ export async function GET(
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     if (!adminDb) {
@@ -33,11 +59,13 @@ export async function GET(
 
     // Get the event
     const eventDoc = await adminDb.collection('events').doc(eventId).get();
+
     if (!eventDoc.exists) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
     const eventData = eventDoc.data();
+
     const event = {
       id: eventDoc.id,
       ...eventData,
@@ -47,6 +75,7 @@ export async function GET(
     return NextResponse.json({ event });
   } catch (error) {
     console.error('Error fetching event:', error);
+
     return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 });
   }
 }
@@ -59,8 +88,9 @@ export async function PUT(
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     if (!adminDb) {
@@ -71,29 +101,30 @@ export async function PUT(
 
     // Parse form data
     const formData = await request.formData();
-    const title = formData.get('title') as string;
-    const date = formData.get('date') as string;
-    const startTime = formData.get('startTime') as string;
-    const endTime = formData.get('endTime') as string;
-    const location = formData.get('location') as string;
-    const price = formData.get('price') as string;
-    const memberPrice = formData.get('memberPrice') as string;
-    const nonMemberPrice = formData.get('nonMemberPrice') as string;
-    const meetUpTime = formData.get('meetUpTime') as string;
-    const meetUpLocation = formData.get('meetUpLocation') as string;
-    const description = formData.get('description') as string;
-    const formFields = JSON.parse(formData.get('formFields') as string);
+    const title = formText(formData, 'title');
+    const date = formText(formData, 'date');
+    const startTime = formText(formData, 'startTime');
+    const endTime = formText(formData, 'endTime');
+    const location = formText(formData, 'location');
+    const price = formText(formData, 'price');
+    const memberPrice = formText(formData, 'memberPrice');
+    const nonMemberPrice = formText(formData, 'nonMemberPrice');
+    const meetUpTime = formText(formData, 'meetUpTime');
+    const meetUpLocation = formText(formData, 'meetUpLocation');
+    const description = formText(formData, 'description');
+    const formFields = JSON.parse(formText(formData, 'formFields') ?? 'null');
     const signupOpen = formData.get('signupOpen') === 'true';
-    const signupMethod = formData.get('signupMethod') as string || 'website'; // Default to website for backwards compatibility
+    const signupMethod = formText(formData, 'signupMethod') || 'website'; // Default to website for backwards compatibility
     const isPublic = formData.get('isPublic') === 'true';
-    const tags = JSON.parse(formData.get('tags') as string || '[]');
-    const maxSignups = formData.get('maxSignups') ? parseInt(formData.get('maxSignups') as string) : 50;
-    const existingImageUrl = formData.get('existingImageUrl') as string;
-    const newImageUrl = formData.get('imageUrl') as string;
-    const signupFormUrl = formData.get('signupFormUrl') as string;
+    const tags = JSON.parse(formText(formData, 'tags') || '[]');
+    const maxSignupsText = formText(formData, 'maxSignups');
+    const maxSignups = maxSignupsText ? parseInt(maxSignupsText) : 50;
+    const existingImageUrl = formText(formData, 'existingImageUrl');
+    const newImageUrl = formText(formData, 'imageUrl');
+    const signupFormUrl = formText(formData, 'signupFormUrl');
 
     // Validate required fields - only title is required
-    if (!title || typeof title !== 'string' || title.trim() === '') {
+    if (!title || title.trim() === '') {
       return NextResponse.json({
         error: 'Missing required field',
         message: 'Event title is required'
@@ -102,6 +133,7 @@ export async function PUT(
 
     // Handle formFields - can be null/undefined for no signup events
     let processedFormFields = [];
+
     if (formFields) {
       processedFormFields = Array.isArray(formFields) ? formFields : [];
     }
@@ -129,28 +161,7 @@ export async function PUT(
     // This API only receives the resulting URL
 
     // Update the event in Firestore
-    const updateData: {
-      title: string;
-      date: string;
-      startTime: string;
-      location: string;
-      description: string;
-      formFields: string[];
-      signupOpen: boolean;
-      signupMethod: string;
-      isPublic: boolean;
-      tags: string[];
-      maxSignups: number;
-      updatedAt: Date;
-      endTime?: string;
-      imageUrl?: string | null;
-      signupFormUrl?: string;
-      price?: string;
-      memberPrice?: string;
-      nonMemberPrice?: string;
-      meetUpTime?: string;
-      meetUpLocation?: string;
-    } = {
+    const updateData: EventUpdate = {
       title,
       date,
       startTime,
@@ -188,6 +199,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error('Error updating event:', error);
+
     return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
   }
 }
@@ -200,8 +212,9 @@ export async function PATCH(
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     if (!adminDb) {
@@ -220,6 +233,7 @@ export async function PATCH(
 
     // Check if event exists
     const eventDoc = await adminDb.collection('events').doc(eventId).get();
+
     if (!eventDoc.exists) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -239,6 +253,7 @@ export async function PATCH(
     });
   } catch (error) {
     console.error('Error updating event:', error);
+
     return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
   }
 }
@@ -251,8 +266,9 @@ export async function DELETE(
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     if (!adminDb) {
@@ -263,6 +279,7 @@ export async function DELETE(
 
     // Check if event exists
     const eventDoc = await adminDb.collection('events').doc(eventId).get();
+
     if (!eventDoc.exists) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -285,6 +302,7 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Error deleting event:', error);
+
     return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
   }
 }

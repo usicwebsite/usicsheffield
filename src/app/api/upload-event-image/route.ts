@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
+import { NextResponse } from 'next/server';
+import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
+import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
+import { formFile } from '@/lib/form-data';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -8,10 +10,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formFile(formData, 'file');
     
     if (!file) {
       return NextResponse.json(
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Cloudinary with optimization (preserves original aspect ratio)
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           folder: 'usic-events',
@@ -54,23 +56,24 @@ export async function POST(request: NextRequest) {
           public_id: `event_${Date.now()}`,
         },
         (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
+          if (result) resolve(result);
+          else reject(error);
         }
       ).end(buffer);
     });
 
     return NextResponse.json({
       success: true,
-      url: (result as { secure_url: string }).secure_url,
-      publicId: (result as { public_id: string }).public_id
+      url: result.secure_url,
+      publicId: result.public_id
     });
 
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
+
     return NextResponse.json(
       { error: 'Failed to upload image' },
       { status: 500 }
     );
   }
-}
+});
