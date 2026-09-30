@@ -9,6 +9,7 @@ interface UseGroupchatModalReturn {
 }
 
 const MODAL_SHOWN_KEY = 'groupchat_modal_shown';
+
 const MODAL_COOLDOWN_DAYS = 7; // Don't show again for 7 days
 
 export function useGroupchatModal(): UseGroupchatModalReturn {
@@ -22,6 +23,7 @@ export function useGroupchatModal(): UseGroupchatModalReturn {
 
     try {
       const storedData = localStorage.getItem(MODAL_SHOWN_KEY);
+
       if (!storedData) return false;
 
       const { timestamp } = JSON.parse(storedData);
@@ -30,6 +32,7 @@ export function useGroupchatModal(): UseGroupchatModalReturn {
       return daysSinceShown < MODAL_COOLDOWN_DAYS;
     } catch (error) {
       console.warn('Error checking groupchat modal history:', error);
+
       return false;
     }
   };
@@ -43,6 +46,7 @@ export function useGroupchatModal(): UseGroupchatModalReturn {
         timestamp: Date.now(),
         version: '1.0'
       };
+
       localStorage.setItem(MODAL_SHOWN_KEY, JSON.stringify(data));
       setHasBeenShown(true);
     } catch (error) {
@@ -59,6 +63,7 @@ export function useGroupchatModal(): UseGroupchatModalReturn {
     // Don't set up timer if modal has been shown recently
     if (checkModalHistory()) {
       setHasBeenShown(true);
+
       return;
     }
 

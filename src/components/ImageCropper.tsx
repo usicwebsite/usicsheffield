@@ -85,8 +85,10 @@ export default function ImageCropper({ file, onCropComplete, onCancel, aspectRat
           (blob) => {
             if (!blob) {
               reject(new Error('Canvas is empty'));
+
               return;
             }
+
             const file = new File([blob], fileName, { type: 'image/jpeg' });
             resolve(file);
           },
@@ -105,11 +107,13 @@ export default function ImageCropper({ file, onCropComplete, onCancel, aspectRat
 
     try {
       setIsProcessing(true);
+
       const croppedFile = await getCroppedImg(
         imgRef.current,
         completedCrop,
         file.name,
       );
+
       onCropComplete(croppedFile);
     } catch (error) {
       console.error('Error cropping image:', error);

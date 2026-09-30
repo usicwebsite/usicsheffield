@@ -14,6 +14,7 @@ export default function AboutSection({ section }: AboutSectionProps) {
         <div className="space-y-4 mb-8">
           {highlights.map((highlight: string, index: number) => {
             const [boldText, ...restText] = highlight.split(' - ');
+
             return (
               <p key={index} className="text-lg md:text-xl text-blue-100">
                 <span className="text-white font-semibold">{boldText}</span> - {restText.join(' - ')}

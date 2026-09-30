@@ -21,8 +21,10 @@ export default function SwiperSlideshow() {
   useEffect(() => {
     const timer = setTimeout(() => {
       const paginationEl = document.querySelector('.swiper-pagination');
+
       if (paginationEl) {
         const bullets = paginationEl.querySelectorAll('span');
+
         if (bullets.length > 0) {
           bullets[0].classList.add('swiper-pagination-bullet-active');
         }
@@ -42,10 +44,12 @@ export default function SwiperSlideshow() {
 
     // Remove active class from all bullets
     const paginationEl = document.querySelector('.swiper-pagination');
+
     if (paginationEl) {
       const bullets = paginationEl.querySelectorAll('span');
       bullets.forEach((bullet, index) => {
         bullet.classList.remove('swiper-pagination-bullet-active');
+
         // Add active class to the correct bullet
         if (index === mappedIndex) {
           bullet.classList.add('swiper-pagination-bullet-active');

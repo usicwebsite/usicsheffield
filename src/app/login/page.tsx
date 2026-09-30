@@ -14,8 +14,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     const auth = getFirebaseAuth();
+
     if (!auth) {
       setIsLoading(false);
+
       return;
     }
 
@@ -31,6 +33,7 @@ export default function LoginPage() {
             await auth.signOut();
             // Redirect to restricted page
             router.push('/restricted');
+
             return;
           }
 
@@ -42,6 +45,7 @@ export default function LoginPage() {
           router.push('/');
         }
       }
+
       setIsLoading(false);
     });
 
@@ -53,8 +57,8 @@ export default function LoginPage() {
     router.push('/');
   };
 
-  const handleLoginError = (error: unknown) => {
-    console.error('[LoginPage] Login error:', error);
+  const handleLoginError = (message: string) => {
+    console.error('[LoginPage] Login error:', message);
   };
 
   if (isLoading) {

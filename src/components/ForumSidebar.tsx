@@ -23,8 +23,10 @@ export default function ForumSidebar({
   // Listen to Firebase auth state changes
   useEffect(() => {
     const auth = getFirebaseAuth();
+
     if (!auth) {
       setIsLoading(false);
+
       return;
     }
 

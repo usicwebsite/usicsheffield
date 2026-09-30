@@ -15,9 +15,11 @@ const AdminTimeoutContext = createContext<AdminTimeoutContextType | undefined>(u
 
 export function useAdminTimeoutContext() {
   const context = useContext(AdminTimeoutContext);
+
   if (context === undefined) {
     throw new Error('useAdminTimeoutContext must be used within an AdminTimeoutProvider');
   }
+
   return context;
 }
 

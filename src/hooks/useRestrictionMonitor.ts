@@ -24,6 +24,7 @@ export function useRestrictionMonitor() {
             sessionStorage.clear();
             // Redirect to restricted page
             window.location.href = '/restricted';
+
             return;
           }
 
@@ -31,6 +32,7 @@ export function useRestrictionMonitor() {
           const interval = setInterval(async () => {
             try {
               const status = await checkUserRestriction();
+
               if (status.restricted) {
                 console.log('User became restricted, redirecting to restricted page');
                 clearInterval(interval);

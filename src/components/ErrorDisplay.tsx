@@ -26,7 +26,7 @@ export function ErrorDisplay({
 }: ErrorDisplayProps) {
   if (!error && !message) return null;
 
-  const errorMessage = typeof error === 'string' ? error : error?.message;
+  const errorMessage = error instanceof Error ? error.message : error;
   const displayMessage = message || errorMessage || 'An unexpected error occurred';
 
   const getIcon = () => {

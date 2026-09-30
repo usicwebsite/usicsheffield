@@ -46,6 +46,7 @@ export function getRandomImages(): string[] {
 
   // Shuffle array and return 4 unique images
   const shuffled = [...allImages].sort(() => 0.5 - Math.random());
+
   return shuffled.slice(0, 4);
 }
 

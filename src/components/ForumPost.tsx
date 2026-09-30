@@ -63,6 +63,7 @@ export default function ForumPost({
     if (!timestamp) return "Unknown date";
     
     const date = 'toDate' in timestamp ? timestamp.toDate() : new Date(timestamp);
+
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",

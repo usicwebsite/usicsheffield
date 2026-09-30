@@ -57,7 +57,7 @@ export default function SponsorsPage() {
                 sponsor.tier === 'bronze' ? 'bg-orange-500/20 text-orange-300' :
                 'bg-gray-500/20 text-gray-300'
               }`}>
-                {sponsors.tiers[sponsor.tier as keyof typeof sponsors.tiers]?.name}
+                {new Map(Object.entries(sponsors.tiers)).get(sponsor.tier)?.name}
               </span>
             </a>
           ))}
