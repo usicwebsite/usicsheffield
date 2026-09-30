@@ -15,8 +15,10 @@ export default function ForumAuth() {
   // Listen to Firebase auth state changes
   useEffect(() => {
     const auth = getFirebaseAuth();
+
     if (!auth) {
       setIsLoading(false);
+
       return;
     }
 
@@ -31,12 +33,13 @@ export default function ForumAuth() {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && event.target instanceof Node && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -45,6 +48,7 @@ export default function ForumAuth() {
   const handleSignOut = async () => {
     try {
       const auth = getFirebaseAuth();
+
       if (auth) {
         await signOut(auth);
       }
@@ -90,7 +94,7 @@ export default function ForumAuth() {
                 className="w-10 h-10 rounded-full"
                 onError={(e) => {
                   // Fallback to UserCircle icon if image fails to load
-                  const target = e.target as HTMLImageElement;
+                  const target = e.currentTarget;
                   target.style.display = 'none';
                   target.nextElementSibling?.classList.remove('hidden');
                 }}

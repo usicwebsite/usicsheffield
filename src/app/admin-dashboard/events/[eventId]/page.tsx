@@ -40,17 +40,39 @@ interface EventSignup {
   paid?: boolean;
 }
 
+type EditEventForm = {
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  price: string;
+  memberPrice: string;
+  nonMemberPrice: string;
+  meetUpTime: string;
+  meetUpLocation: string;
+  description: string;
+  formFields: string[];
+  signupOpen: boolean;
+  signupMethod: 'none' | 'website' | 'external';
+  isPublic: boolean;
+  maxSignups: number;
+  tags: string[];
+  signupFormUrl: string;
+};
+
 export default function EventDetailPage() {
-  const params = useParams();
+  const params = useParams<{ eventId: string }>();
   const router = useRouter();
-  const eventId = params.eventId as string;
+  const eventId = params.eventId;
 
   const [event, setEvent] = useState<Event | null>(null);
   const [signups, setSignups] = useState<EventSignup[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingSignups, setLoadingSignups] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
+
+  const [editForm, setEditForm] = useState<EditEventForm>({
     title: '',
     date: '',
     startTime: '',
@@ -62,12 +84,12 @@ export default function EventDetailPage() {
     meetUpTime: '',
     meetUpLocation: '',
     description: '',
-    formFields: [] as string[],
+    formFields: [],
     signupOpen: true,
-    signupMethod: 'website' as 'none' | 'website' | 'external',
+    signupMethod: 'website',
     isPublic: true,
     maxSignups: 50,
-    tags: [] as string[],
+    tags: [],
     signupFormUrl: ''
   });
 
@@ -76,9 +98,11 @@ export default function EventDetailPage() {
     if (url.trim()) {
       return 'external';
     }
+
     // If URL is cleared and current method was external, switch to website
     return currentMethod === 'external' ? 'website' : currentMethod;
   };
+
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -108,17 +132,21 @@ export default function EventDetailPage() {
 
   const getPreviousEvent = useCallback(() => {
     const currentIndex = getCurrentEventIndex();
+
     if (currentIndex > 0) {
       return allEvents[currentIndex - 1];
     }
+
     return null;
   }, [allEvents, getCurrentEventIndex]);
 
   const getNextEvent = useCallback(() => {
     const currentIndex = getCurrentEventIndex();
+
     if (currentIndex < allEvents.length - 1) {
       return allEvents[currentIndex + 1];
     }
+
     return null;
   }, [allEvents, getCurrentEventIndex]);
 
@@ -140,6 +168,7 @@ export default function EventDetailPage() {
       // Add ordinal suffix
       const getOrdinalSuffix = (day: number) => {
         if (day > 3 && day < 21) return 'th';
+
         switch (day % 10) {
           case 1: return 'st';
           case 2: return 'nd';
@@ -164,6 +193,7 @@ export default function EventDetailPage() {
       const hour = parseInt(hours);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
+
       return `${displayHour}:${minutes} ${ampm}`;
     };
 
@@ -171,6 +201,7 @@ export default function EventDetailPage() {
 
     if (endTime) {
       const formattedEnd = formatTime(endTime);
+
       return `${formattedStart} - ${formattedEnd}`;
     }
 
@@ -181,6 +212,7 @@ export default function EventDetailPage() {
   const loadEvent = useCallback(async () => {
     try {
       const token = await getIdToken();
+
       if (!token) throw new Error('No authentication token');
 
       const response = await fetch('/api/admin/events', {
@@ -198,6 +230,7 @@ export default function EventDetailPage() {
       if (foundEvent) {
         // Handle migration from old noSignupNeeded field to new signupMethod
         let signupMethod: 'none' | 'website' | 'external' = 'website';
+
         if (foundEvent.signupFormUrl && foundEvent.signupFormUrl.trim()) {
           signupMethod = 'external';
         } else if (foundEvent.noSignupNeeded) {
@@ -242,6 +275,7 @@ export default function EventDetailPage() {
     try {
       setLoadingSignups(true);
       const token = await getIdToken();
+
       if (!token) throw new Error('No authentication token');
 
       const response = await fetch(`/api/admin/events/${eventId}/signups`, {
@@ -273,17 +307,20 @@ export default function EventDetailPage() {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle navigation if not typing in an input/textarea
       const activeElement = document.activeElement;
+
       if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
         return;
       }
 
       if (event.key === 'ArrowLeft') {
         const prevEvent = getPreviousEvent();
+
         if (prevEvent) {
           navigateToEvent(prevEvent.id);
         }
       } else if (event.key === 'ArrowRight') {
         const nextEvent = getNextEvent();
+
         if (nextEvent) {
           navigateToEvent(nextEvent.id);
         }
@@ -291,6 +328,7 @@ export default function EventDetailPage() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
+
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [getPreviousEvent, getNextEvent, navigateToEvent]);
 
@@ -307,6 +345,7 @@ export default function EventDetailPage() {
       // Check if we already have a current user
       if (auth.currentUser) {
         setAuthLoading(false);
+
         return await auth.currentUser.getIdToken();
       }
 
@@ -315,6 +354,7 @@ export default function EventDetailPage() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
           unsubscribe(); // Clean up listener
           setAuthLoading(false);
+
           if (user) {
             try {
               const token = await user.getIdToken();
@@ -329,27 +369,26 @@ export default function EventDetailPage() {
       });
     } catch {
       setAuthLoading(false);
+
       return null;
     }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (file) {
       setSelectedImageFile(file);
 
       // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreviewUrl(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleRemoveImage = () => {
     setSelectedImageFile(null);
     setImagePreviewUrl(null);
+
     // Update the event to remove the image
     if (event) {
       setEvent({...event, imageUrl: undefined});
@@ -362,6 +401,7 @@ export default function EventDetailPage() {
     try {
       setUploadingImage(true);
       const token = await getIdToken();
+
       if (!token) throw new Error('No authentication token');
 
       let newImageUrl = event.imageUrl;
@@ -373,6 +413,7 @@ export default function EventDetailPage() {
 
         const uploadResponse = await fetch('/api/upload-event-image', {
           method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
           body: imageFormData,
         });
 
@@ -389,22 +430,28 @@ export default function EventDetailPage() {
       formData.append('title', editForm.title);
       formData.append('date', editForm.date);
       formData.append('startTime', editForm.startTime);
+
       if (editForm.endTime) {
         formData.append('endTime', editForm.endTime);
       }
+
       formData.append('location', editForm.location);
       // Member price uses the old price field for backwards compatibility
       formData.append('price', editForm.price || '');
       // Both member and non-member prices are required
       formData.append('memberPrice', editForm.memberPrice.trim());
       formData.append('nonMemberPrice', editForm.nonMemberPrice.trim());
+
       if (editForm.meetUpTime) {
         formData.append('meetUpTime', editForm.meetUpTime);
       }
+
       if (editForm.meetUpLocation) {
         formData.append('meetUpLocation', editForm.meetUpLocation);
       }
+
       formData.append('description', editForm.description);
+
       // Handle formFields based on signup method
       if (editForm.signupMethod === 'none') {
         formData.append('formFields', JSON.stringify([])); // Empty array for no signup events
@@ -414,11 +461,13 @@ export default function EventDetailPage() {
         // External signup - empty form fields since signup happens externally
         formData.append('formFields', JSON.stringify([]));
       }
+
       formData.append('signupOpen', editForm.signupOpen.toString());
       formData.append('signupMethod', editForm.signupMethod);
       formData.append('isPublic', editForm.isPublic.toString());
       formData.append('tags', JSON.stringify(editForm.tags));
       formData.append('maxSignups', (editForm.maxSignups || 50).toString());
+
       if (editForm.signupFormUrl) {
         formData.append('signupFormUrl', editForm.signupFormUrl);
       }
@@ -473,6 +522,7 @@ export default function EventDetailPage() {
 
     try {
       const token = await getIdToken();
+
       if (!token) throw new Error('No authentication token');
 
       const response = await fetch(`/api/admin/events/${eventId}`, {
@@ -501,6 +551,7 @@ export default function EventDetailPage() {
   const handlePaymentToggle = async (signupId: string, paid: boolean) => {
     try {
       const token = await getIdToken();
+
       if (!token) throw new Error('No authentication token');
 
       const response = await fetch(`/api/admin/events/${eventId}/signups/${signupId}`, {
@@ -603,6 +654,7 @@ export default function EventDetailPage() {
                 <button
                   onClick={() => {
                     const prevEvent = getPreviousEvent();
+
                     if (prevEvent) navigateToEvent(prevEvent.id);
                   }}
                   disabled={!getPreviousEvent()}
@@ -633,6 +685,7 @@ export default function EventDetailPage() {
                 <button
                   onClick={() => {
                     const nextEvent = getNextEvent();
+
                     if (nextEvent) navigateToEvent(nextEvent.id);
                   }}
                   disabled={!getNextEvent()}
@@ -1126,10 +1179,10 @@ export default function EventDetailPage() {
                             name="signupMethod"
                             value="external"
                             checked={editForm.signupMethod === 'external'}
-                            onChange={(e) => {
+                            onChange={() => {
                               setEditForm({
                                 ...editForm,
-                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                signupMethod: 'external',
                                 formFields: [], // Clear form fields for external signup
                                 maxSignups: 50 // Reset max signups
                               });
@@ -1155,10 +1208,10 @@ export default function EventDetailPage() {
                             name="signupMethod"
                             value="website"
                             checked={editForm.signupMethod === 'website'}
-                            onChange={(e) => {
+                            onChange={() => {
                               setEditForm({
                                 ...editForm,
-                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                signupMethod: 'website',
                                 formFields: editForm.formFields.length === 0 ? ['name', 'email'] : editForm.formFields, // Set defaults for website signup
                                 maxSignups: 50 // Reset max signups
                               });
@@ -1180,10 +1233,10 @@ export default function EventDetailPage() {
                             name="signupMethod"
                             value="none"
                             checked={editForm.signupMethod === 'none'}
-                            onChange={(e) => {
+                            onChange={() => {
                               setEditForm({
                                 ...editForm,
-                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                signupMethod: 'none',
                                 formFields: [], // Clear form fields for no signup
                                 maxSignups: 0, // Clear max signups
                                 memberPrice: 'Free', // Set price to Free for no signup events
@@ -1401,6 +1454,7 @@ export default function EventDetailPage() {
                         onClick={async () => {
                           try {
                             const token = await getIdToken();
+
                             if (!token) throw new Error('No authentication token');
 
                             // Optimistically update the UI first

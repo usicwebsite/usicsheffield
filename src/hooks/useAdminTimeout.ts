@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
-import { logoutAdmin } from '@/lib/client-auth';
 
 interface UseAdminTimeoutOptions {
   timeoutMinutes?: number;
@@ -52,14 +51,13 @@ export function useAdminTimeout({
 
       // Clear all timeouts
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+
       if (intervalRef.current) clearInterval(intervalRef.current);
 
       // Sign out from Firebase
       await signOut(auth);
-
-      // Call server logout
-      await logoutAdmin();
 
       // Redirect to admin login
       router.push('/admin-login');
@@ -81,9 +79,11 @@ export function useAdminTimeout({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+
     if (warningTimeoutRef.current) {
       clearTimeout(warningTimeoutRef.current);
     }
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -98,8 +98,10 @@ export function useAdminTimeout({
         setRemainingSeconds(prev => {
           if (prev <= 1) {
             clearInterval(intervalRef.current);
+
             return 0;
           }
+
           return prev - 1;
         });
       }, 1000);
@@ -171,7 +173,9 @@ export function useAdminTimeout({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [handleActivity, resetTimer, logout]);

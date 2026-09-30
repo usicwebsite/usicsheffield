@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { WebsiteUser } from '@/lib/firebase-admin-utils';
 import { ForumPost, ForumComment } from '@/lib/firebase-utils';
 import { getAuth } from 'firebase/auth';
+
 // Local formatDate function
 const formatDate = (date: Date | string | number | { toDate(): Date } | undefined) => {
   if (!date) return 'Never';
@@ -14,7 +15,7 @@ const formatDate = (date: Date | string | number | { toDate(): Date } | undefine
 
     if (date instanceof Date) {
       dateObj = date;
-    } else if (typeof date === 'object' && 'toDate' in date) {
+    } else if (date instanceof Object) {
       dateObj = date.toDate();
     } else {
       dateObj = new Date(date);
@@ -34,6 +35,7 @@ const formatDate = (date: Date | string | number | { toDate(): Date } | undefine
     }).format(dateObj);
   } catch (error) {
     console.error('Error formatting date:', error, date);
+
     return 'Invalid Date';
   }
 };
@@ -44,9 +46,9 @@ interface UserDetailPageProps {
 }
 
 export default function UserDetailPage({}: UserDetailPageProps) {
-  const params = useParams();
+  const params = useParams<{ userId: string }>();
   const router = useRouter();
-  const userId = params.userId as string;
+  const userId = params.userId;
 
   const [user, setUser] = useState<WebsiteUser | null>(null);
   const [userPosts, setUserPosts] = useState<ForumPost[]>([]);
@@ -64,6 +66,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const currentUser = auth.currentUser;
+
       if (!currentUser) {
         throw new Error('Admin not authenticated');
       }
@@ -83,10 +86,12 @@ export default function UserDetailPage({}: UserDetailPageProps) {
         if (userResponse.status === 404) {
           throw new Error('User not found');
         }
+
         throw new Error('Failed to fetch user details');
       }
 
       const userData = await userResponse.json();
+
       if (userData.success) {
         setUser(userData.user);
       } else {
@@ -104,6 +109,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
 
       if (postsResponse.ok) {
         const postsData = await postsResponse.json();
+
         if (postsData.success) {
           setUserPosts(postsData.posts || []);
         }
@@ -120,6 +126,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
 
       if (commentsResponse.ok) {
         const commentsData = await commentsResponse.json();
+
         if (commentsData.success) {
           setUserComments(commentsData.comments || []);
         }
@@ -141,6 +148,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
     try {
       const auth = getAuth();
       const currentUser = auth.currentUser;
+
       if (!currentUser) {
         throw new Error('Admin not authenticated');
       }
@@ -165,6 +173,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
       }
 
       const data = await response.json();
+
       if (data.success) {
         // Refresh user data
         await fetchUserDetails();
@@ -184,6 +193,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const currentUser = auth.currentUser;
+
       if (!currentUser) {
         throw new Error('Admin not authenticated');
       }
@@ -203,6 +213,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
       }
 
       const data = await response.json();
+
       if (data.success) {
         // Remove the post from the local state
         setUserPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
@@ -224,6 +235,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const currentUser = auth.currentUser;
+
       if (!currentUser) {
         throw new Error('Admin not authenticated');
       }
@@ -243,6 +255,7 @@ export default function UserDetailPage({}: UserDetailPageProps) {
       }
 
       const data = await response.json();
+
       if (data.success) {
         // Remove the comment from the local state
         setUserComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
