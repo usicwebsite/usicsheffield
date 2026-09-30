@@ -5,11 +5,13 @@ import Image from 'next/image';
 import { faqData } from '@/lib/faq-data';
 import { timelineData } from '@/lib/membership-data';
 import { useTimelineScroll } from '@/hooks/useTimelineScroll';
+import { cloudinaryLoader } from '@/lib/cloudinary-optimizer';
 import FAQModal from '@/components/FAQModal';
 import TimelineItem from '@/components/TimelineItem';
 
 export default function MembershipTimeline() {
   const [showFAQModal, setShowFAQModal] = useState(false);
+
   const { activeStep, timelineRef, itemRefs } = useTimelineScroll({ 
     itemCount: timelineData.length 
   });
@@ -24,6 +26,7 @@ export default function MembershipTimeline() {
           src="https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-81_qclhrm.jpg"
           alt=""
           fill
+          loader={cloudinaryLoader}
           sizes="100vw"
           className="object-cover"
           priority

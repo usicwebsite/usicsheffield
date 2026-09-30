@@ -20,6 +20,7 @@ export function useContactModal() {
     // For Apple devices, mailto usually works well
     if (isAppleDevice) {
       window.location.href = `mailto:${email}`;
+
       return;
     }
 

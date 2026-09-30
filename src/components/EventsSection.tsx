@@ -1,35 +1,69 @@
 "use client";
 
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { BROTHERS_IMAGES, SISTERS_IMAGES } from '../lib/about-data';
-import { optimizeCloudinaryUrls } from '../lib/cloudinary-optimizer';
+import { cloudinaryLoader } from '../lib/cloudinary-optimizer';
+
+const GALLERY_FALLBACK =
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+
+type GalleryImage = {
+  id: number;
+  title: string;
+  imagePath: string;
+  alt: string;
+};
+
+function GalleryTile({
+  image,
+  src,
+  onFallback,
+}: {
+  image: GalleryImage;
+  src: string;
+  onFallback: (id: number) => void;
+}) {
+  return (
+    <div className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden">
+      <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
+      <Image
+        src={src}
+        alt={image.alt}
+        fill
+        sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
+        loader={cloudinaryLoader}
+        style={{
+          objectFit: 'cover'
+        }}
+        className="transition-transform duration-500 hover:scale-105"
+        loading="lazy"
+        onError={() => {
+          if (src !== GALLERY_FALLBACK) {
+            onFallback(image.id);
+          }
+        }}
+      />
+    </div>
+  );
+}
 
 // Removed predictive preloading hook - Next.js Image component handles all optimization
 
 export default function EventsSection() {
 
-  // Optimize images at runtime using useMemo
-  const optimizedBrothersImages = useMemo(() => {
-    return optimizeCloudinaryUrls(BROTHERS_IMAGES, 'events');
-  }, []);
-
-  const optimizedSistersImages = useMemo(() => {
-    return optimizeCloudinaryUrls(SISTERS_IMAGES, 'events');
-  }, []);
-
   // Function to generate event images alternating between brothers and sisters
   const generateEventImages = () => {
-    const brothersImages = optimizedBrothersImages.map((imagePath, index) => ({
+    const brothersImages = BROTHERS_IMAGES.map((imagePath, index) => ({
       id: index + 1,
       title: "USIC Brothers",
       imagePath,
       alt: "USIC brothers community"
     }));
 
-    const sistersImages = optimizedSistersImages.map((imagePath, index) => ({
-      id: optimizedBrothersImages.length + index + 1,
+    const sistersImages = SISTERS_IMAGES.map((imagePath, index) => ({
+      id: BROTHERS_IMAGES.length + index + 1,
       title: "USIC Sisters",
       imagePath,
       alt: "USIC sisters community"
@@ -43,6 +77,7 @@ export default function EventsSection() {
       if (i < brothersImages.length) {
         alternatingImages.push(brothersImages[i]);
       }
+
       if (i < sistersImages.length) {
         alternatingImages.push(sistersImages[i]);
       }
@@ -52,7 +87,7 @@ export default function EventsSection() {
   };
 
   // Generate alternating event images for top row
-  const alternatingImages = useMemo(() => generateEventImages(), [optimizedBrothersImages, optimizedSistersImages]);
+  const alternatingImages = useMemo(() => generateEventImages(), []);
 
   // Top row: starts with brother, then sister, brother, sister, etc.
   const eventImages = alternatingImages;
@@ -60,6 +95,22 @@ export default function EventsSection() {
   // Bottom row: randomized order to avoid same images appearing on top of each other
   // Use state to avoid hydration mismatch from Math.random()
   const [bottomSliderImages, setBottomSliderImages] = useState(alternatingImages);
+  const [srcOverrides, setSrcOverrides] = useState<Record<number, string>>({});
+
+  const handleGalleryFallback = useCallback((id: number) => {
+    setSrcOverrides((prev) => {
+      if (prev[id] === GALLERY_FALLBACK) {
+        return prev;
+      }
+
+      return { ...prev, [id]: GALLERY_FALLBACK };
+    });
+  }, []);
+
+  const gallerySrc = useCallback(
+    (image: GalleryImage) => srcOverrides[image.id] ?? image.imagePath,
+    [srcOverrides]
+  );
 
   useEffect(() => {
     // Only randomize on client side to avoid SSR hydration mismatch
@@ -111,6 +162,7 @@ export default function EventsSection() {
       const topWidth = topRow.scrollWidth;
       const bottomWidth = bottomRow.scrollWidth;
       const ready = topWidth > 0 && bottomWidth > 0;
+
       return ready;
     };
     
@@ -122,6 +174,7 @@ export default function EventsSection() {
       
       if (isTopPaused) {
         topAnimationFrame = requestAnimationFrame(animateTopRow);
+
         return;
       }
       
@@ -155,6 +208,7 @@ export default function EventsSection() {
         // Reset when reaching the midpoint (after first set of images)
         if (!useTransformForTop) {
           const halfWidth = topRow.scrollWidth / 2;
+
           if (topRow.scrollLeft >= halfWidth) {
             topRow.scrollLeft = 0;
           }
@@ -174,6 +228,7 @@ export default function EventsSection() {
       
       if (isBottomPaused) {
         bottomAnimationFrame = requestAnimationFrame(animateBottomRow);
+
         return;
       }
       
@@ -223,6 +278,7 @@ export default function EventsSection() {
         if (retryCount < 10) {
           retryCount++;
           setTimeout(initializeAnimations, 50);
+
           return;
         } else {
           return;
@@ -242,6 +298,7 @@ export default function EventsSection() {
 
         // Bottom row starts at the beginning of the second set (for leftward scrolling)
         const bottomStartPosition = bottomRow.scrollWidth / 2;
+
         if (useTransformForBottom) {
           // Margin approach: Initialize margin for bottom row
           bottomTransformX = bottomStartPosition;
@@ -304,6 +361,7 @@ export default function EventsSection() {
       if (topAnimationFrame !== null) {
         cancelAnimationFrame(topAnimationFrame);
       }
+
       if (bottomAnimationFrame !== null) {
         cancelAnimationFrame(bottomAnimationFrame);
       }
@@ -313,6 +371,7 @@ export default function EventsSection() {
         topRow.removeEventListener('mouseenter', pauseTopScrolling);
         topRow.removeEventListener('mouseleave', resumeTopScrolling);
       }
+
       if (bottomRow) {
         bottomRow.removeEventListener('mouseenter', pauseBottomScrolling);
         bottomRow.removeEventListener('mouseleave', resumeBottomScrolling);
@@ -355,63 +414,23 @@ export default function EventsSection() {
           }}
         >
           {/* First set of images */}
-          {eventImages.map((image) => {
-            return (
-              <div
-                key={`top-1-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                <Image
-                  src={image.imagePath}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                  style={{
-                    objectFit: 'cover'
-                  }}
-                  className="transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                  // Quality now optimized by Cloudinary URL transformations
-                  onError={(e) => {
-                    // Fallback to logo if image fails to load
-                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
-                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
-                    }
-                  }}
-                />
-              </div>
-            );
-          })}
+          {eventImages.map((image) => (
+            <GalleryTile
+              key={`top-1-${image.id}`}
+              image={image}
+              src={gallerySrc(image)}
+              onFallback={handleGalleryFallback}
+            />
+          ))}
           {/* Second set of images for seamless loop */}
-          {eventImages.map((image) => {
-            return (
-              <div
-                key={`top-2-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                <Image
-                  src={image.imagePath}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                  style={{
-                    objectFit: 'cover'
-                  }}
-                  className="transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                  // Quality now optimized by Cloudinary URL transformations
-                  onError={(e) => {
-                    // Fallback to logo if image fails to load
-                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
-                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
-                    }
-                  }}
-                />
-              </div>
-            );
-          })}
+          {eventImages.map((image) => (
+            <GalleryTile
+              key={`top-2-${image.id}`}
+              image={image}
+              src={gallerySrc(image)}
+              onFallback={handleGalleryFallback}
+            />
+          ))}
         </div>
 
         {/* Bottom row - scrolls left with JavaScript animation */}
@@ -424,63 +443,23 @@ export default function EventsSection() {
           }}
         >
           {/* First set of images */}
-          {bottomSliderImages.map((image) => {
-            return (
-              <div
-                key={`bottom-1-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                <Image
-                  src={image.imagePath}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                  style={{
-                    objectFit: 'cover'
-                  }}
-                  className="transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                  // Quality now optimized by Cloudinary URL transformations
-                  onError={(e) => {
-                    // Fallback to logo if image fails to load
-                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
-                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
-                    }
-                  }}
-                />
-              </div>
-            );
-          })}
+          {bottomSliderImages.map((image) => (
+            <GalleryTile
+              key={`bottom-1-${image.id}`}
+              image={image}
+              src={gallerySrc(image)}
+              onFallback={handleGalleryFallback}
+            />
+          ))}
           {/* Second set of images for seamless loop */}
-          {bottomSliderImages.map((image) => {
-            return (
-              <div
-                key={`bottom-2-${image.id}`}
-                className="inline-block w-[200px] h-[150px] sm:w-[280px] sm:h-[200px] md:w-[350px] md:h-[250px] relative shrink-0 mx-0.5 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-all duration-300 z-10"></div>
-                <Image
-                  src={image.imagePath}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 200px, (max-width: 768px) 280px, 350px"
-                  style={{
-                    objectFit: 'cover'
-                  }}
-                  className="transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                  // Quality now optimized by Cloudinary URL transformations
-                  onError={(e) => {
-                    // Fallback to logo if image fails to load
-                    if (e.currentTarget.src !== 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png') {
-                      e.currentTarget.src = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
-                    }
-                  }}
-                />
-              </div>
-            );
-          })}
+          {bottomSliderImages.map((image) => (
+            <GalleryTile
+              key={`bottom-2-${image.id}`}
+              image={image}
+              src={gallerySrc(image)}
+              onFallback={handleGalleryFallback}
+            />
+          ))}
         </div>
       </div>
       

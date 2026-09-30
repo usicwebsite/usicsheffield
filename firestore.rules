@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // NOTE: the server (Firebase Admin SDK) bypasses these rules entirely.
+    // Every rule here applies to browser clients only, so "request.auth == null"
+    // means an anonymous visitor, never the server.
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && notRestricted() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Restricted via custom claim (set by restrictUser) or the users/{uid} flag
+    function notRestricted() {
+      return request.auth.token.get('restricted', false) != true &&
+        !(exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('restricted', false) == true);
+    }
+
+    function isAuthor() {
+      return signedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    // Only likes (+1 or -1) and updatedAt may change
+    function isLikeChange() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'updatedAt']) &&
+        (request.resource.data.likes == resource.data.likes + 1 ||
+         request.resource.data.likes == resource.data.likes - 1);
+    }
+
+    // Submitted Posts - pending moderation, created only via /api/posts (Admin SDK)
+    match /submitted_posts/{postId} {
+      allow read: if isAdmin() || isAuthor();
+      allow create: if false;
+      allow update, delete: if isAdmin();
+    }
+
+    // Approved Posts - public
+    match /approved_posts/{postId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (signedIn() && notRestricted() && isLikeChange());
+    }
+
+    // Rejected Posts - visible to the author and admins only
+    match /rejected_posts/{postId} {
+      allow read: if isAdmin() || isAuthor();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Comments
+    match /comments/{commentId} {
+      allow read: if true;
+
+      allow create: if signedIn() && notRestricted() &&
+        request.resource.data.keys().hasOnly(
+          ['postId', 'content', 'author', 'authorId', 'likes', 'createdAt', 'updatedAt']) &&
+        request.resource.data.authorId == request.auth.uid &&
+        request.resource.data.likes == 0 &&
+        request.resource.data.postId is string &&
+        request.resource.data.content is string &&
+        request.resource.data.content.size() > 0 &&
+        request.resource.data.content.size() <= 10000 &&
+        request.resource.data.author is string &&
+        request.resource.data.author.size() > 0 &&
+        request.resource.data.author.size() <= 200 &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp;
+
+      allow update: if isAdmin() ||
+        (signedIn() && notRestricted() && isLikeChange()) ||
+        (isAuthor() && notRestricted() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'updatedAt']) &&
+          request.resource.data.content is string &&
+          request.resource.data.content.size() > 0 &&
+          request.resource.data.content.size() <= 10000);
+
+      allow delete: if isAdmin() || isAuthor();
+    }
+
+    // Legacy Posts Collection (deprecated) - admins only
+    match /posts/{postId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Admins - membership is managed only via the Firebase console / Admin SDK
+    match /admins/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // Admin sessions collection
+    match /admin_sessions/{sessionId} {
+      allow read, write: if signedIn() && request.auth.uid == sessionId;
+    }
+
+    // Users - written only by the server (restriction flags, display name sync)
+    match /users/{userId} {
+      allow read: if (signedIn() && request.auth.uid == userId) || isAdmin();
+      allow write: if false;
+    }
+
+    // Admin audit logs - append-only
+    match /admin_audit_logs/{logId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Analytics
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Questions (public submissions)
+    match /questions/{questionId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Events - public read, managed via admin API routes
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Event signups - created only via /api/events/signup (capacity + open checks)
+    match /event_signups/{signupId} {
+      allow create: if false;
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+  }
+}

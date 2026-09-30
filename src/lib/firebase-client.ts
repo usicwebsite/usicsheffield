@@ -11,9 +11,21 @@ import {
   updateDoc, 
   increment,
   serverTimestamp,
-  Firestore
+  Firestore,
+  DocumentSnapshot
 } from 'firebase/firestore';
 import { getFirestoreDb, getFirebaseAuth } from './firebase';
+
+// Thrown by createPost when /api/posts responds 429
+export class RateLimitError extends Error {
+  constructor(
+    message: string,
+    readonly rateLimitInfo: { limit: number; remaining: number; resetTime: string; retryAfter: number }
+  ) {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
 
 // Types for forum data
 export interface ForumPost {
@@ -51,14 +63,25 @@ export interface ForumComment {
 // Helper function to get Firestore instance
 const getDb = (): Firestore => {
   const db = getFirestoreDb();
+
   if (!db) {
     throw new Error('Firestore is not initialized');
   }
+
   return db;
 };
 
 // Helper functions to get collection references
+// SAFETY: post documents are only written by the server (createPost via /api/posts,
+// moveSubmittedPost) with the ForumPost fields; Security Rules block direct client creates.
+const toForumPost = (snapshot: DocumentSnapshot) => ({ id: snapshot.id, ...snapshot.data() }) as ForumPost;
+
+// SAFETY: comments are only created through addComment with the ForumComment fields;
+// Security Rules enforce author (string), authorId, postId, content, likes, and timestamps on create.
+const toForumComment = (snapshot: DocumentSnapshot) => ({ id: snapshot.id, ...snapshot.data() }) as ForumComment;
+
 const getApprovedPostsCollection = () => collection(getDb(), 'approved_posts');
+
 const getCommentsCollection = () => collection(getDb(), 'comments');
 
 // CLIENT-SIDE FUNCTIONS (using Client SDK)
@@ -82,10 +105,7 @@ export const getPosts = async (category?: string, limitCount: number = 20) => {
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
@@ -102,11 +122,13 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
 
     // Get Firebase ID token for authentication
     const auth = getFirebaseAuth();
+
     if (!auth) {
       throw new Error('Firebase auth not initialized');
     }
 
     const user = auth.currentUser;
+
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -133,14 +155,12 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
 
       // Handle rate limiting specifically
       if (response.status === 429) {
-        const error = new Error(errorData.message || 'Rate limit exceeded');
-        (error as { rateLimitInfo?: { limit: number; remaining: number; resetTime: string; retryAfter: number } }).rateLimitInfo = {
+        throw new RateLimitError(errorData.message || 'Rate limit exceeded', {
           limit: errorData.limit,
           remaining: errorData.remaining,
           resetTime: errorData.resetTime,
           retryAfter: errorData.retryAfter
-        };
-        throw error;
+        });
       }
 
       throw new Error(errorData.message || 'Failed to create post');
@@ -148,6 +168,7 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
 
     const data = await response.json();
     console.log('[Firebase Client] Post created successfully:', data.data.postId);
+
     return data.data.postId;
   } catch (error) {
     console.error('[Firebase Client] Error creating post:', error);
@@ -168,10 +189,7 @@ export const getComments = async (postId: string) => {
     const comments: ForumComment[] = [];
     
     querySnapshot.forEach((doc) => {
-      comments.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumComment);
+      comments.push(toForumComment(doc));
     });
     
     return comments;
@@ -192,6 +210,7 @@ export const addComment = async (commentData: Omit<ForumComment, 'id' | 'created
     };
     
     const docRef = await addDoc(getCommentsCollection(), newComment);
+
     return docRef.id;
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -271,11 +290,12 @@ export const searchPosts = async (searchTerm: string) => {
       getApprovedPostsCollection(),
       orderBy('createdAt', 'desc')
     );
+
     const querySnapshot = await getDocs(q);
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      const postData = doc.data() as ForumPost;
+      const postData = toForumPost(doc);
       const searchLower = searchTerm.toLowerCase();
 
       // Search in title and content
@@ -283,10 +303,7 @@ export const searchPosts = async (searchTerm: string) => {
         postData.title.toLowerCase().includes(searchLower) ||
         postData.content.toLowerCase().includes(searchLower)
       ) {
-        posts.push({
-          id: doc.id,
-          ...postData
-        });
+        posts.push(postData);
       }
     });
 
@@ -306,6 +323,7 @@ export const checkUserAdminStatus = async (userId: string): Promise<boolean> => 
     return adminDocSnap.exists();
   } catch (error) {
     console.error('Error checking admin status:', error);
+
     return false;
   }
 };

@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/firebase-admin-utils';
-import { getUserSubmittedPosts, getUserApprovedPosts, getUserRejectedPosts, ForumPost } from '@/lib/firebase-utils';
+import { adminDb } from '@/lib/firebase-admin';
+import { ForumPost, toForumPost } from '@/lib/firebase-admin-utils';
+
+const getUserPosts = async (collection: string, userId: string, limitCount: number) => {
+  const snapshot = await adminDb
+    .collection(collection)
+    .where('authorId', '==', userId)
+    .orderBy('createdAt', 'desc')
+    .limit(limitCount)
+    .get();
+
+  return snapshot.docs.map(toForumPost);
+};
 
 // GET /api/admin/users/[userId]/posts - Get all posts by a user
 export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
@@ -9,18 +21,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Verify admin authentication
     const verification = await verifyAdminToken(request);
+
     if (!verification.success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: verification.status }
       );
     }
 
     // Get all posts by the user from different collections
     const [submittedPosts, approvedPosts, rejectedPosts] = await Promise.all([
-      getUserSubmittedPosts(userId, 100),
-      getUserApprovedPosts(userId, 100),
-      getUserRejectedPosts(userId, 100)
+      getUserPosts('submitted_posts', userId, 100),
+      getUserPosts('approved_posts', userId, 100),
+      getUserPosts('rejected_posts', userId, 100)
     ]);
 
     // Combine all posts and sort by creation date
@@ -29,14 +42,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ...approvedPosts,
       ...rejectedPosts
     ].sort((a, b) => {
-      const getTime = (date: Date | { toDate(): Date } | undefined): number => {
+      const getTime = (date: ForumPost['createdAt'] | undefined): number => {
         if (!date) return 0;
-        if (date instanceof Date) return date.getTime();
-        if (typeof date === 'object' && 'toDate' in date) return date.toDate().getTime();
-        return 0;
+
+        return date instanceof Date ? date.getTime() : date.toDate().getTime();
       };
+
       const aTime = getTime(a.createdAt);
       const bTime = getTime(b.createdAt);
+
       return bTime - aTime;
     });
 
@@ -47,6 +61,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   } catch (error) {
     console.error('[User Posts API] Error getting user posts:', error);
+
     return NextResponse.json(
       {
         success: false,

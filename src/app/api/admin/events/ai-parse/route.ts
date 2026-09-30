@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/firebase-admin-utils';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { z } from 'zod';
 
 interface ParsedEvent {
   title: string | null;
@@ -21,8 +22,9 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     // Check if Gemini API key is configured
@@ -32,15 +34,16 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const body = await request.json();
-    const { eventText } = body;
+    const body = z.object({ eventText: z.string().refine((text) => text.trim().length > 0) }).safeParse(await request.json());
 
     // Validate input
-    if (!eventText || typeof eventText !== 'string' || !eventText.trim()) {
+    if (!body.success) {
       return NextResponse.json({ 
         error: 'Event text is required' 
       }, { status: 400 });
     }
+
+    const { eventText } = body.data;
 
     // Initialize Gemini AI
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest) {
     for (const separator of separators) {
       if (eventText.includes(separator)) {
         eventSections = eventText.split(separator).map(section => section.trim()).filter(section => section.length > 0);
+
         if (eventSections.length > 1) {
           isMultipleEvents = true;
           break;
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
     if (!isMultipleEvents) {
       const lines = eventText.split('\n').filter(line => line.trim().length > 0);
       const numberedLines = lines.filter(line => /^\d+\./.test(line.trim()) || /^•/.test(line.trim()) || /^-/.test(line.trim()));
+
       if (numberedLines.length >= 2 && numberedLines.length === lines.length) {
         eventSections = lines.map(line => line.replace(/^\d+\.\s*/, '').replace(/^•\s*/, '').replace(/^-\s*/, '').trim());
         isMultipleEvents = true;
@@ -118,12 +123,15 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
 
       // Try to parse the AI response as JSON (could be object or array)
       let parsedData;
+
       try {
         // Clean the response text to extract JSON
         const jsonMatch = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+
         if (!jsonMatch) {
           throw new Error('No JSON found in AI response');
         }
+
         parsedData = JSON.parse(jsonMatch[0]);
 
         // Ensure we have an array of events
@@ -139,17 +147,19 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
       } catch (parseError) {
         console.error('Failed to parse AI response as JSON:', parseError);
         console.error('AI response:', text);
+
         return NextResponse.json({
           error: 'Failed to parse event details. Please check the format and try again.'
         }, { status: 422 });
       }
 
       // Check for missing required fields for each event (but don't fail - let user fill them in)
-      const requiredFields = ['title', 'date', 'startTime', 'location', 'description'];
+      const requiredFields: (keyof ParsedEvent)[] = ['title', 'date', 'startTime', 'location', 'description'];
 
       // Process each event and collect missing fields information
       const eventsWithMissingFields = parsedData.map((event: ParsedEvent, index: number) => {
-        const missingFields = requiredFields.filter(field => !event[field as keyof ParsedEvent]);
+        const missingFields = requiredFields.filter(field => !event[field]);
+
         return {
           event,
           index: index + 1,
@@ -184,6 +194,7 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
         // Validate date format and add to missing fields if invalid
         if (event.date && !dateRegex.test(event.date)) {
           const eventMissingFields = eventsWithMissingFields[index].missingFields || [];
+
           if (!eventMissingFields.includes('date')) {
             eventMissingFields.push('date');
             eventsWithMissingFields[index].missingFields = eventMissingFields;
@@ -193,6 +204,7 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
         // Validate time formats and add to missing fields if invalid
         if (event.startTime && !timeRegex.test(event.startTime)) {
           const eventMissingFields = eventsWithMissingFields[index].missingFields || [];
+
           if (!eventMissingFields.includes('startTime')) {
             eventMissingFields.push('startTime');
             eventsWithMissingFields[index].missingFields = eventMissingFields;
@@ -201,6 +213,7 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
 
         if (event.endTime && !timeRegex.test(event.endTime)) {
           const eventMissingFields = eventsWithMissingFields[index].missingFields || [];
+
           if (!eventMissingFields.includes('endTime')) {
             eventMissingFields.push('endTime');
             eventsWithMissingFields[index].missingFields = eventMissingFields;
@@ -224,6 +237,7 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
 
     } catch (aiError) {
       console.error('Gemini AI error:', aiError);
+
       return NextResponse.json({ 
         error: 'AI service temporarily unavailable. Please try again or use manual entry.' 
       }, { status: 503 });
@@ -231,6 +245,7 @@ ${eventSections.map((section, index) => isMultipleEvents ? `\n--- Event ${index 
 
   } catch (error) {
     console.error('Error in AI parse endpoint:', error);
+
     return NextResponse.json({ 
       error: 'Internal server error' 
     }, { status: 500 });

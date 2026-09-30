@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Set by the inline script in app/layout.tsx
+declare global {
+  interface Window {
+    __CSRF_TOKEN__?: string;
+  }
+}
+
 // CSRF token configuration
 const CSRF_CONFIG = {
   TOKEN_LENGTH: 32,
@@ -20,6 +27,7 @@ export interface CSRFToken {
 export function generateCSRFToken(): string {
   // Use Web Crypto API instead of Node.js crypto
   const array = new Uint8Array(CSRF_CONFIG.TOKEN_LENGTH);
+
   if (typeof crypto !== 'undefined') {
     crypto.getRandomValues(array);
   } else {
@@ -28,6 +36,7 @@ export function generateCSRFToken(): string {
       array[i] = Math.floor(Math.random() * 256);
     }
   }
+
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
@@ -55,9 +64,11 @@ export function validateCSRFToken(token: string, storedToken: string): boolean {
   }
   
   let result = 0;
+
   for (let i = 0; i < token.length; i++) {
     result |= token.charCodeAt(i) ^ storedToken.charCodeAt(i);
   }
+
   return result === 0;
 }
 
@@ -67,6 +78,7 @@ export function validateCSRFToken(token: string, storedToken: string): boolean {
 export function extractCSRFToken(request: NextRequest): string | null {
   // Check header first
   const headerToken = request.headers.get(CSRF_CONFIG.HEADER_NAME);
+
   if (headerToken) {
     return headerToken;
   }
@@ -82,6 +94,7 @@ export function extractCSRFToken(request: NextRequest): string | null {
  */
 export function getCSRFTokenFromCookies(request: NextRequest): string | null {
   const cookie = request.cookies.get(CSRF_CONFIG.COOKIE_NAME);
+
   return cookie?.value || null;
 }
 
@@ -166,14 +179,17 @@ export function getCSRFTokenForClient(): string | null {
   // First, try to get from cookie (most reliable, set by middleware)
   const cookies = document.cookie.split(';');
   const csrfCookie = cookies.find(cookie => cookie.trim().startsWith('csrf_token='));
+
   if (csrfCookie) {
     const token = csrfCookie.split('=')[1];
+
     return token;
   }
   
   // Fallback: try to get from global window variable
   if (typeof window !== 'undefined') {
-    const globalToken = (window as { __CSRF_TOKEN__?: string }).__CSRF_TOKEN__;
+    const globalToken = window.__CSRF_TOKEN__;
+
     if (globalToken) {
       return globalToken;
     }

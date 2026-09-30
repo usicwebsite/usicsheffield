@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { verifyAdminToken } from '@/lib/firebase-admin-utils';
+import { z } from 'zod';
 
 // Admin token verification is now handled by the imported utility function
 
@@ -12,8 +13,9 @@ export async function PATCH(
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     if (!adminDb) {
@@ -21,12 +23,13 @@ export async function PATCH(
     }
 
     const { signupId } = await params;
-    const body = await request.json();
-    const { paid } = body;
+    const body = z.object({ paid: z.boolean() }).safeParse(await request.json());
 
-    if (typeof paid !== 'boolean') {
+    if (!body.success) {
       return NextResponse.json({ error: 'Invalid paid status' }, { status: 400 });
     }
+
+    const { paid } = body.data;
 
     // Update the signup payment status
     await adminDb.collection('event_signups').doc(signupId).update({
@@ -40,6 +43,7 @@ export async function PATCH(
     });
   } catch (error) {
     console.error('Error updating signup payment status:', error);
+
     return NextResponse.json({ error: 'Failed to update payment status' }, { status: 500 });
   }
 }

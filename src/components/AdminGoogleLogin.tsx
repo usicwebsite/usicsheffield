@@ -6,8 +6,8 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
 
 interface AdminGoogleLoginProps {
-  onSuccess?: (user: unknown) => void;
-  onError?: (error: unknown) => void;
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
   className?: string;
 }
 
@@ -23,6 +23,7 @@ export default function AdminGoogleLogin({ onSuccess, onError, className = "" }:
 
       // Get Firebase auth instance
       const auth = getFirebaseAuth();
+
       if (!auth) {
         throw new Error('Firebase auth not initialized');
       }
@@ -61,7 +62,7 @@ export default function AdminGoogleLogin({ onSuccess, onError, className = "" }:
 
       // Call success callback
       if (onSuccess) {
-        onSuccess(data.user);
+        onSuccess();
       }
 
       // Redirect to admin dashboard
@@ -89,7 +90,7 @@ export default function AdminGoogleLogin({ onSuccess, onError, className = "" }:
 
       // Call error callback
       if (onError) {
-        onError(error);
+        onError(errorMessage);
       }
     } finally {
       setIsLoading(false);

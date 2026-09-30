@@ -13,8 +13,12 @@ import {
   deleteDoc,
   serverTimestamp,
   Firestore,
-  QueryConstraint
+  QueryConstraint,
+  runTransaction,
+  DocumentSnapshot,
+  FieldValue
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 import { getFirestoreDb } from './firebase';
 
 // Types for forum data
@@ -53,17 +57,31 @@ export interface ForumComment {
 // Helper function to get Firestore instance
 const getDb = (): Firestore => {
   const db = getFirestoreDb();
+
   if (!db) {
     throw new Error('Firestore is not initialized');
   }
+
   return db;
 };
 
+// SAFETY: post documents are only written by the server (createPost via /api/posts,
+// moveSubmittedPost) with the ForumPost fields; Security Rules block direct client creates.
+const toForumPost = (snapshot: DocumentSnapshot) => ({ id: snapshot.id, ...snapshot.data() }) as ForumPost;
+
+// SAFETY: comments are only created through addComment with the ForumComment fields;
+// Security Rules enforce author (string), authorId, postId, content, likes, and timestamps on create.
+const toForumComment = (snapshot: DocumentSnapshot) => ({ id: snapshot.id, ...snapshot.data() }) as ForumComment;
+
 // Helper functions to get collection references
 const getPostsCollection = () => collection(getDb(), 'posts'); // Legacy collection
+
 const getSubmittedPostsCollection = () => collection(getDb(), 'submitted_posts');
+
 const getApprovedPostsCollection = () => collection(getDb(), 'approved_posts');
+
 const getRejectedPostsCollection = () => collection(getDb(), 'rejected_posts');
+
 const getCommentsCollection = () => collection(getDb(), 'comments');
 
 
@@ -83,19 +101,14 @@ export const getAllPosts = async (limitCount: number = 100) => {
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-
-      posts.push({
-        id: doc.id,
-        ...data
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
   } catch (error) {
     console.error('[Firebase Utils] getAllPosts: Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as { code?: string })?.code,
+      code: error instanceof FirebaseError ? error.code : undefined,
       stack: error instanceof Error ? error.stack : undefined
     });
     throw error;
@@ -120,34 +133,20 @@ export const getPendingPosts = async (limitCount: number = 50): Promise<ForumPos
 // Get a single post by ID (searches all collections)
 export const getPost = async (postId: string) => {
   try {
-    // Search in submitted_posts first
-    let postSnapshot = await getDocs(query(getSubmittedPostsCollection(), where('__name__', '==', postId)));
-    if (!postSnapshot.empty) {
-      const postData = postSnapshot.docs[0];
-      return {
-        id: postData.id,
-        ...postData.data()
-      } as ForumPost;
-    }
+    // Approved posts are public. Submitted/rejected posts are readable only by their
+    // author or an admin, so permission-denied there means "not visible to this user".
+    for (const collectionName of ['approved_posts', 'submitted_posts', 'rejected_posts']) {
+      try {
+        const postSnapshot = await getDoc(doc(getDb(), collectionName, postId));
 
-    // Search in approved_posts
-    postSnapshot = await getDocs(query(getApprovedPostsCollection(), where('__name__', '==', postId)));
-    if (!postSnapshot.empty) {
-      const postData = postSnapshot.docs[0];
-      return {
-        id: postData.id,
-        ...postData.data()
-      } as ForumPost;
-    }
-
-    // Search in rejected_posts
-    postSnapshot = await getDocs(query(getRejectedPostsCollection(), where('__name__', '==', postId)));
-    if (!postSnapshot.empty) {
-      const postData = postSnapshot.docs[0];
-      return {
-        id: postData.id,
-        ...postData.data()
-      } as ForumPost;
+        if (postSnapshot.exists()) {
+          return toForumPost(postSnapshot);
+        }
+      } catch (error) {
+        if (!(error instanceof FirebaseError) || error.code !== 'permission-denied') {
+          throw error;
+        }
+      }
     }
 
     return null;
@@ -172,6 +171,7 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
     };
 
     const docRef = await addDoc(getSubmittedPostsCollection(), newPost);
+
     return docRef.id;
   } catch (error) {
     console.error('Error creating post:', error);
@@ -179,35 +179,46 @@ export const createPost = async (postData: Omit<ForumPost, 'id' | 'createdAt' | 
   }
 };
 
-// Approve a post (move from submitted_posts to approved_posts)
-export const approvePost = async (postId: string, adminUid: string) => {
-  try {
+// Moderation fields set when a submitted post is approved or rejected
+type ModerationFields = {
+  isApproved: boolean;
+  approvedBy?: string;
+  approvedAt?: FieldValue;
+  rejectedBy?: string;
+  rejectedAt?: FieldValue;
+  rejectionReason?: string;
+};
 
-    // Get the post from submitted_posts
+// Move a submitted post to approved_posts/rejected_posts atomically, keeping its ID
+// (comments reference postId). The transaction re-reads the source, so a concurrent
+// second move fails with "not found" instead of creating a duplicate.
+const moveSubmittedPost = (postId: string, targetCollection: 'approved_posts' | 'rejected_posts', fields: ModerationFields) =>
+  runTransaction(getDb(), async (tx) => {
     const submittedPostRef = doc(getDb(), 'submitted_posts', postId);
-    const postSnapshot = await getDocs(query(getSubmittedPostsCollection(), where('__name__', '==', postId)));
+    const postSnapshot = await tx.get(submittedPostRef);
 
-    if (postSnapshot.empty) {
+    if (!postSnapshot.exists()) {
       throw new Error('Post not found in submitted_posts');
     }
 
-    const postData = postSnapshot.docs[0].data() as ForumPost;
+    tx.set(doc(getDb(), targetCollection, postId), {
+      ...postSnapshot.data(),
+      ...fields,
+      updatedAt: serverTimestamp(),
+    });
+    tx.delete(submittedPostRef);
 
-    // Create the post in approved_posts collection
-    const approvedPostData = {
-      ...postData,
+    return postId;
+  });
+
+// Approve a post (move from submitted_posts to approved_posts)
+export const approvePost = async (postId: string, adminUid: string) => {
+  try {
+    return await moveSubmittedPost(postId, 'approved_posts', {
       isApproved: true,
       approvedBy: adminUid,
       approvedAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
-
-    const approvedDocRef = await addDoc(getApprovedPostsCollection(), approvedPostData);
-
-    // Delete from submitted_posts
-    await deleteDoc(submittedPostRef);
-
-    return approvedDocRef.id;
+    });
   } catch (error) {
     console.error('Error approving post:', error);
     throw error;
@@ -217,33 +228,12 @@ export const approvePost = async (postId: string, adminUid: string) => {
 // Reject a post (move from submitted_posts to rejected_posts with reason)
 export const rejectPost = async (postId: string, adminUid: string, rejectionReason: string) => {
   try {
-
-    // Get the post from submitted_posts
-    const submittedPostRef = doc(getDb(), 'submitted_posts', postId);
-    const postSnapshot = await getDocs(query(getSubmittedPostsCollection(), where('__name__', '==', postId)));
-
-    if (postSnapshot.empty) {
-      throw new Error('Post not found in submitted_posts');
-    }
-
-    const postData = postSnapshot.docs[0].data() as ForumPost;
-
-    // Create the post in rejected_posts collection
-    const rejectedPostData = {
-      ...postData,
+    return await moveSubmittedPost(postId, 'rejected_posts', {
       isApproved: false,
       rejectedBy: adminUid,
       rejectedAt: serverTimestamp(),
       rejectionReason,
-      updatedAt: serverTimestamp(),
-    };
-
-    const rejectedDocRef = await addDoc(getRejectedPostsCollection(), rejectedPostData);
-
-    // Delete from submitted_posts
-    await deleteDoc(submittedPostRef);
-
-    return rejectedDocRef.id;
+    });
   } catch (error) {
     console.error('Error rejecting post:', error);
     throw error;
@@ -263,10 +253,7 @@ export const getComments = async (postId: string) => {
     const comments: ForumComment[] = [];
 
     querySnapshot.forEach((doc) => {
-      comments.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumComment);
+      comments.push(toForumComment(doc));
     });
 
     return comments;
@@ -285,9 +272,11 @@ export const getCommentCount = async (postId: string): Promise<number> => {
     );
 
     const querySnapshot = await getDocs(q);
+
     return querySnapshot.size;
   } catch (error) {
     console.error('Error getting comment count:', error);
+
     return 0;
   }
 };
@@ -303,6 +292,7 @@ export const addComment = async (commentData: Omit<ForumComment, 'id' | 'created
     };
     
     const docRef = await addDoc(getCommentsCollection(), newComment);
+
     return docRef.id;
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -466,18 +456,14 @@ export const getSubmittedPosts = async (limitCount: number = 50) => {
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      posts.push({
-        id: doc.id,
-        ...data
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
   } catch (error) {
     console.error('[Firebase Utils] getSubmittedPosts: Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as { code?: string })?.code,
+      code: error instanceof FirebaseError ? error.code : undefined,
       stack: error instanceof Error ? error.stack : undefined
     });
     throw error;
@@ -509,10 +495,7 @@ export const getApprovedPosts = async (category?: string, limitCount: number = 2
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
@@ -536,10 +519,7 @@ export const getUserSubmittedPosts = async (userId: string, limitCount: number =
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
@@ -563,10 +543,7 @@ export const getUserApprovedPosts = async (userId: string, limitCount: number = 
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
@@ -590,10 +567,7 @@ export const getUserRejectedPosts = async (userId: string, limitCount: number = 
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
@@ -610,11 +584,12 @@ export const searchApprovedPosts = async (searchTerm: string) => {
       getApprovedPostsCollection(),
       orderBy('createdAt', 'desc')
     );
+
     const querySnapshot = await getDocs(q);
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      const postData = doc.data() as ForumPost;
+      const postData = toForumPost(doc);
       const searchLower = searchTerm.toLowerCase();
 
       // Search in title and content
@@ -622,10 +597,7 @@ export const searchApprovedPosts = async (searchTerm: string) => {
         postData.title.toLowerCase().includes(searchLower) ||
         postData.content.toLowerCase().includes(searchLower)
       ) {
-        posts.push({
-          id: doc.id,
-          ...postData
-        });
+        posts.push(postData);
       }
     });
 
@@ -640,11 +612,13 @@ export const searchApprovedPosts = async (searchTerm: string) => {
 export const getUserComments = async (userId: string, limitCount: number = 20): Promise<ForumComment[]> => {
   try {
     const db = getFirestoreDb();
+
     if (!db) {
       throw new Error('Firestore is not initialized');
     }
 
     const commentsCollection = collection(db, 'comments');
+
     const q = query(
       commentsCollection,
       where('authorId', '==', userId),
@@ -656,10 +630,7 @@ export const getUserComments = async (userId: string, limitCount: number = 20): 
     const comments: ForumComment[] = [];
 
     querySnapshot.forEach((doc) => {
-      comments.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumComment);
+      comments.push(toForumComment(doc));
     });
 
     return comments;

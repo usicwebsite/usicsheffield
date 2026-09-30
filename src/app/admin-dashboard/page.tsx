@@ -11,20 +11,24 @@ import { getSubmittedPosts, approvePost, rejectPost, getApprovedPosts, updatePos
 import { categoryUtils } from '@/lib/static-data';
 import AdminTimeoutStatus from '@/components/AdminTimeoutStatus';
 import UsersManagement from '@/components/admin/UsersManagement';
+import { parseOption } from '@/lib/form-data';
 
 // Helper function to get Firebase ID token
 const getIdToken = async (): Promise<string | null> => {
   const auth = getAuth();
   const user = auth.currentUser;
+
   if (!user) {
     return null;
   }
 
   try {
     const token = await user.getIdToken();
+
     return token;
   } catch (error) {
     console.error('[AdminDashboard] ❌ Error getting ID token:', error);
+
     return null;
   }
 };
@@ -96,6 +100,7 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingPosts, setPendingPosts] = useState<ForumPost[]>([]);
+
   const [stats, setStats] = useState<AdminStats>({
     totalPosts: 0,
     pendingPosts: 0,
@@ -103,14 +108,18 @@ export default function AdminDashboard() {
     rejectedPosts: 0,
     totalUsers: 0
   });
+
   const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'events' | 'users'>(() => {
     // Read the tab parameter from URL to set initial state
     const tabParam = searchParams.get('tab');
+
     if (tabParam === 'posts' || tabParam === 'events' || tabParam === 'users') {
       return tabParam;
     }
+
     return 'overview';
   });
+
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedPostForRejection, setSelectedPostForRejection] = useState<ForumPost | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -131,6 +140,7 @@ export default function AdminDashboard() {
   const [usersSearchTerm, setUsersSearchTerm] = useState('');
   const [usersFilterStatus, setUsersFilterStatus] = useState<'all' | 'restricted' | 'active'>('all');
   const [showEventForm, setShowEventForm] = useState(false);
+
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
     date: '',
@@ -152,6 +162,7 @@ export default function AdminDashboard() {
     tags: [], // Default to empty array
     signupFormUrl: '' // Default to empty string
   });
+
   const [eventFormErrors, setEventFormErrors] = useState<string[]>([]);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -186,8 +197,10 @@ export default function AdminDashboard() {
   const checkAdminStatus = async (uid: string): Promise<boolean> => {
     try {
       const db = getFirestoreDb();
+
       if (!db) {
         console.error('[AdminDashboard] ❌ Firestore not initialized');
+
         return false;
       }
 
@@ -209,16 +222,19 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('[AdminDashboard] ❌ Error checking admin status:', error);
+
       return false;
     }
   };
 
   useEffect(() => {
     const auth = getAuth();
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (!user) {
           router.push('/admin-login');
+
           return;
         }
 
@@ -228,6 +244,7 @@ export default function AdminDashboard() {
         if (!isAdminUser) {
           await signOut(auth);
           router.push('/admin-login');
+
           return;
         }
 
@@ -261,6 +278,7 @@ export default function AdminDashboard() {
   // Update activeTab when URL search params change
   useEffect(() => {
     const tabParam = searchParams.get('tab');
+
     if (tabParam === 'posts' || tabParam === 'events') {
       setActiveTab(tabParam);
     } else if (tabParam === 'overview' || !tabParam) {
@@ -328,6 +346,7 @@ export default function AdminDashboard() {
 
       // Get ID token for authentication
       const token = await getIdToken();
+
       if (!token) {
         throw new Error('Failed to get authentication token');
       }
@@ -373,6 +392,7 @@ export default function AdminDashboard() {
     try {
       // Get Firebase ID token for authentication
       const idToken = await getIdToken();
+
       if (!idToken) {
         throw new Error('Unable to get authentication token');
       }
@@ -451,10 +471,12 @@ export default function AdminDashboard() {
 
   const toggleComments = async (postId: string) => {
     const newExpanded = new Set(expandedPosts);
+
     if (newExpanded.has(postId)) {
       newExpanded.delete(postId);
       } else {
       newExpanded.add(postId);
+
       // Load comments if not already loaded
       if (!postComments[postId]) {
         try {
@@ -468,6 +490,7 @@ export default function AdminDashboard() {
         }
       }
     }
+
     setExpandedPosts(newExpanded);
   };
 
@@ -511,6 +534,7 @@ export default function AdminDashboard() {
       if (!user || !postId) {
         console.error('[AdminDashboard] No authenticated user or invalid post ID');
         setLoadingPosts(prev => ({ ...prev, [postId]: null }));
+
         return;
       }
 
@@ -545,6 +569,7 @@ export default function AdminDashboard() {
       if (!user || !postId) {
         console.error('[AdminDashboard] No authenticated user or invalid post ID');
         setLoadingPosts(prev => ({ ...prev, [postId]: null }));
+
         return;
       }
 
@@ -578,6 +603,7 @@ export default function AdminDashboard() {
     if (url.trim()) {
       return 'external';
     }
+
     // If URL is cleared and current method was external, switch to website
     return currentMethod === 'external' ? 'website' : currentMethod;
   };
@@ -609,8 +635,10 @@ export default function AdminDashboard() {
 
     // Validate form data
     const validationErrors = validateEventForm(eventFormData);
+
     if (validationErrors.length > 0) {
       setEventFormErrors(validationErrors);
+
       return;
     }
 
@@ -632,22 +660,28 @@ export default function AdminDashboard() {
       formData.append('title', eventFormData.title);
       formData.append('date', eventFormData.date);
       formData.append('startTime', eventFormData.startTime);
+
       if (eventFormData.endTime) {
         formData.append('endTime', eventFormData.endTime);
       }
+
       formData.append('location', eventFormData.location);
       // Member price uses the old price field for backwards compatibility
       formData.append('price', eventFormData.price || '');
       // Both member and non-member prices are required
       formData.append('memberPrice', eventFormData.memberPrice.trim());
       formData.append('nonMemberPrice', eventFormData.nonMemberPrice.trim());
+
       if (eventFormData.meetUpTime) {
         formData.append('meetUpTime', eventFormData.meetUpTime);
       }
+
       if (eventFormData.meetUpLocation) {
         formData.append('meetUpLocation', eventFormData.meetUpLocation);
       }
+
       formData.append('description', eventFormData.description);
+
       // Handle formFields based on signup method
       if (eventFormData.signupMethod === 'none') {
         formData.append('formFields', JSON.stringify([])); // Empty array for no signup events
@@ -657,14 +691,17 @@ export default function AdminDashboard() {
         // External signup - empty form fields since signup happens externally
         formData.append('formFields', JSON.stringify([]));
       }
+
       formData.append('signupOpen', eventFormData.signupOpen.toString());
       formData.append('signupMethod', eventFormData.signupMethod);
       formData.append('isPublic', eventFormData.isPublic.toString());
       formData.append('tags', JSON.stringify(eventFormData.tags));
       formData.append('maxSignups', (eventFormData.maxSignups || 50).toString());
+
       if (eventFormData.signupFormUrl) {
         formData.append('signupFormUrl', eventFormData.signupFormUrl);
       }
+
       formData.append('createdBy', user.uid);
       
       if (eventFormData.imageFile) {
@@ -673,6 +710,7 @@ export default function AdminDashboard() {
 
       // Get ID token for authentication
       const token = await getIdToken();
+
       if (!token) {
         throw new Error('Failed to get authentication token');
       }
@@ -688,10 +726,12 @@ export default function AdminDashboard() {
 
       if (!response.ok) {
         const errorData = await response.json();
+
         // Handle the simplified error format - only title is required
         if (errorData.message) {
           throw new Error(errorData.message);
         }
+
         throw new Error(errorData.error || 'Failed to create event');
       }
 
@@ -781,6 +821,7 @@ export default function AdminDashboard() {
   const handleAIEventParsing = async () => {
     if (!aiEventText.trim()) {
       alert('Please enter event details to parse');
+
       return;
     }
 
@@ -788,6 +829,7 @@ export default function AdminDashboard() {
       setIsProcessingAI(true);
       
       const token = await getIdToken();
+
       if (!token) {
         throw new Error('Failed to get authentication token');
       }
@@ -874,12 +916,14 @@ export default function AdminDashboard() {
     try {
       setIsCreatingEvent(true);
       const token = await getIdToken();
+
       if (!token) {
         throw new Error('Failed to get authentication token');
       }
 
       const auth = getAuth();
       const user = auth.currentUser;
+
       if (!user) {
         throw new Error('No authenticated user');
       }
@@ -893,7 +937,8 @@ export default function AdminDashboard() {
 
         // Skip if missing required fields (only title is required)
         const requiredFields = ['title'] as const;
-        const missing = requiredFields.filter(field => !event[field as keyof Event]);
+        const missing = requiredFields.filter(field => !event[field]);
+
         if (missing.length > 0) {
           errors[i] = `Missing required field: ${missing.join(', ')}`;
           setBatchCreationProgress(prev => ({ ...prev, [i]: 'failed' }));
@@ -917,9 +962,11 @@ export default function AdminDashboard() {
           formData.append('title', event.title);
           formData.append('date', event.date);
           formData.append('startTime', event.startTime);
+
           if (event.endTime) {
             formData.append('endTime', event.endTime);
           }
+
           formData.append('location', event.location);
           formData.append('price', event.price || 'Free');
           formData.append('description', event.description);
@@ -968,6 +1015,7 @@ export default function AdminDashboard() {
             createdAt: new Date(),
             createdBy: user.uid
           };
+
           setEvents(prev => [newEvent, ...prev]);
 
         } catch (error) {
@@ -1018,6 +1066,7 @@ export default function AdminDashboard() {
     if (!timestamp) return "Unknown date";
 
     const date = 'toDate' in timestamp ? timestamp.toDate() : new Date(timestamp);
+
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
@@ -1036,6 +1085,7 @@ export default function AdminDashboard() {
       const hour = parseInt(hours);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
+
       return `${displayHour}:${minutes} ${ampm}`;
     };
 
@@ -1043,6 +1093,7 @@ export default function AdminDashboard() {
 
     if (endTime) {
       const formattedEnd = formatTime(endTime);
+
       return `${formattedStart} - ${formattedEnd}`;
     }
 
@@ -1107,6 +1158,7 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated || !isAdmin) {
     router.push('/admin-login');
+
     return null;
   }
 
@@ -1315,7 +1367,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-3">
                     <select
                       value={usersFilterStatus}
-                      onChange={(e) => setUsersFilterStatus(e.target.value as 'all' | 'restricted' | 'active')}
+                      onChange={(e) => setUsersFilterStatus(parseOption(['all', 'restricted', 'active'] as const, e.target.value) ?? 'all')}
                       className="px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       <option value="all">All Users</option>
@@ -1832,6 +1884,7 @@ export default function AdminDashboard() {
                       setAiEventText('');
                       setMissingFields([]);
                       setEventFormErrors([]);
+
                       if (imagePreview) {
                         URL.revokeObjectURL(imagePreview);
                         setImagePreview(null);
@@ -1936,6 +1989,7 @@ export default function AdminDashboard() {
                       value={eventFormData.title}
                       onChange={(e) => {
                         setEventFormData({...eventFormData, title: e.target.value});
+
                         if (missingFields.includes('title') && e.target.value.trim()) {
                           setMissingFields(missingFields.filter(f => f !== 'title'));
                         }
@@ -2255,10 +2309,10 @@ export default function AdminDashboard() {
                             name="signupMethod"
                             value="external"
                             checked={eventFormData.signupMethod === 'external'}
-                            onChange={(e) => {
+                            onChange={() => {
                               setEventFormData({
                                 ...eventFormData,
-                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                signupMethod: 'external',
                                 formFields: [], // Clear form fields for external signup
                                 maxSignups: 50 // Reset max signups
                               });
@@ -2284,10 +2338,10 @@ export default function AdminDashboard() {
                             name="signupMethod"
                             value="website"
                             checked={eventFormData.signupMethod === 'website'}
-                            onChange={(e) => {
+                            onChange={() => {
                               setEventFormData({
                                 ...eventFormData,
-                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                signupMethod: 'website',
                                 formFields: eventFormData.formFields.length === 0 ? ['name', 'email'] : eventFormData.formFields, // Set defaults for website signup
                                 maxSignups: 50 // Reset max signups
                               });
@@ -2309,10 +2363,10 @@ export default function AdminDashboard() {
                             name="signupMethod"
                             value="none"
                             checked={eventFormData.signupMethod === 'none'}
-                            onChange={(e) => {
+                            onChange={() => {
                               setEventFormData({
                                 ...eventFormData,
-                                signupMethod: e.target.value as 'none' | 'website' | 'external',
+                                signupMethod: 'none',
                                 formFields: [], // Clear form fields for no signup
                                 maxSignups: 0, // Clear max signups
                                 memberPrice: 'Free', // Set price to Free for no signup events
@@ -2399,6 +2453,7 @@ export default function AdminDashboard() {
                       accept="image/*"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
+
                         if (file) {
                           setEventFormData({...eventFormData, imageFile: file});
                           // Create preview URL
@@ -2429,8 +2484,9 @@ export default function AdminDashboard() {
                               setImagePreview(null);
                               setEventFormData({...eventFormData, imageFile: undefined});
                               // Clear the file input
-                              const fileInput = document.getElementById('eventImage') as HTMLInputElement;
-                              if (fileInput) fileInput.value = '';
+                              const fileInput = document.getElementById('eventImage');
+
+                              if (fileInput instanceof HTMLInputElement) fileInput.value = '';
                             }}
                             className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
                           >
@@ -2561,6 +2617,7 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => {
                         setShowEventForm(false);
+
                         if (imagePreview) {
                           URL.revokeObjectURL(imagePreview);
                           setImagePreview(null);
@@ -2644,6 +2701,7 @@ Or use numbered lists:
                           setEventFormTab('manual');
                           setAiEventText('');
                           setMissingFields([]);
+
                           if (imagePreview) {
                             URL.revokeObjectURL(imagePreview);
                             setImagePreview(null);
@@ -2710,7 +2768,7 @@ Or use numbered lists:
                 <div className="space-y-4 mb-6">
                   {parsedEvents.map((event, index) => {
                     const requiredFields = ['title'] as const;
-                    const missing = requiredFields.filter(field => !event[field as keyof Event]);
+                    const missing = requiredFields.filter(field => !event[field]);
                     const progress = batchCreationProgress[index] || 'pending';
                     const error = batchCreationErrors[index];
 
@@ -2826,6 +2884,7 @@ Or use numbered lists:
                               onChange={(e) => {
                                 const updatedEvents = [...parsedEvents];
                                 updatedEvents[index].noSignupNeeded = e.target.checked;
+
                                 // Clear form fields if no signup is needed
                                 if (e.target.checked) {
                                   updatedEvents[index].formFields = [];
@@ -2833,6 +2892,7 @@ Or use numbered lists:
                                   // Set default form fields if signup is needed and none are set
                                   updatedEvents[index].formFields = ['name', 'email'];
                                 }
+
                                 setParsedEvents(updatedEvents);
                               }}
                               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -2868,11 +2928,13 @@ Or use numbered lists:
                                     onChange={(e) => {
                                       const updatedEvents = [...parsedEvents];
                                       const currentFields = updatedEvents[index].formFields || [];
+
                                       if (e.target.checked) {
                                         updatedEvents[index].formFields = [...currentFields, field];
                                       } else {
                                         updatedEvents[index].formFields = currentFields.filter(f => f !== field);
                                       }
+
                                       setParsedEvents(updatedEvents);
                                     }}
                                     className="mr-2 h-3 w-3"

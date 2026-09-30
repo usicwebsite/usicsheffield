@@ -1,49 +1,24 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { withAdminAuth } from '@/lib/auth-api';
 
-export async function GET() {
+// Health check: performs a real authorized Firestore read, which proves credentials work.
+export const GET = withAdminAuth(async () => {
   try {
-    
-    if (!adminDb) {
-      console.error('[Test Admin SDK] Admin DB is null');
-      return NextResponse.json({
-        success: false,
-        error: 'Admin DB is null',
-        message: 'Firebase Admin SDK not initialized'
-      }, { status: 500 });
-    }
+    const snapshot = await adminDb.collection('admins').limit(1).get();
 
-    
-    // Test basic collection access
-    try {
-      const testCollection = adminDb.collection('admins');
-      
-      // Try to get a document (this will fail if permissions are wrong, but won't crash)
-      testCollection.doc('test');
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Admin SDK is working correctly',
-        adminDbAvailable: true,
-        collectionAccess: true,
-        documentAccess: true
-      });
-    } catch (collectionError) {
-      console.error('[Test Admin SDK] Collection access error:', collectionError);
-      return NextResponse.json({
-        success: false,
-        error: 'Collection access failed',
-        message: 'Cannot access Firestore collections',
-        details: collectionError instanceof Error ? collectionError.message : String(collectionError)
-      }, { status: 500 });
-    }
+    return NextResponse.json({
+      success: true,
+      message: 'Admin SDK is working correctly',
+      adminCount: snapshot.size
+    });
   } catch (error) {
-    console.error('[Test Admin SDK] General error:', error);
+    console.error('[Test Admin SDK] Firestore read failed:', error);
+
     return NextResponse.json({
       success: false,
-      error: 'General error',
-      message: 'Failed to test admin SDK',
+      error: 'Firestore read failed',
       details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
-}
+});

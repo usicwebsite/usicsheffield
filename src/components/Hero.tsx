@@ -1,24 +1,113 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { staticData } from '@/lib/static-data';
-import { useImageSlideshow } from '@/hooks/useImageSlideshow';
-import { optimizeCloudinaryUrls } from '@/lib/cloudinary-optimizer';
+import {
+  findNonSkippedIndex,
+  useImageSlideshow,
+} from '@/hooks/useImageSlideshow';
+import { cloudinaryLoader } from '@/lib/cloudinary-optimizer';
 import CTAButton from '@/components/ui/CTAButton';
 import ScrollArrow from '@/components/ui/ScrollArrow';
+
+const FALLBACK_IMAGE =
+  'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+
+interface HeroSlideProps {
+  index: number;
+  src: string;
+  isCurrentImage: boolean;
+  markReady: (index: number, src: string) => void;
+  markUnready: (index: number) => void;
+  markSkipped: (index: number) => void;
+  onRequestFallback: (index: number) => void;
+}
+
+function HeroSlide({
+  index,
+  src,
+  isCurrentImage,
+  markReady,
+  markUnready,
+  markSkipped,
+  onRequestFallback,
+}: HeroSlideProps) {
+  // Drop stale readiness when this mounted image unmounts or its src changes
+  useEffect(() => {
+    return () => {
+      markUnready(index);
+    };
+  }, [index, src, markUnready]);
+
+  return (
+    <div
+      className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+        isCurrentImage
+          ? 'opacity-100 blur-0'
+          : 'opacity-0 blur-sm'
+      }`}
+    >
+      <Image
+        src={src}
+        alt={`Slideshow image ${index + 1}`}
+        fill
+        sizes="100vw"
+        loader={cloudinaryLoader}
+        style={{
+          objectFit: 'cover',
+          filter: 'brightness(0.5)'
+        }}
+        priority={index === 0}
+        loading="eager"
+        fetchPriority={index === 0 ? 'high' : 'auto'}
+        onLoad={() => {
+          markReady(index, src);
+        }}
+        onError={() => {
+          if (src === FALLBACK_IMAGE) {
+            markSkipped(index);
+
+            return;
+          }
+
+          onRequestFallback(index);
+        }}
+      />
+    </div>
+  );
+}
 
 /**
  * Hero component for the USIC landing page with optimized image slideshow
  */
 export default function Hero() {
-  const images = useMemo(() => {
-    return optimizeCloudinaryUrls(staticData.homepage.hero.images, 'hero');
-  }, []);
+  const images = staticData.homepage.hero.images;
+  const [imageSources, setImageSources] = useState(images);
 
-  const { currentImageIndex } = useImageSlideshow({
-    images
+  const {
+    currentImageIndex,
+    skippedIndices,
+    markReady,
+    markUnready,
+    markSkipped,
+  } = useImageSlideshow({
+    images: imageSources,
   });
+
+  const previousIndex = findNonSkippedIndex(
+    currentImageIndex,
+    -1,
+    imageSources.length,
+    skippedIndices
+  );
+
+  const nextIndex = findNonSkippedIndex(
+    currentImageIndex,
+    1,
+    imageSources.length,
+    skippedIndices
+  );
 
   // Scroll to next section
   const scrollToNextSection = () => {
@@ -28,8 +117,19 @@ export default function Hero() {
     });
   };
 
-  // Fallback image for failed loads
-  const fallbackImage = 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758530952/usic-logo_rhs375.png';
+  const handleRequestFallback = (index: number) => {
+    markUnready(index);
+    setImageSources((prev) => {
+      if (prev[index] === FALLBACK_IMAGE) {
+        return prev;
+      }
+
+      const next = [...prev];
+      next[index] = FALLBACK_IMAGE;
+
+      return next;
+    });
+  };
 
   return (
     <div className="relative overflow-hidden w-full h-screen">
@@ -39,38 +139,26 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A1219] via-[#18384D] to-[#0F1E2C]" />
 
         {/* Smooth slideshow with blur + fade transitions */}
-        {images.map((image, index) => {
-          const isCurrentImage = index === currentImageIndex;
+        {images.map((originalImage, index) => {
+          if (
+            index !== previousIndex &&
+            index !== currentImageIndex &&
+            index !== nextIndex
+          ) {
+            return null;
+          }
 
           return (
-            <div
-              key={image}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isCurrentImage 
-                  ? 'opacity-100 blur-0' 
-                  : 'opacity-0 blur-sm'
-              }`}
-            >
-              <Image
-                src={image}
-                alt={`Slideshow image ${index + 1}`}
-                fill
-                sizes="100vw"
-                style={{
-                  objectFit: 'cover',
-                  filter: 'brightness(0.5)'
-                }}
-                priority={index < 2} // Only prioritize first 2 images for above-the-fold content
-                loading={index < 2 ? "eager" : "lazy"} // Lazy load images after the first 2
-                // Quality now optimized by Cloudinary URL transformations
-                onError={(e) => {
-                  // Fallback to logo if image fails to load
-                  if (e.currentTarget.src !== fallbackImage) {
-                    e.currentTarget.src = fallbackImage;
-                  }
-                }}
-              />
-            </div>
+            <HeroSlide
+              key={originalImage}
+              index={index}
+              src={imageSources[index]}
+              isCurrentImage={index === currentImageIndex}
+              markReady={markReady}
+              markUnready={markUnready}
+              markSkipped={markSkipped}
+              onRequestFallback={handleRequestFallback}
+            />
           );
         })}
       </div>
@@ -118,4 +206,4 @@ export default function Hero() {
       </div>
     </div>
   );
-} 
+}

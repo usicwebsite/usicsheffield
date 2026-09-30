@@ -3,6 +3,7 @@ import { getAboutSections } from '@/lib/about-data';
 
 export default function AboutPage() {
   const aboutSections = getAboutSections();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0A1219] to-[#18384D] text-white">
       {/* Hero section */}

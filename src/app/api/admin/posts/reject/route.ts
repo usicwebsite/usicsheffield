@@ -46,6 +46,7 @@ async function rejectPostHandler(request: AuthenticatedRequest) {
     });
   } catch (error: unknown) {
     console.error('[Reject Post API] Error rejecting post:', error);
+
     return NextResponse.json(
       {
         success: false,

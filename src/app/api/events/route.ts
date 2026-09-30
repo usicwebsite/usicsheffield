@@ -6,6 +6,7 @@ export async function GET() {
   try {
     if (!adminDb) {
       console.error('Database not initialized');
+
       return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
     }
 
@@ -15,15 +16,19 @@ export async function GET() {
     const events = await Promise.all(eventsSnapshot.docs.map(async doc => {
       const data = doc.data();
       
-      // Get signup count for this event
-      let signupCount = 0;
-      if (data.signupOpen && data.signupMethod === 'website') {
+      // signupCount is maintained by /api/events/signup regardless of signupOpen,
+      // so full (auto-closed) events still report it. Legacy events without it are counted.
+      let signupCount = Number.isInteger(data.signupCount) ? data.signupCount : 0;
+
+      if (!Number.isInteger(data.signupCount) && data.signupMethod === 'website') {
         try {
-          const signupsSnapshot = await adminDb!
+          const countSnapshot = await adminDb!
             .collection('event_signups')
             .where('eventId', '==', doc.id)
+            .count()
             .get();
-          signupCount = signupsSnapshot.size;
+
+          signupCount = countSnapshot.data().count;
         } catch (error) {
           console.error(`Error getting signup count for event ${doc.id}:`, error);
         }
@@ -59,6 +64,7 @@ export async function GET() {
     return NextResponse.json({ events });
   } catch (error) {
     console.error('Error fetching events:', error);
+
     return NextResponse.json({
       error: 'Failed to fetch events',
       details: error instanceof Error ? error.message : 'Unknown error'

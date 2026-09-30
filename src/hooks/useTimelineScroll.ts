@@ -26,6 +26,7 @@ export function useTimelineScroll({ itemCount }: UseTimelineScrollProps) {
     // Use for loop for better performance than forEach
     for (let i = 0; i < itemRefs.current.length; i++) {
       const itemRef = itemRefs.current[i];
+
       if (itemRef) {
         const itemRect = itemRef.getBoundingClientRect();
         
@@ -43,6 +44,7 @@ export function useTimelineScroll({ itemCount }: UseTimelineScrollProps) {
 
     // Calculate progress line height with optimized logic
     let newProgressHeight = 0;
+
     if (timelineRect.top < middleLine) {
       if (timelineRect.bottom < middleLine) {
         newProgressHeight = 100;
@@ -74,6 +76,7 @@ export function useTimelineScroll({ itemCount }: UseTimelineScrollProps) {
 
     return () => {
       window.removeEventListener('scroll', throttledHandleScroll);
+
       if (rafId) {
         cancelAnimationFrame(rafId);
       }

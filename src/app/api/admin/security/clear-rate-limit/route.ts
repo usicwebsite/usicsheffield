@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { clearRateLimit } from '@/lib/rateLimit';
+import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
 
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
   try {
     const { clientIP, endpoint } = await request.json();
     
@@ -21,9 +22,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to clear rate limit:', error);
+
     return NextResponse.json(
       { error: 'Failed to clear rate limit' },
       { status: 500 }
     );
   }
-}
+});

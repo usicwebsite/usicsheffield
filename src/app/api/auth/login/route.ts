@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { cookies } from 'next/headers';
-import { syncUserDisplayNameWithGoogle } from '@/lib/firebase-admin-utils';
+import { syncUserDisplayNameWithGoogle, verifyUserIdToken } from '@/lib/firebase-admin-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,14 +17,22 @@ export async function POST(request: NextRequest) {
     // Check if Firebase Admin is initialized
     if (!adminAuth) {
       console.error('[Login API] ❌ Firebase Admin Auth not initialized');
+
       return NextResponse.json(
         { error: 'Authentication service not available' },
         { status: 503 }
       );
     }
 
-    // Verify the Firebase ID token
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    // Verify the Firebase ID token (revocation + restriction checks shared with API routes)
+    const decodedToken = await verifyUserIdToken(idToken);
+
+    if (!decodedToken.success) {
+      return NextResponse.json(
+        { error: decodedToken.error, message: 'message' in decodedToken ? decodedToken.message : undefined },
+        { status: decodedToken.status }
+      );
+    }
 
     // Get user info from Firebase Auth
     const firebaseUser = await adminAuth.getUser(decodedToken.uid);
@@ -33,6 +40,7 @@ export async function POST(request: NextRequest) {
     // Sync user's display name with Google account name
     try {
       const syncResult = await syncUserDisplayNameWithGoogle(decodedToken.uid, 'system');
+
       if (syncResult.synced) {
         console.log(`[Login API] Synced display name for user ${decodedToken.uid}: "${syncResult.oldName}" -> "${syncResult.newName}"`);
         // Refresh user data after sync
@@ -54,7 +62,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create session data
+    // No server session is created: API routes authenticate with Firebase ID tokens
     const sessionData = {
       uid: decodedToken.uid,
       email: firebaseUser.email,
@@ -63,16 +71,6 @@ export async function POST(request: NextRequest) {
       emailVerified: firebaseUser.emailVerified,
       loginTime: new Date().toISOString(),
     };
-
-    // Set session cookie (you might want to use a more secure session management)
-    const cookieStore = await cookies();
-    cookieStore.set('session', JSON.stringify(sessionData), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
 
 
     return NextResponse.json({

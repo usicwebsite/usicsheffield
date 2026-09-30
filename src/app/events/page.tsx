@@ -43,16 +43,26 @@ type AdminEvent = {
   signupFormUrl?: string;
 };
 
+// Static events carry a category; admin events from the API never do
+const isAdminEvent = (event: StaticEvent | AdminEvent): event is AdminEvent => !('category' in event);
+
 export default function EventsPage() {
   const [adminEvents, setAdminEvents] = useState<AdminEvent[]>([]);
-  const [, setLoadingAdminEvents] = useState(true);
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const todayDotRef = useRef<HTMLDivElement>(null);
+  const [loadingAdminEvents, setLoadingAdminEvents] = useState(true);
+  const todayItemRef = useRef<HTMLDivElement>(null);
   const hasScrolledToTodayRef = useRef(false);
+
+  const todayKey = new Date().toLocaleDateString('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).split('/').reverse().join('-');
 
   // Function to get day of the week
   const getDayOfWeek = (date: Date): string => {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
     return daysOfWeek[date.getDay()];
   };
 
@@ -65,12 +75,15 @@ export default function EventsPage() {
 
       if (match) {
         const [, monthName, dayStr, yearStr] = match;
+
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                            'July', 'August', 'September', 'October', 'November', 'December'];
+
         const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthName.toLowerCase());
 
         if (monthIndex !== -1) {
           const date = new Date(parseInt(yearStr), monthIndex, parseInt(dayStr));
+
           const shortMonthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
                                   'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
 
@@ -82,6 +95,7 @@ export default function EventsPage() {
           // Add ordinal suffix
           const getOrdinalSuffix = (day: number) => {
             if (day > 3 && day < 21) return 'th';
+
             switch (day % 10) {
               case 1: return 'st';
               case 2: return 'nd';
@@ -96,6 +110,7 @@ export default function EventsPage() {
 
       // Try standard date parsing for other formats
       const date = new Date(dateString);
+
       if (!isNaN(date.getTime())) {
         const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
                            'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
@@ -108,6 +123,7 @@ export default function EventsPage() {
         // Add ordinal suffix
         const getOrdinalSuffix = (day: number) => {
           if (day > 3 && day < 21) return 'th';
+
           switch (day % 10) {
             case 1: return 'st';
             case 2: return 'nd';
@@ -135,6 +151,7 @@ export default function EventsPage() {
       const hour = parseInt(hours);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
+
       return `${displayHour}:${minutes} ${ampm}`;
     };
 
@@ -142,6 +159,7 @@ export default function EventsPage() {
 
     if (endTime) {
       const formattedEnd = formatTime(endTime);
+
       return `${formattedStart} - ${formattedEnd}`;
     }
 
@@ -151,6 +169,9 @@ export default function EventsPage() {
   // Function to organize events by date
   const organizeEventsByDate = (events: StaticEvent[], adminEvents: AdminEvent[]) => {
     const dates: { [key: string]: (StaticEvent | AdminEvent)[] } = {};
+
+    // Today occupies its actual chronological position, even without events.
+    dates[todayKey] = [];
 
     // Helper function to parse event date and get a standardized date key
     const getDateKey = (dateString: string): string | null => {
@@ -165,18 +186,22 @@ export default function EventsPage() {
 
       if (match) {
         const [, monthName, dayStr, yearStr] = match;
+
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                            'July', 'August', 'September', 'October', 'November', 'December'];
+
         const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthName.toLowerCase());
 
         if (monthIndex !== -1) {
           const date = new Date(parseInt(yearStr), monthIndex, parseInt(dayStr));
+
           return date.toISOString().split('T')[0]; // Return YYYY-MM-DD format
         }
       }
 
       // Try standard date parsing
       const date = new Date(dateString);
+
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0];
       }
@@ -200,6 +225,7 @@ export default function EventsPage() {
       // Add ordinal suffix
       const getOrdinalSuffix = (day: number) => {
         if (day > 3 && day < 21) return 'th';
+
         switch (day % 10) {
           case 1: return 'st';
           case 2: return 'nd';
@@ -217,15 +243,17 @@ export default function EventsPage() {
 
       if (!dateString.includes('Every')) return dates;
 
-      const dayMap: { [key: string]: number } = {
-        'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4,
-        'Friday': 5, 'Saturday': 6, 'Sunday': 0
-      };
+      const dayMap = new Map([
+        ['Monday', 1], ['Tuesday', 2], ['Wednesday', 3], ['Thursday', 4],
+        ['Friday', 5], ['Saturday', 6], ['Sunday', 0]
+      ]);
 
       const dayMatch = dateString.match(/Every (\w+)/);
+
       if (!dayMatch) return dates;
 
-      const dayOfWeek = dayMap[dayMatch[1]];
+      const dayOfWeek = dayMap.get(dayMatch[1]);
+
       if (dayOfWeek === undefined) return dates;
 
       // Special handling for Roots Academy Classes - use specific dates
@@ -244,6 +272,7 @@ export default function EventsPage() {
 
         return specificRootsDates.filter(dateStr => {
           const eventDate = new Date(dateStr);
+
           return eventDate >= today;
         });
       }
@@ -262,6 +291,7 @@ export default function EventsPage() {
 
         return specificFridayFootballDates.filter(dateStr => {
           const eventDate = new Date(dateStr);
+
           return eventDate >= today;
         });
       }
@@ -315,10 +345,12 @@ export default function EventsPage() {
           if (!dates[dateKey]) {
             dates[dateKey] = [];
           }
+
           // Prevent duplicate events on the same date
           const existingEvent = dates[dateKey].find(e =>
-            ('id' in e ? (e as StaticEvent).id : (e as AdminEvent).id) === event.id
+            e.id === event.id
           );
+
           if (!existingEvent) {
             dates[dateKey].push(event);
           }
@@ -326,10 +358,12 @@ export default function EventsPage() {
       } else {
         // Handle specific dates
         const dateKey = getDateKey(event.date);
+
         if (dateKey) {
           if (!dates[dateKey]) {
             dates[dateKey] = [];
           }
+
           dates[dateKey].push(event);
         }
       }
@@ -338,10 +372,12 @@ export default function EventsPage() {
     // Process admin events
     adminEvents.forEach(event => {
       const dateKey = getDateKey(event.date);
+
       if (dateKey) {
         if (!dates[dateKey]) {
           dates[dateKey] = [];
         }
+
         dates[dateKey].push(event);
       }
     });
@@ -367,6 +403,7 @@ export default function EventsPage() {
       try {
         // Handle formats like "7:00 PM - 8:30 PM" or "18:00"
         const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+
         if (timeMatch) {
           let hours = parseInt(timeMatch[1]);
           const minutes = parseInt(timeMatch[2]);
@@ -384,9 +421,11 @@ export default function EventsPage() {
 
         // Fallback: try to parse as 24-hour format
         const parts = timeStr.split(':');
+
         if (parts.length >= 2) {
           const hours = parseInt(parts[0]);
           const minutes = parseInt(parts[1]);
+
           return hours * 60 + minutes;
         }
 
@@ -403,6 +442,7 @@ export default function EventsPage() {
         events: dates[dateKey].sort((a, b) => {
           const timeA = timeToMinutes(getEventTime(a));
           const timeB = timeToMinutes(getEventTime(b));
+
           return timeA - timeB; // Sort by time (earlier first)
         })
       }));
@@ -454,8 +494,9 @@ export default function EventsPage() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.filter-dropdown-container')) {
+      const target = event.target;
+
+      if (target instanceof Element && !target.closest('.filter-dropdown-container')) {
         setIsFilterDropdownOpen(false);
       }
     };
@@ -474,6 +515,7 @@ export default function EventsPage() {
     const fetchAdminEvents = async () => {
       try {
         const response = await fetch('/api/events');
+
         if (response.ok) {
           const data = await response.json();
           setAdminEvents(data.events || []);
@@ -490,70 +532,15 @@ export default function EventsPage() {
 
   // Scroll timeline to today's date when events are loaded (only on initial page load, not when clicking modals)
   useEffect(() => {
-    if (adminEvents.length > 0 && timelineRef.current && !hasScrolledToTodayRef.current) {
-      const organizedDates = organizeEventsByDate(allEvents, adminEvents);
-      const today = new Date();
-      const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-      // Find today's position in the timeline
-      const todayIndex = organizedDates.findIndex(dateItem => dateItem.dateKey === todayKey);
-
-      if (todayIndex !== -1) {
-        // Today has events - scroll to that timeline item
-        const timelineItem = timelineRef.current.children[todayIndex] as HTMLElement;
-        if (timelineItem) {
-          timelineItem.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'center'
-          });
-        }
-      } else if (todayDotRef.current) {
-        // Today has no events but there's a today dot - scroll to center it horizontally
-        const timelineContainer = timelineRef.current.parentElement;
-        if (timelineContainer) {
-          const containerRect = timelineContainer.getBoundingClientRect();
-          const dotRect = todayDotRef.current.getBoundingClientRect();
-
-          // Calculate scroll position to center the dot horizontally
-          const targetScrollLeft = timelineContainer.scrollLeft +
-            (dotRect.left + dotRect.width / 2) -
-            (containerRect.left + containerRect.width / 2);
-
-          timelineContainer.scrollTo({
-            left: targetScrollLeft,
-            behavior: 'smooth'
-          });
-        }
-      } else if (organizedDates.length > 0) {
-        // Today has no events and no dot - find closest date
-        const todayTime = today.getTime();
-        let closestIndex = 0;
-        let minDiff = Math.abs(todayTime - new Date(organizedDates[0].dateKey).getTime());
-
-        organizedDates.forEach((dateItem, index) => {
-          const diff = Math.abs(todayTime - new Date(dateItem.dateKey).getTime());
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestIndex = index;
-          }
-        });
-
-        // Scroll to closest date
-        const timelineItem = timelineRef.current.children[closestIndex] as HTMLElement;
-        if (timelineItem) {
-          timelineItem.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'center'
-          });
-        }
-      }
-
-      // Mark that we've performed the initial scroll to prevent future auto-scrolls
+    if (!loadingAdminEvents && todayItemRef.current && !hasScrolledToTodayRef.current) {
+      todayItemRef.current.scrollIntoView({
+        behavior: 'instant',
+        block: 'nearest',
+        inline: 'center'
+      });
       hasScrolledToTodayRef.current = true;
     }
-  }, [adminEvents, allEvents]);
+  }, [loadingAdminEvents]);
 
   // Use centralized FAQ data for events
   const eventsFAQData = faqData.events;
@@ -580,7 +567,7 @@ export default function EventsPage() {
   // Filter combined events for cards display - only show public events
   const filteredEvents = combinedEvents.filter(event =>
     // Static events are always considered public
-    'category' in event || (event as AdminEvent).isPublic !== false
+    !isAdminEvent(event) || event.isPublic !== false
   );
 
   // Modal handlers
@@ -631,88 +618,36 @@ export default function EventsPage() {
             className="overflow-x-auto pb-2 sm:pb-4 scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent scrollbar-thumb-rounded-full hover:scrollbar-thumb-transparent"
             style={{
               scrollbarWidth: 'thin',
-              scrollbarColor: 'transparent transparent',
-              // WebKit scrollbar styling for complete transparency
-              WebkitScrollbarWidth: 'thin',
-              WebkitScrollbarColor: 'transparent transparent'
-            } as React.CSSProperties}
+              scrollbarColor: 'transparent transparent'
+            }}
           >
-            <div ref={timelineRef} className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8 relative">
-              {/* Today's yellow indicator dot - only show when no event on today's date */}
-              {(() => {
-                const organizedDates = organizeEventsByDate(allEvents, adminEvents);
-                const today = new Date();
-                const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-                // Find today's position in the timeline
-                const todayIndex = organizedDates.findIndex(dateItem => dateItem.dateKey === todayKey);
-
-                // Only show separate indicator if today has NO events (use closest date instead)
-                if (todayIndex !== -1) {
-                  return null; // Don't show separate indicator - the timeline dot will be yellow
-                }
-
-                // Calculate position for closest date when today has no events
-                let todayPosition = 0;
-                if (organizedDates.length > 0) {
-                  const todayTime = today.getTime();
-                  let closestIndex = 0;
-                  let minDiff = Math.abs(todayTime - new Date(organizedDates[0].dateKey).getTime());
-
-                  organizedDates.forEach((dateItem, index) => {
-                    const diff = Math.abs(todayTime - new Date(dateItem.dateKey).getTime());
-                    if (diff < minDiff) {
-                      minDiff = diff;
-                      closestIndex = index;
-                    }
-                  });
-
-                  const itemSpacing = 32; // space-x-8 = 2rem = 32px on larger screens
-                  const itemWidth = 300; // sm:min-w-[300px]
-                  todayPosition = closestIndex * (itemWidth + itemSpacing) + (itemWidth / 2) + 16;
-                }
-
-                return todayPosition > 0 ? (
-                  <div
-                    ref={todayDotRef}
-                    className="absolute top-4 sm:top-8 z-20"
-                    style={{ left: `${todayPosition}px` }}
-                  >
-                    {/* Today's yellow dot with pulsing animation */}
-                    <div className="relative">
-                      {/* Outer pulsing ring - properly centered */}
-                      <div className="absolute -top-0.5 -left-0.5 w-5 h-5 sm:w-7 sm:h-7 sm:-top-0.5 sm:-left-0.5 bg-yellow-400 rounded-full animate-ping opacity-30"></div>
-                      {/* Main yellow dot */}
-                      <div className="relative w-4 h-4 sm:w-6 sm:h-6 bg-yellow-400 rounded-full border-2 sm:border-4 border-[#0A1219] shadow-lg shadow-yellow-400/50">
-                        {/* Inner white dot for better visibility */}
-                        <div className="absolute inset-1 bg-white rounded-full"></div>
-                      </div>
-                    </div>
-                    {/* "Today" label */}
-                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-                      <span className="text-xs font-semibold text-yellow-300 bg-[#0A1219]/80 px-2 py-1 rounded whitespace-nowrap">
-                        Today
-                      </span>
-                    </div>
-                  </div>
-                ) : null;
-              })()}
-
+            <div className="flex space-x-4 sm:space-x-8 min-w-max px-4 sm:px-8 relative">
               {organizeEventsByDate(allEvents, adminEvents).map((dateItem) => {
-                const today = new Date();
-                const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
                 const isToday = dateItem.dateKey === todayKey;
 
                 return (
-                  <div key={dateItem.dateKey} className="relative flex flex-col items-center min-w-[240px] sm:min-w-[300px]">
+                  <div
+                    key={dateItem.dateKey}
+                    ref={isToday ? todayItemRef : null}
+                    data-date={dateItem.dateKey}
+                    className={`relative flex flex-col items-center ${
+                      dateItem.events.length > 0 ? 'min-w-[240px] sm:min-w-[300px]' : 'min-w-16 min-h-24'
+                    }`}
+                  >
                     {/* Timeline dot - yellow for today */}
                     <div className={`absolute top-4 sm:top-8 w-4 h-4 sm:w-6 sm:h-6 rounded-full border-2 sm:border-4 border-[#0A1219] z-10 ${
                       isToday
                         ? 'bg-yellow-400 shadow-lg shadow-yellow-400/50'
                         : 'bg-blue-400'
                     }`}></div>
+                    {isToday && (
+                      <span className="absolute top-9 sm:top-14 text-xs font-semibold text-yellow-300 bg-[#0A1219]/80 px-2 py-1 rounded">
+                        Today
+                      </span>
+                    )}
 
                     {/* Timeline content - yellow border for today */}
+                    {dateItem.events.length > 0 && (
                     <div className={`mt-12 sm:mt-20 bg-[#0F1E2C]/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-6 border w-full max-w-[240px] sm:max-w-[320px] transition-all duration-300 ${
                       isToday
                         ? 'border-yellow-400 shadow-lg shadow-yellow-400/20'
@@ -740,7 +675,7 @@ export default function EventsPage() {
                               openModal(event);
                             } else {
                               // Admin event - handle based on signup method
-                              const adminEvent = event as AdminEvent;
+                              const adminEvent = event;
 
                               if (adminEvent.signupMethod === 'none') {
                                 // Walk-in event
@@ -755,6 +690,7 @@ export default function EventsPage() {
                               } else if (adminEvent.signupMethod === 'website' && adminEvent.signupOpen) {
                                 // Website signup - redirect to event page
                                 const isSoldOut = adminEvent.maxSignups && adminEvent.signupCount && adminEvent.signupCount >= adminEvent.maxSignups;
+
                                 if (isSoldOut) {
                                   openModal(event);
                                 } else {
@@ -780,17 +716,11 @@ export default function EventsPage() {
                       ))}
                     </div>
                   </div>
+                  )}
                 </div>
                 );
               })}
             </div>
-
-            {/* Empty state */}
-            {organizeEventsByDate(allEvents, adminEvents).length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-blue-200">No upcoming events scheduled</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -970,9 +900,9 @@ export default function EventsPage() {
               }}
             >
               <div className="bg-[#102736] relative shrink-0 h-48">
-                {('image' in event ? event.image : (event as AdminEvent).imageUrl) ? (
+                {(isAdminEvent(event) ? event.imageUrl : event.image) ? (
                   <Image
-                    src={'image' in event ? event.image! : (event as AdminEvent).imageUrl!}
+                    src={isAdminEvent(event) ? event.imageUrl! : event.image!}
                     alt={event.title}
                     width={600}
                     height={600}
@@ -1058,20 +988,21 @@ export default function EventsPage() {
                   >
                     SIGN UP NOW
                   </button>
-                ) : (event as AdminEvent).signupMethod === 'external' ? (
+                ) : isAdminEvent(event) && event.signupMethod === 'external' ? (
                   // Admin event with external signup
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click when clicking button
-                      if ((event as AdminEvent).signupFormUrl) {
-                        window.open((event as AdminEvent).signupFormUrl, '_blank');
+
+                      if (event.signupFormUrl) {
+                        window.open(event.signupFormUrl, '_blank');
                       }
                     }}
                     className="block w-full px-4 py-2 bg-white text-[#18384D] hover:bg-gray-100 transition duration-300 font-semibold rounded-full text-center uppercase text-xs tracking-wider shadow"
                   >
                     SIGN UP NOW
                   </button>
-                ) : (event as AdminEvent).signupMethod === 'none' ? (
+                ) : isAdminEvent(event) && event.signupMethod === 'none' ? (
                   // Admin event with no signup needed
                   <button
                     onClick={(e) => {
@@ -1082,15 +1013,17 @@ export default function EventsPage() {
                   >
                     LEARN MORE
                   </button>
-                ) : (event as AdminEvent).signupMethod === 'website' && (event as AdminEvent).signupOpen ? (
+                ) : isAdminEvent(event) && event.signupMethod === 'website' && event.signupOpen ? (
                   // Admin event with website signup open
                   (() => {
-                    const adminEvent = event as AdminEvent;
+                    const adminEvent = event;
                     const isSoldOut = adminEvent.maxSignups && adminEvent.signupCount && adminEvent.signupCount >= adminEvent.maxSignups;
+
                     return (
                       <button
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent card click when clicking button
+
                           if (isSoldOut) {
                             openModal(event);
                           } else {
@@ -1160,10 +1093,10 @@ export default function EventsPage() {
             {/* Modal Content */}
             <div className="p-6">
               {/* Event Image */}
-              {('image' in selectedEvent ? selectedEvent.image : (selectedEvent as AdminEvent).imageUrl) && (
+              {(isAdminEvent(selectedEvent) ? selectedEvent.imageUrl : selectedEvent.image) && (
                 <div className="mb-6 rounded-lg overflow-hidden">
                   <Image
-                    src={'image' in selectedEvent ? selectedEvent.image! : (selectedEvent as AdminEvent).imageUrl!}
+                    src={isAdminEvent(selectedEvent) ? selectedEvent.imageUrl! : selectedEvent.image!}
                     alt={selectedEvent.title}
                     width={800}
                     height={400}
@@ -1261,7 +1194,8 @@ export default function EventsPage() {
                         <h4 className="text-white font-semibold mb-1">Registration Status</h4>
                         <p className="text-blue-200">
                           {(() => {
-                            const adminEvent = selectedEvent as AdminEvent;
+                            const adminEvent = selectedEvent;
+
                             if ('signupMethod' in adminEvent) {
                               if (adminEvent.signupMethod === 'none') {
                                 return 'Walk-in Event - No Registration Required';
@@ -1388,4 +1322,4 @@ export default function EventsPage() {
       )}
     </div>
   );
-} 
+}

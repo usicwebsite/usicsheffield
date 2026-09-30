@@ -8,10 +8,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Verify admin authentication
     const verification = await verifyAdminToken(request);
+
     if (!verification.success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: verification.status }
       );
     }
 
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   } catch (error) {
     console.error('[User Detail API] Error getting user details:', error);
+
     return NextResponse.json(
       {
         success: false,

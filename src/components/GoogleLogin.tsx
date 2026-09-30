@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
+import { FirebaseError } from 'firebase/app';
 
 interface GoogleLoginProps {
-  onSuccess?: (user: unknown) => void;
-  onError?: (error: unknown) => void;
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
   className?: string;
 }
 
@@ -22,6 +23,7 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
 
       // Get Firebase auth instance
       const auth = getFirebaseAuth();
+
       if (!auth) {
         console.error('Firebase auth not initialized');
         throw new Error('Firebase auth not initialized');
@@ -34,6 +36,7 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
 
       // Check if popup will be blocked
       const testPopup = window.open('', '_blank', 'width=1,height=1');
+
       if (!testPopup || testPopup.closed) {
         throw new Error('Popup was blocked. Please allow popups for this site.');
       } else {
@@ -66,7 +69,7 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
 
       // Call success callback
       if (onSuccess) {
-        onSuccess(data.user);
+        onSuccess();
       }
 
       // Don't redirect here - let the parent component handle it
@@ -79,7 +82,7 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
         console.error('Error details:', {
           message: error.message,
           name: error.name,
-          code: 'code' in error ? (error as { code?: string }).code : undefined
+          code: error instanceof FirebaseError ? error.code : undefined
         });
       }
       
@@ -104,7 +107,7 @@ export default function GoogleLogin({ onSuccess, onError, className = "" }: Goog
 
       // Call error callback
       if (onError) {
-        onError(error);
+        onError(errorMessage);
       }
     } finally {
       setIsLoading(false);

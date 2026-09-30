@@ -10,9 +10,9 @@ import { useErrorHandler } from "@/components/ErrorBoundary";
 import { categoryUtils } from "@/lib/static-data";
 
 export default function PostDetailPage() {
-  const params = useParams();
+  const params = useParams<{ postId: string }>();
   const router = useRouter();
-  const postId = params.postId as string;
+  const postId = params.postId;
 
   const [post, setPost] = useState<ForumPost | null>(null);
   const [comments, setComments] = useState<ForumComment[]>([]);
@@ -35,8 +35,10 @@ export default function PostDetailPage() {
         clearError();
 
         const fetchedPost = await getPost(postId);
+
         if (!fetchedPost) {
           handleError(new Error("Post not found"));
+
           return;
         }
 
@@ -71,6 +73,7 @@ export default function PostDetailPage() {
   // Listen for authentication state changes
   useEffect(() => {
     const auth = getAuth();
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
     });
@@ -82,6 +85,7 @@ export default function PostDetailPage() {
     if (!timestamp) return "Unknown date";
 
     const date = 'toDate' in timestamp ? timestamp.toDate() : new Date(timestamp);
+
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
@@ -94,6 +98,7 @@ export default function PostDetailPage() {
   const handlePostLike = async () => {
     if (!currentUser) {
       alert('You must be logged in to like posts');
+
       return;
     }
 
@@ -117,6 +122,7 @@ export default function PostDetailPage() {
   const handleCommentLike = async (commentId: string) => {
     if (!currentUser) {
       alert('You must be logged in to like comments');
+
       return;
     }
 
@@ -152,6 +158,7 @@ export default function PostDetailPage() {
 
     if (!currentUser) {
       alert('You must be logged in to comment');
+
       return;
     }
 

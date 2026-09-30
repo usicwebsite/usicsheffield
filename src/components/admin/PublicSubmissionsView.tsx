@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Mail, Clock, User, Eye, X } from 'lucide-react';
+import { parseOption } from '@/lib/form-data';
 
 interface QuestionData {
   id: string;
@@ -62,6 +63,7 @@ export default function PublicSubmissionsView({ darkMode }: PublicSubmissionsVie
 
       if (response.ok) {
         const data = await response.json();
+
         const formattedQuestions = data.data.questions.map((q: QuestionData) => ({
           id: q.id,
           type: 'question' as const,
@@ -75,6 +77,7 @@ export default function PublicSubmissionsView({ darkMode }: PublicSubmissionsVie
           genre: q.genre,
           isPublic: q.isPublic
         }));
+
         setSubmissions(formattedQuestions);
       }
     } catch (error) {
@@ -88,6 +91,7 @@ export default function PublicSubmissionsView({ darkMode }: PublicSubmissionsVie
     if (!timestamp) return "Unknown date";
     
     const date = 'toDate' in timestamp ? timestamp.toDate() : new Date(timestamp);
+
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
@@ -184,7 +188,7 @@ export default function PublicSubmissionsView({ darkMode }: PublicSubmissionsVie
       <div className="flex space-x-4 mb-6">
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'reviewed' | 'resolved')}
+          onChange={(e) => setFilterStatus(parseOption(['all', 'pending', 'reviewed', 'resolved'] as const, e.target.value) ?? 'all')}
           className={`px-3 py-2 rounded-lg border ${
             darkMode
               ? 'bg-gray-700 border-gray-600 text-white'

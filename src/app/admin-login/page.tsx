@@ -20,6 +20,7 @@ export default function AdminLogin() {
   // Check if user is already authenticated on mount
   useEffect(() => {
     const auth = getAuth();
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -30,19 +31,23 @@ export default function AdminLogin() {
             console.log('Restricted admin attempted to sign in, redirecting to restricted page');
             await auth.signOut();
             router.push('/restricted');
+
             return;
           }
 
           // Check if user is admin
           const isAdmin = await checkAdminStatus(user.uid);
+
           if (isAdmin) {
             router.push('/admin-dashboard');
+
             return;
           }
         } catch (error) {
           console.error('Error checking admin status:', error);
         }
       }
+
       setIsInitialized(true);
     });
 
@@ -52,8 +57,10 @@ export default function AdminLogin() {
   const checkAdminStatus = async (uid: string): Promise<boolean> => {
     try {
       const db = getFirestoreDb();
+
       if (!db) {
         console.error('[AdminLogin] ❌ Firestore not initialized');
+
         return false;
       }
 
@@ -67,6 +74,7 @@ export default function AdminLogin() {
         try {
           const adminsCollection = collection(db, 'admins');
           const adminsSnapshot = await getDocs(adminsCollection);
+
           if (adminsSnapshot.size === 0) {
             console.error('[AdminLogin] ❌ No admin documents found in collection');
           }
@@ -83,6 +91,7 @@ export default function AdminLogin() {
         stack: error instanceof Error ? error.stack : undefined,
         name: error instanceof Error ? error.name : undefined
       });
+
       return false;
     }
   };
@@ -109,6 +118,7 @@ export default function AdminLogin() {
       }
     } catch (error) {
       console.error('[AdminLogin] Login error:', error);
+
       if (error instanceof Error) {
         if (error.message.includes('auth/wrong-password') || error.message.includes('auth/user-not-found')) {
           setError('Invalid email or password');

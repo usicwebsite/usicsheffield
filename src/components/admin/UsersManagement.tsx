@@ -32,12 +32,13 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
   // Handle clicking outside dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownOpen && !(event.target as Element).closest('.dropdown-menu')) {
+      if (dropdownOpen && event.target instanceof Element && !event.target.closest('.dropdown-menu')) {
         setDropdownOpen(null);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [dropdownOpen]);
 
@@ -48,6 +49,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
     };
 
     window.addEventListener('refreshUsers', handleRefreshUsers);
+
     return () => window.removeEventListener('refreshUsers', handleRefreshUsers);
   }, []);
 
@@ -62,6 +64,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const user = auth.currentUser;
+
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -81,6 +84,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       }
 
       const data = await response.json();
+
       if (data.success) {
         setUsers(data.data);
       } else {
@@ -100,6 +104,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const user = auth.currentUser;
+
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -124,6 +129,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       }
 
       const data = await response.json();
+
       if (data.success) {
         // Refresh users list
         await fetchUsers();
@@ -148,6 +154,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const user = auth.currentUser;
+
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -171,6 +178,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       }
 
       const data = await response.json();
+
       if (data.success) {
         // Refresh users list
         await fetchUsers();
@@ -201,6 +209,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       // Get Firebase ID token for authentication
       const auth = getAuth();
       const user = auth.currentUser;
+
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -223,6 +232,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       }
 
       const data = await response.json();
+
       if (data.success) {
         // Refresh users list
         await fetchUsers();
@@ -277,6 +287,7 @@ export default function UsersManagement({ searchTerm = '', filterStatus = 'all' 
       }).format(dateObj);
     } catch (error) {
       console.error('Error formatting date:', error, date);
+
       return 'Invalid Date';
     }
   };

@@ -18,6 +18,7 @@ export default function PricingCarousel() {
   const shouldHighlightOnMobile = (tier: typeof pricing.tiers[0]) => {
     // Don't highlight Lifetime card on mobile screens
     if (tier.name === 'Lifetime') return false;
+
     return tier.highlighted;
   };
 

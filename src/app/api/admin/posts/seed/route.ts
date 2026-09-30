@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-api';
-import { createPost } from '@/lib/firebase-utils';
+import { createPost } from '@/lib/firebase-admin-utils';
 
 export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
   try {
@@ -39,6 +39,7 @@ export const POST = withAdminAuth(async (request: AuthenticatedRequest) => {
     });
   } catch (error: unknown) {
     console.error('[Seed Posts API] Error creating post:', error);
+
     return NextResponse.json(
       { 
         success: false,

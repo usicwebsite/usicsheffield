@@ -46,6 +46,7 @@ export default function ForumPage() {
   const fetchCommentCounts = async (postsToFetch: ForumPostType[]) => {
     try {
       const counts: Record<string, number> = {};
+
       const commentPromises = postsToFetch.map(async (post) => {
         if (post.id) {
           const count = await getCommentCount(post.id);
@@ -78,12 +79,14 @@ export default function ForumPage() {
       if (searchQuery.length < 2) {
         setValidationErrors(['Search query must be at least 2 characters long']);
         setFilteredPosts([]);
+
         return;
       }
       
       if (searchQuery.length > 100) {
         setValidationErrors(['Search query is too long']);
         setFilteredPosts([]);
+
         return;
       }
       
@@ -91,14 +94,17 @@ export default function ForumPage() {
       if (/[<>'";&|]/.test(searchQuery)) {
         setValidationErrors(['Search query contains invalid characters']);
         setFilteredPosts([]);
+
         return;
       }
       
       setValidationErrors([]);
+
       const filtered = posts.filter(post => 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.content.toLowerCase().includes(searchQuery.toLowerCase())
       );
+
       setFilteredPosts(filtered);
     }
   }, [posts, searchQuery]);
@@ -113,6 +119,7 @@ export default function ForumPage() {
 
   const handlePostCreated = async () => {
     setShowNewPostForm(false);
+
     // Refresh posts by refetching
     try {
       setLoading(true);
@@ -211,6 +218,7 @@ export default function ForumPage() {
                   error={error} 
                   onRetry={() => {
                     clearError();
+
                     const fetchPosts = async () => {
                       try {
                         setLoading(true);
@@ -222,6 +230,7 @@ export default function ForumPage() {
                         setLoading(false);
                       }
                     };
+
                     fetchPosts();
                   }}
                   onDismiss={clearError}

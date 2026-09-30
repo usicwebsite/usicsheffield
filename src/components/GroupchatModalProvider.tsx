@@ -14,9 +14,11 @@ const GroupchatModalContext = createContext<GroupchatModalContextType | undefine
 
 export function useGroupchatModalContext() {
   const context = useContext(GroupchatModalContext);
+
   if (context === undefined) {
     throw new Error('useGroupchatModalContext must be used within a GroupchatModalProvider');
   }
+
   return context;
 }
 

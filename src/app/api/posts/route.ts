@@ -6,14 +6,18 @@ import { categoryUtils } from '@/lib/static-data';
 export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
   try {
     const body = await request.json();
-    const { title, content, category, author, authorId } = body;
+    const { title, content, category } = body;
+
+    // Author identity comes from the verified token, never the request body
+    const authorId = request.user.uid;
+    const author = (request.user.displayName || request.user.email || 'Anonymous User').slice(0, 100);
 
     // Validate required fields
-    if (!title || !content || !category || !author || !authorId) {
+    if (!title || !content || !category) {
       return NextResponse.json({
         success: false,
         error: 'Missing required fields',
-        message: 'Title, content, category, author, and authorId are required'
+        message: 'Title, content, and category are required'
       }, { status: 400 });
     }
 
@@ -34,24 +38,9 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
       }, { status: 400 });
     }
 
-    if (author.length < 1 || author.length > 100) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid author length',
-        message: 'Author name must be between 1 and 100 characters'
-      }, { status: 400 });
-    }
-
-    if (!authorId || authorId.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid author ID',
-        message: 'Author ID is required'
-      }, { status: 400 });
-    }
-
     // Validate category
     const validCategories = categoryUtils.getCategoryIds();
+
     if (!validCategories.includes(category)) {
       return NextResponse.json({
         success: false,
@@ -64,8 +53,8 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
     const postId = await createPost({
       title: title.trim(),
       content: content.trim(),
-      author: author.trim(),
-      authorId: authorId.trim(),
+      author,
+      authorId,
       category
     });
 
@@ -81,6 +70,7 @@ export const POST = withAuth(async (request: UserAuthenticatedRequest) => {
     console.error('[Posts API] Error creating post:', error);
 
     const errorMessage = error instanceof Error ? error.message : 'Failed to create post';
+
     return NextResponse.json({
       success: false,
       error: 'Internal server error',

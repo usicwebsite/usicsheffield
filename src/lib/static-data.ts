@@ -1,8 +1,6 @@
 // Static data for Server-Side Rendering and Static Generation
 // This improves performance and SEO by pre-rendering content
 
-import { optimizeCloudinaryUrls } from './cloudinary-optimizer';
-
 const heroImages = [
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524412/USIC_Annual_Dinner_2025-55_rk9wpd.jpg',
   'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524316/brother1_clajgi.jpg',
@@ -42,7 +40,7 @@ export const staticData = {
       description: "Your university experience doesn't have to mean compromising your faith. Join our community of Muslim students.",
       ctaText: "Join USIC Today",
       ctaLink: "/membership",
-      images: optimizeCloudinaryUrls(heroImages, 'hero')
+      images: heroImages
     },
     slideshow: {
       title: "USIC",
@@ -503,6 +501,7 @@ export const categoryUtils = {
   // Convert category ID to display name
   getCategoryName: (categoryId: string): string => {
     const category = categoryUtils.categories.find(cat => cat.id === categoryId);
+
     return category ? category.name : categoryId;
   },
 

@@ -1,5 +1,6 @@
 import { adminDb, adminAuth } from './firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, type DocumentSnapshot } from 'firebase-admin/firestore';
+import type { UserRecord } from 'firebase-admin/auth';
 
 // Types for forum data (server-side)
 export interface ForumPost {
@@ -25,6 +26,10 @@ export interface ForumPost {
 
 // SERVER-SIDE FUNCTIONS (using Admin SDK)
 
+// SAFETY: post documents are only written by createPost and moveSubmittedPost (server)
+// with the ForumPost fields; Security Rules block direct client creates.
+export const toForumPost = (snapshot: DocumentSnapshot) => ({ id: snapshot.id, ...snapshot.data() }) as ForumPost;
+
 // Verify Firebase ID token
 export const verifyFirebaseToken = async (token: string) => {
   if (!adminAuth) {
@@ -32,50 +37,87 @@ export const verifyFirebaseToken = async (token: string) => {
   }
 
   try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
+    // checkRevoked: tokens issued before revokeRefreshTokens() (e.g. on restriction) are rejected
+    const decodedToken = await adminAuth.verifyIdToken(token, true);
+
     return {
-      success: true,
+      success: true as const,
       uid: decodedToken.uid,
       email: decodedToken.email,
       emailVerified: decodedToken.email_verified,
       name: decodedToken.name,
       picture: decodedToken.picture,
-      customClaims: decodedToken.customClaims || {}
+      // Custom claims (restricted, etc.) are top-level properties of the decoded token
+      restricted: decodedToken.restricted === true
     };
   } catch (error) {
     console.error('Token verification failed:', error);
+
     return {
-      success: false,
+      success: false as const,
+      status: 401,
       error: error instanceof Error ? error.message : 'Token verification failed'
     };
   }
 };
 
-// Verify admin token from request headers
-export const verifyAdminToken = async (request: Request) => {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { success: false, error: 'No authorization header' };
-    }
+const RESTRICTED_MESSAGE = 'Your account has been restricted by an administrator. Please contact support if you believe this is an error.';
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    const verification = await verifyFirebaseToken(token);
+// Verify the ID token and reject restricted accounts (custom claim OR users/{uid} flag).
+// Shared by user routes, admin routes and login. Fails closed if the restriction lookup errors.
+export const verifyUserIdToken = async (token: string) => {
+  const verification = await verifyFirebaseToken(token);
 
-    if (!verification.success) {
-      return verification;
-    }
-
-    // Check if user has admin privileges (you can implement custom claims or check against an admin users collection)
-    // For now, we'll allow any authenticated user - you can add admin role checking here
+  if (!verification.success) {
     return verification;
+  }
 
+  if (verification.restricted) {
+    return { success: false as const, status: 403, error: 'Account restricted', message: RESTRICTED_MESSAGE };
+  }
+
+  try {
+    const userDoc = await adminDb.collection('users').doc(verification.uid).get();
+
+    if (userDoc.exists && userDoc.data()?.restricted === true) {
+      return { success: false as const, status: 403, error: 'Account restricted', message: RESTRICTED_MESSAGE };
+    }
   } catch (error) {
-    console.error('Admin token verification failed:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Token verification failed'
-    };
+    console.error('Could not check Firestore for restriction status:', error);
+
+    return { success: false as const, status: 503, error: 'Could not verify account status' };
+  }
+
+  return verification;
+};
+
+// Verify the bearer token, that the account is not restricted, AND that the caller has an
+// admins/{uid} record. Admin SDK calls bypass Security Rules, so this is the only gate for admin routes.
+export const verifyAdminToken = async (request: Request) => {
+  const authHeader = request.headers.get('authorization');
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { success: false as const, status: 401, error: 'No authorization header' };
+  }
+
+  const verification = await verifyUserIdToken(authHeader.substring(7));
+
+  if (!verification.success) {
+    return verification;
+  }
+
+  try {
+    const adminDoc = await adminDb.collection('admins').doc(verification.uid).get();
+
+    if (!adminDoc.exists) {
+      return { success: false as const, status: 403, error: 'Access denied - Admin privileges required' };
+    }
+
+    return { ...verification, email: verification.email || adminDoc.data()?.email || '' };
+  } catch (error) {
+    console.error('Admin check failed:', error);
+
+    return { success: false as const, status: 500, error: 'Admin check failed' };
   }
 };
 
@@ -123,10 +165,7 @@ export const getSubmittedPosts = async (limitCount: number = 50) => {
     const posts: ForumPost[] = [];
 
     querySnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data()
-      } as ForumPost);
+      posts.push(toForumPost(doc));
     });
 
     return posts;
@@ -136,39 +175,46 @@ export const getSubmittedPosts = async (limitCount: number = 50) => {
   }
 };
 
-// Approve a post (move from submitted_posts to approved_posts) - server-side
-export const approvePost = async (postId: string, adminUid: string) => {
-  if (!adminDb) {
-    throw new Error('Firebase Admin Database is not initialized');
-  }
+// Move a submitted post to approved_posts/rejected_posts atomically, keeping its ID
+// (comments reference postId). tx.create fails if the target already exists, so
+// concurrent or retried moderation cannot leave duplicates.
+// Moderation fields set when a submitted post is approved or rejected
+type ModerationFields = {
+  isApproved: boolean;
+  approvedBy?: string;
+  approvedAt?: FieldValue;
+  rejectedBy?: string;
+  rejectedAt?: FieldValue;
+  rejectionReason?: string;
+};
 
-  try {
-
-    // Get the post from submitted_posts
+const moveSubmittedPost = (postId: string, targetCollection: 'approved_posts' | 'rejected_posts', fields: ModerationFields) =>
+  adminDb.runTransaction(async (tx) => {
     const submittedPostRef = adminDb.collection('submitted_posts').doc(postId);
-    const postSnapshot = await submittedPostRef.get();
+    const postSnapshot = await tx.get(submittedPostRef);
 
     if (!postSnapshot.exists) {
       throw new Error('Post not found in submitted_posts');
     }
 
-    const postData = postSnapshot.data() as ForumPost;
+    tx.create(adminDb.collection(targetCollection).doc(postId), {
+      ...postSnapshot.data(),
+      ...fields,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    tx.delete(submittedPostRef);
 
-    // Create the post in approved_posts collection
-    const approvedPostData = {
-      ...postData,
+    return postId;
+  });
+
+// Approve a post (move from submitted_posts to approved_posts) - server-side
+export const approvePost = async (postId: string, adminUid: string) => {
+  try {
+    return await moveSubmittedPost(postId, 'approved_posts', {
       isApproved: true,
       approvedBy: adminUid,
       approvedAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-
-    const approvedDocRef = await adminDb.collection('approved_posts').add(approvedPostData);
-
-    // Delete from submitted_posts
-    await submittedPostRef.delete();
-
-    return approvedDocRef.id;
+    });
   } catch (error) {
     console.error('[Firebase Admin Utils] Error approving post:', error);
     throw error;
@@ -177,38 +223,13 @@ export const approvePost = async (postId: string, adminUid: string) => {
 
 // Reject a post (move from submitted_posts to rejected_posts with reason) - server-side
 export const rejectPost = async (postId: string, adminUid: string, rejectionReason: string) => {
-  if (!adminDb) {
-    throw new Error('Firebase Admin Database is not initialized');
-  }
-
   try {
-
-    // Get the post from submitted_posts
-    const submittedPostRef = adminDb.collection('submitted_posts').doc(postId);
-    const postSnapshot = await submittedPostRef.get();
-
-    if (!postSnapshot.exists) {
-      throw new Error('Post not found in submitted_posts');
-    }
-
-    const postData = postSnapshot.data() as ForumPost;
-
-    // Create the post in rejected_posts collection
-    const rejectedPostData = {
-      ...postData,
+    return await moveSubmittedPost(postId, 'rejected_posts', {
       isApproved: false,
       rejectedBy: adminUid,
       rejectedAt: FieldValue.serverTimestamp(),
       rejectionReason,
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-
-    const rejectedDocRef = await adminDb.collection('rejected_posts').add(rejectedPostData);
-
-    // Delete from submitted_posts
-    await submittedPostRef.delete();
-
-    return rejectedDocRef.id;
+    });
   } catch (error) {
     console.error('[Firebase Admin Utils] Error rejecting post:', error);
     throw error;
@@ -234,35 +255,24 @@ export const getAllPosts = async (limitCount: number = 100) => {
 
     // Add submitted posts
     submittedSnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data(),
-        status: 'submitted'
-      } as ForumPost & { status: 'submitted' });
+      posts.push({ ...toForumPost(doc), status: 'submitted' });
     });
 
     // Add approved posts
     approvedSnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data(),
-        status: 'approved'
-      } as ForumPost & { status: 'approved' });
+      posts.push({ ...toForumPost(doc), status: 'approved' });
     });
 
     // Add rejected posts
     rejectedSnapshot.forEach((doc) => {
-      posts.push({
-        id: doc.id,
-        ...doc.data(),
-        status: 'rejected'
-      } as ForumPost & { status: 'rejected' });
+      posts.push({ ...toForumPost(doc), status: 'rejected' });
     });
 
     // Sort by creation date
     posts.sort((a, b) => {
-      const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : (a.createdAt as FirebaseFirestore.Timestamp).toDate().getTime();
-      const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : (b.createdAt as FirebaseFirestore.Timestamp).toDate().getTime();
+      const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : a.createdAt.toDate().getTime();
+      const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : b.createdAt.toDate().getTime();
+
       return bTime - aTime;
     });
 
@@ -290,6 +300,7 @@ export const deletePost = async (postId: string, adminUid: string) => {
 
     let postExists = false;
     let postCollection = '';
+
     if (submittedSnapshot.exists) {
       postExists = true;
       postCollection = 'submitted_posts';
@@ -342,7 +353,7 @@ export interface WebsiteUser {
   restrictedAt?: Date;
   createdAt: Date;
   lastSignInTime?: Date;
-  customClaims?: Record<string, unknown>;
+  customClaims?: UserRecord['customClaims'];
 }
 
 // Get all users from Firebase Auth (admin function)
@@ -362,6 +373,7 @@ export const getAllUsers = async (limitCount: number = 1000): Promise<WebsiteUse
 
       // Get additional user data from Firestore users collection
       const userIds = listUsersResult.users.map(user => user.uid);
+
       const userDocs = await Promise.all(
         userIds.map(uid => adminDb?.collection('users').doc(uid).get())
       );
@@ -415,13 +427,18 @@ export const restrictUser = async (userId: string, adminUid: string, reason?: st
   }
 
   try {
-    // Update user's custom claims to mark as restricted
+    // Update user's custom claims to mark as restricted, preserving other claims
+    const userRecord = await adminAuth.getUser(userId);
     await adminAuth.setCustomUserClaims(userId, {
+      ...userRecord.customClaims,
       restricted: true,
       restrictedAt: new Date().toISOString(),
       restrictedBy: adminUid,
       restrictionReason: reason
     });
+
+    // Invalidate existing sessions now; verifyIdToken(token, true) rejects older tokens
+    await adminAuth.revokeRefreshTokens(userId);
 
     // Update user document in Firestore
     const userRef = adminDb.collection('users').doc(userId);
@@ -539,6 +556,7 @@ export const getUserDetails = async (userId: string): Promise<WebsiteUser | null
     if (error instanceof Error && 'code' in error && error.code === 'auth/user-not-found') {
       return null; // User doesn't exist
     }
+
     console.error('[Firebase Admin Utils] Error getting user details:', error);
     throw error;
   }
@@ -560,6 +578,7 @@ export const deletePostByAdmin = async (postId: string, adminUid: string): Promi
 
     let postExists = false;
     let postCollection = '';
+
     if (submittedSnapshot.exists) {
       postExists = true;
       postCollection = 'submitted_posts';
@@ -652,9 +671,11 @@ export const syncUserDisplayNameWithGoogle = async (userId: string, performedBy?
 
     // Get user data from Firestore to check if there's any custom name stored
     let firestoreUserData = null;
+
     if (adminDb) {
       try {
         const userDoc = await adminDb.collection('users').doc(userId).get();
+
         if (userDoc.exists) {
           firestoreUserData = userDoc.data();
         }
@@ -670,6 +691,7 @@ export const syncUserDisplayNameWithGoogle = async (userId: string, performedBy?
     // If there's no display name from Google, we can't sync
     if (!googleDisplayName) {
       console.log(`[Sync Display Name] No Google display name found for user ${userId}`);
+
       return { synced: false };
     }
 
@@ -739,6 +761,7 @@ export const batchSyncDisplayNamesWithGoogle = async (adminUid: string): Promise
         // Only sync users that have a display name (indicating they have a Google account)
         if (user.displayName) {
           const result = await syncUserDisplayNameWithGoogle(user.uid, adminUid);
+
           if (result.synced) {
             syncedCount++;
           }

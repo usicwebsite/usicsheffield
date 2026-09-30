@@ -100,6 +100,7 @@ function getClientIP(request: NextRequest): string {
  */
 function cleanupExpiredRequests(key: string, windowMs: number): void {
   const entry = rateLimitStore.get(key);
+
   if (!entry) return;
   
   const now = Date.now();
@@ -127,7 +128,7 @@ function performGlobalCleanup(): void {
     if (now - entry.lastCleanup > CLEANUP_INTERVAL_MS) {
       // Extract window size from key (format: "ip:endpoint")
       const endpoint = key.split(':')[1];
-      const config = RATE_LIMIT_CONFIGS[endpoint as keyof typeof RATE_LIMIT_CONFIGS];
+      const config = Object.entries(RATE_LIMIT_CONFIGS).find(([name]) => name === endpoint)?.[1];
       
       if (config) {
         cleanupExpiredRequests(key, config.windowMs);
@@ -144,6 +145,7 @@ function performGlobalCleanup(): void {
 
 // Set up periodic cleanup
 let cleanupInterval: NodeJS.Timeout | null = null;
+
 if (typeof window === 'undefined') { // Only run on server
   cleanupInterval = setInterval(performGlobalCleanup, CLEANUP_INTERVAL_MS);
 }
@@ -157,6 +159,7 @@ export async function checkPostRateLimit(
 ): Promise<RateLimitResult> {
   // Check if user is admin (only if userId is provided)
   let isAdmin = false;
+
   if (userId) {
     try {
       // Import here to avoid circular dependencies
@@ -184,6 +187,7 @@ export async function checkPostRateLimit(
 
   // Get or create entry
   let entry = rateLimitStore.get(key);
+
   if (!entry) {
     entry = {
       requests: [],
@@ -197,6 +201,7 @@ export async function checkPostRateLimit(
 
   // Calculate reset time (when the oldest request expires)
   const oldestRequest = entry.requests[0];
+
   const resetTime = oldestRequest
     ? new Date(oldestRequest + config.windowMs)
     : new Date(now + config.windowMs);
@@ -243,6 +248,7 @@ export function checkRateLimit(
   
   // Get or create entry
   let entry = rateLimitStore.get(key);
+
   if (!entry) {
     entry = {
       requests: [],
@@ -256,6 +262,7 @@ export function checkRateLimit(
   
   // Calculate reset time (when the oldest request expires)
   const oldestRequest = entry.requests[0];
+
   const resetTime = oldestRequest 
     ? new Date(oldestRequest + config.windowMs)
     : new Date(now + config.windowMs);
@@ -306,6 +313,7 @@ export function getRateLimitStatus(
   
   // Calculate reset time
   const oldestRequest = entry?.requests[0];
+
   const resetTime = oldestRequest 
     ? new Date(oldestRequest + config.windowMs)
     : new Date(now + config.windowMs);
@@ -335,11 +343,7 @@ export function clearRateLimit(clientIP: string, endpoint: 'questions' | 'posts'
 /**
  * Get rate limit statistics (for monitoring)
  */
-export function getRateLimitStats(): {
-  totalEntries: number;
-  totalRequests: number;
-  endpoints: Record<string, number>;
-} {
+export function getRateLimitStats() {
   let totalRequests = 0;
   const endpoints: Record<string, number> = {};
   

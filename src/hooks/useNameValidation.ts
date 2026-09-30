@@ -20,8 +20,10 @@ export function useNameValidation(): NameValidationResult {
 
   useEffect(() => {
     const auth = getFirebaseAuth();
+
     if (!auth) {
       console.warn('[Name Validation] Firebase auth not initialized');
+
       return;
     }
 
@@ -31,6 +33,7 @@ export function useNameValidation(): NameValidationResult {
         setIsValidating(false);
         setWasSynced(false);
         setError(null);
+
         return;
       }
 
@@ -59,8 +62,10 @@ export function useNameValidation(): NameValidationResult {
         }
 
         const data = await response.json();
+
         if (data.success) {
           setWasSynced(data.data.synced);
+
           if (data.data.synced) {
             console.log(`[Name Validation] Synced display name for user ${user.uid}: "${data.data.oldName}" → "${data.data.newName}"`);
           }

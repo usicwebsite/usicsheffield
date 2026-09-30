@@ -22,18 +22,20 @@ export default function Navbar() {
     };
 
     window.addEventListener('scroll', handleScroll);
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Handle click outside to close membership dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (membershipDropdownRef.current && !membershipDropdownRef.current.contains(event.target as Node)) {
+      if (membershipDropdownRef.current && event.target instanceof Node && !membershipDropdownRef.current.contains(event.target)) {
         setIsMembershipDropdownOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };

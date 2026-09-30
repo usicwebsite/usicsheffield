@@ -31,9 +31,9 @@ interface EventSignupForm {
 }
 
 export default function EventPage() {
-  const params = useParams();
+  const params = useParams<{ eventId: string }>();
   const router = useRouter();
-  const eventId = params.eventId as string;
+  const eventId = params.eventId;
 
   // Function to format date like "Sep. 25th, 2025"
   const formatEventDate = (dateString: string) => {
@@ -48,6 +48,7 @@ export default function EventPage() {
       // Add ordinal suffix
       const getOrdinalSuffix = (day: number) => {
         if (day > 3 && day < 21) return 'th';
+
         switch (day % 10) {
           case 1: return 'st';
           case 2: return 'nd';
@@ -72,6 +73,7 @@ export default function EventPage() {
       const hour = parseInt(hours);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
+
       return `${displayHour}:${minutes} ${ampm}`;
     };
 
@@ -79,6 +81,7 @@ export default function EventPage() {
 
     if (endTime) {
       const formattedEnd = formatTime(endTime);
+
       return `${formattedStart} - ${formattedEnd}`;
     }
 
@@ -103,6 +106,7 @@ export default function EventPage() {
         } else {
           setError('Failed to load event');
         }
+
         return;
       }
 
@@ -143,8 +147,10 @@ export default function EventPage() {
 
     // Validate required fields
     const missingFields = event.formFields.filter(field => !formData[field]?.trim());
+
     if (missingFields.length > 0) {
       alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+
       return;
     }
 
@@ -182,8 +188,11 @@ export default function EventPage() {
 
   const getFieldType = (field: string) => {
     if (field.includes('email')) return 'email';
+
     if (field.includes('phone') || field.includes('whatsapp')) return 'tel';
+
     if (field.includes('student_id')) return 'text';
+
     return 'text';
   };
 
@@ -243,6 +252,7 @@ export default function EventPage() {
                 event.formFields.forEach(field => {
                   resetData[field] = '';
                 });
+
                 return resetData;
               });
               }}
