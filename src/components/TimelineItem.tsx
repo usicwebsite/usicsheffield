@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { TimelineItem as TimelineItemType } from '@/lib/membership-data';
+import { cloudinaryLoader } from '@/lib/cloudinary-optimizer';
 
 interface TimelineItemProps {
   item: TimelineItemType;
@@ -12,9 +13,7 @@ export default function TimelineItem({ item, isActive, ref }: TimelineItemProps)
   return (
     <div 
       ref={ref}
-      className={`relative mb-16 last:mb-0 transition-all duration-500 ${
-        isActive ? 'opacity-100' : 'opacity-25'
-      }`}
+      className="relative mb-16 last:mb-0 transition-all duration-500"
     >
       <div className="flex flex-col md:flex-row items-start gap-8">
         {/* Step Number and Progress Dot */}
@@ -39,6 +38,8 @@ export default function TimelineItem({ item, isActive, ref }: TimelineItemProps)
                 src={item.image}
                 alt={item.imageAlt}
                 fill
+                loader={cloudinaryLoader}
+                priority
                 className="object-cover transition-transform duration-500 hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />

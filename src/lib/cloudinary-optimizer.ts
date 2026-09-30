@@ -3,6 +3,19 @@
  * Provides optimized URLs with automatic format detection, quality optimization, and progressive loading
  */
 
+import type { ImageLoaderProps } from 'next/image';
+
+/** Next.js Image loader: resize/format via Cloudinary, skip Next's optimizer. */
+export function cloudinaryLoader({
+  src,
+  width,
+}: ImageLoaderProps): string {
+  return src.replace(
+    '/upload/',
+    `/upload/c_limit,w_${width}/q_auto/f_auto/`
+  );
+}
+
 export interface CloudinaryOptimizationOptions {
   width?: number;
   height?: number;
@@ -30,6 +43,7 @@ export function optimizeCloudinaryUrl(
 
     // Extract base URL and version
     const urlParts = url.split('/upload/');
+
     if (urlParts.length !== 2) {
       return url;
     }
@@ -57,6 +71,7 @@ export function optimizeCloudinaryUrl(
     if (options.width) {
       transformations.push(`w_${options.width}`);
     }
+
     if (options.height) {
       transformations.push(`h_${options.height}`);
     }
@@ -73,10 +88,12 @@ export function optimizeCloudinaryUrl(
 
     // Construct optimized URL
     const transformationString = transformations.join(',');
+
     return `${baseUrl}/upload/${transformationString}/${imagePath}`;
   } catch (error) {
     // If anything goes wrong, return the original URL
     console.warn('Cloudinary URL optimization failed, using original URL:', error);
+
     return url;
   }
 }
@@ -118,9 +135,10 @@ export const cloudinaryPresets = {
  */
 export function optimizeCloudinaryUrls(
   urls: string[],
-  preset: keyof typeof cloudinaryPresets | CloudinaryOptimizationOptions
+  preset: keyof typeof cloudinaryPresets
 ): string[] {
-  const options = typeof preset === 'string' ? cloudinaryPresets[preset] : preset;
+  const options = cloudinaryPresets[preset];
+
   return urls.map(url => optimizeCloudinaryUrl(url, options));
 }
 
