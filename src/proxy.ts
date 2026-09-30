@@ -2,12 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/csrf';
 
-// Simple in-memory rate limiting for Edge Runtime compatibility
-const imageRateLimitStore = new Map<string, { count: number; resetTime: number }>();
-const IMAGE_RATE_LIMIT = { maxRequests: 100, windowMs: 60000 }; // 100 per minute
-
 // API rate limiting (merged from middleware-api)
 const apiRateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
 const API_RATE_LIMITS = {
   'api-auth': { maxRequests: 10, windowMs: 60000 },
   'api-global': { maxRequests: 30, windowMs: 60000 },
@@ -32,33 +29,12 @@ function getClientIP(request: NextRequest): string {
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
   }
+
   if (realIP) return realIP;
+
   if (cfConnectingIP) return cfConnectingIP;
 
   return 'unknown';
-}
-
-function checkImageRateLimit(clientIP: string): boolean {
-  const now = Date.now();
-  const key = `image:${clientIP}`;
-
-  const entry = imageRateLimitStore.get(key);
-
-  if (!entry || now > entry.resetTime) {
-    // Reset or create new entry
-    imageRateLimitStore.set(key, {
-      count: 1,
-      resetTime: now + IMAGE_RATE_LIMIT.windowMs
-    });
-    return true;
-  }
-
-  if (entry.count >= IMAGE_RATE_LIMIT.maxRequests) {
-    return false;
-  }
-
-  entry.count++;
-  return true;
 }
 
 function checkApiRateLimit(clientIP: string, limitType: keyof typeof API_RATE_LIMITS): boolean {
@@ -73,6 +49,7 @@ function checkApiRateLimit(clientIP: string, limitType: keyof typeof API_RATE_LI
       count: 1,
       resetTime: now + limit.windowMs,
     });
+
     return true;
   }
 
@@ -81,11 +58,12 @@ function checkApiRateLimit(clientIP: string, limitType: keyof typeof API_RATE_LI
   }
 
   entry.count++;
+
   return true;
 }
 
 // Security headers configuration
-const securityHeaders: Record<string, string> = {
+const securityHeaders = {
   // Content Security Policy - Restrict resource loading
   'Content-Security-Policy': [
     "default-src 'self'",
@@ -128,7 +106,7 @@ const securityHeaders: Record<string, string> = {
   'Pragma': 'no-cache',
   'Expires': '0',
   'Surrogate-Control': 'no-store'
-};
+} satisfies Record<string, string>;
 
 // Pages that should not be cached
 const noCachePaths = [
@@ -143,17 +121,28 @@ const noCachePaths = [
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
+  // Public image routes: no CSRF cookies, no-store headers, or rate limits
+  if (
+    path.startsWith('/_next/image') ||
+    path.startsWith('/images/')
+  ) {
+    return NextResponse.next();
+  }
+
   // API rate limiting (skip admin rate limit clearing)
   if (path.startsWith('/api/') && path !== '/api/admin/security/clear-rate-limit') {
     let rateLimitCategory: keyof typeof API_RATE_LIMITS | null = null;
+
     for (const rule of API_RATE_LIMIT_RULES) {
       if (rule.pattern.test(path)) {
         rateLimitCategory = rule.category;
         break;
       }
     }
+
     if (rateLimitCategory) {
       const clientIP = getClientIP(request);
+
       if (!checkApiRateLimit(clientIP, rateLimitCategory)) {
         return NextResponse.json(
           {
@@ -165,25 +154,8 @@ export async function proxy(request: NextRequest) {
         );
       }
     }
+
     return NextResponse.next();
-  }
-
-  // Handle image rate limiting for Next.js image optimization and static images
-  if (path.startsWith('/_next/image') || path.startsWith('/images/')) {
-    const clientIP = getClientIP(request);
-    const isAllowed = checkImageRateLimit(clientIP);
-
-    if (!isAllowed) {
-      return NextResponse.json({
-        error: 'Rate limit exceeded',
-        message: 'Too many image requests. Please try again later.'
-      }, {
-        status: 429,
-        headers: {
-          'Retry-After': '60',
-        }
-      });
-    }
   }
 
   // Create response object - admin authentication is now handled client-side
@@ -218,7 +190,7 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except _next/static, favicon.ico.
-     * Includes: /api/* (rate limiting), pages, _next/image, images/
+     * Includes: /api/* (rate limiting), pages; image routes early-return.
      */
     '/((?!_next/static|favicon.ico|public(?!/images)).*)',
   ],
