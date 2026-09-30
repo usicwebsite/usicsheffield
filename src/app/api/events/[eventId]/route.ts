@@ -25,6 +25,7 @@ export async function GET(
     }
 
     const eventData = eventDoc.data();
+
     if (!eventData) {
       return NextResponse.json({ error: 'Event data not found' }, { status: 404 });
     }
@@ -55,6 +56,7 @@ export async function GET(
     return NextResponse.json({ event });
   } catch (error) {
     console.error('Error fetching event:', error);
+
     return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 });
   }
 }

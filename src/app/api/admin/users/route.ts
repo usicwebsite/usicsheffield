@@ -23,10 +23,11 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const verification = await verifyAdminToken(request);
+
     if (!verification.success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: verification.status }
       );
     }
 
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('[Users API] Error getting users:', error);
+
     return NextResponse.json(
       {
         success: false,
@@ -55,10 +57,11 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
     const verification = await verifyAdminToken(request);
+
     if (!verification.success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: verification.status }
       );
     }
 
@@ -86,9 +89,9 @@ export async function POST(request: NextRequest) {
       const { userId, action, reason } = restrictResult.data;
 
       if (action === 'restrict') {
-        await restrictUser(userId, (verification as { uid: string }).uid, reason);
+        await restrictUser(userId, verification.uid, reason);
       } else {
-        await unrestrictUser(userId, (verification as { uid: string }).uid);
+        await unrestrictUser(userId, verification.uid);
       }
 
       return NextResponse.json({
@@ -97,7 +100,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId,
           action,
-          performedBy: (verification as { uid: string }).uid,
+          performedBy: verification.uid,
           timestamp: new Date().toISOString()
         }
       });
@@ -107,7 +110,7 @@ export async function POST(request: NextRequest) {
     if (syncResult.success) {
       const { userId } = syncResult.data;
 
-      const syncResultData = await syncUserDisplayNameWithGoogle(userId, (verification as { uid: string }).uid);
+      const syncResultData = await syncUserDisplayNameWithGoogle(userId, verification.uid);
 
       return NextResponse.json({
         success: true,
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest) {
           synced: syncResultData.synced,
           oldName: syncResultData.oldName,
           newName: syncResultData.newName,
-          performedBy: (verification as { uid: string }).uid,
+          performedBy: verification.uid,
           timestamp: new Date().toISOString()
         }
       });
@@ -127,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Handle batch sync display names action
     if (batchSyncResult.success) {
-      const batchResult = await batchSyncDisplayNamesWithGoogle((verification as { uid: string }).uid);
+      const batchResult = await batchSyncDisplayNamesWithGoogle(verification.uid);
 
       return NextResponse.json({
         success: true,
@@ -136,7 +139,7 @@ export async function POST(request: NextRequest) {
           totalUsers: batchResult.totalUsers,
           syncedUsers: batchResult.syncedUsers,
           errors: batchResult.errors,
-          performedBy: (verification as { uid: string }).uid,
+          performedBy: verification.uid,
           timestamp: new Date().toISOString()
         }
       });
@@ -144,6 +147,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[Users API] Error managing user:', error);
+
     return NextResponse.json(
       {
         success: false,

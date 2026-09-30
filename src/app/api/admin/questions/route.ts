@@ -8,6 +8,7 @@ export const GET = withAdminAuth(async (request: AuthenticatedRequest) => {
     
     if (!adminDb) {
       console.error('[Admin Questions API] Database connection error');
+
       return NextResponse.json(
         { 
           success: false,
@@ -25,6 +26,7 @@ export const GET = withAdminAuth(async (request: AuthenticatedRequest) => {
     console.log('[Admin Questions API] Fetching questions with status:', status);
     
     let querySnapshot;
+
     try {
       if (status && status !== 'all') {
         querySnapshot = await adminDb.collection('questions')
@@ -42,6 +44,7 @@ export const GET = withAdminAuth(async (request: AuthenticatedRequest) => {
       // In development, return empty results instead of failing
       if (process.env.NODE_ENV === 'development') {
         console.log('[Admin Questions API] Development mode: returning empty results due to Firestore error');
+
         return NextResponse.json({
           success: true,
           data: {
@@ -54,6 +57,7 @@ export const GET = withAdminAuth(async (request: AuthenticatedRequest) => {
         throw new Error('Firestore query failed');
       }
     }
+
     const questions: Array<{
       id: string;
       question: string;
@@ -110,6 +114,7 @@ export const GET = withAdminAuth(async (request: AuthenticatedRequest) => {
     });
   } catch (error: unknown) {
     console.error('[Admin Questions API] Error getting questions:', error);
+
     return NextResponse.json(
       { 
         success: false,

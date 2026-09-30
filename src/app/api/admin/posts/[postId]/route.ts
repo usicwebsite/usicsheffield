@@ -28,6 +28,7 @@ export const DELETE = withAdminAuth(async (
     });
   } catch (error: unknown) {
     console.error('[Delete Post API] Error deleting post:', error);
+
     return NextResponse.json(
       {
         success: false,

@@ -30,6 +30,7 @@ async function approvePostHandler(request: AuthenticatedRequest) {
     });
   } catch (error: unknown) {
     console.error('[Approve Post API] Error approving post:', error);
+
     return NextResponse.json(
       {
         success: false,

@@ -22,9 +22,10 @@ async function getSubmittedPostsHandler() {
     console.error('[Admin Posts API] Error getting submitted posts:', error);
     console.error('[Admin Posts API] Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as { code?: string })?.code,
+      code: error instanceof Error && 'code' in error ? error.code : undefined,
       stack: error instanceof Error ? error.stack : undefined
     });
+
     return NextResponse.json(
       {
         success: false,
@@ -57,6 +58,7 @@ async function getAllPostsHandler() {
     });
   } catch (error: unknown) {
     console.error('[Admin Posts API] Error getting all posts:', error);
+
     return NextResponse.json(
       {
         success: false,
@@ -116,9 +118,10 @@ export const POST = async () => {
     console.error('[Admin Posts API] Error creating test post:', error);
     console.error('[Admin Posts API] Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as { code?: string })?.code,
+      code: error instanceof Error && 'code' in error ? error.code : undefined,
       stack: error instanceof Error ? error.stack : undefined
     });
+
     return NextResponse.json(
       {
         success: false,

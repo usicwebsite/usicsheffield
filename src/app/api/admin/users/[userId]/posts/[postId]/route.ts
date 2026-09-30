@@ -8,15 +8,16 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     // Verify admin authentication
     const verification = await verifyAdminToken(request);
+
     if (!verification.success) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: verification.status }
       );
     }
 
     // Delete the post
-    const result = await deletePostByAdmin(postId, (verification as { uid: string }).uid);
+    const result = await deletePostByAdmin(postId, verification.uid);
 
     return NextResponse.json({
       success: true,
@@ -26,6 +27,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   } catch (error) {
     console.error('[Delete Post API] Error deleting post:', error);
+
     return NextResponse.json(
       {
         success: false,

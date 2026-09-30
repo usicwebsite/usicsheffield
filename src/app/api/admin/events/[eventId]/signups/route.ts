@@ -12,8 +12,9 @@ export async function GET(
   try {
     // Verify admin authentication
     const authResult = await verifyAdminToken(request);
+
     if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     if (!adminDb) {
@@ -24,6 +25,7 @@ export async function GET(
 
     // Verify event exists
     const eventDoc = await adminDb.collection('events').doc(eventId).get();
+
     if (!eventDoc.exists) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -46,6 +48,7 @@ export async function GET(
     return NextResponse.json({ signups });
   } catch (error) {
     console.error('Error fetching event signups:', error);
+
     return NextResponse.json({ error: 'Failed to fetch signups' }, { status: 500 });
   }
 }
