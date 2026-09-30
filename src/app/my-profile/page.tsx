@@ -13,6 +13,9 @@ import { checkUserAdminStatus, ForumPost } from '@/lib/firebase-client';
 import { getUserSubmittedPosts, getUserApprovedPosts, getUserRejectedPosts } from '@/lib/firebase-utils';
 import { categoryUtils } from '@/lib/static-data';
 
+// Firestore Timestamps expose toDate(); locally built posts may already hold a Date
+const toDate = (value: ForumPost['createdAt']) => ('toDate' in value ? value.toDate() : value);
+
 export default function MyProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -43,10 +46,12 @@ export default function MyProfilePage() {
   // Check authentication status
   useEffect(() => {
     const auth = getFirebaseAuth();
+
     if (!auth) {
       console.error('Firebase Auth not initialized');
       setError('Authentication service not available');
       setIsLoading(false);
+
       return;
     }
 
@@ -55,16 +60,10 @@ export default function MyProfilePage() {
         if (!user) {
           // Redirect to login if not authenticated
           router.push('/login');
+
           return;
         }
         
-        // Verify user object has required methods
-        if (typeof user.getIdToken !== 'function') {
-          console.error('User object is invalid:', user);
-          setError('Invalid user session. Please log in again.');
-          router.push('/login');
-          return;
-        }
         
         setUser(user);
         // No longer initializing form data since we're not editing display name/email
@@ -127,17 +126,20 @@ export default function MyProfilePage() {
 
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+
     if (!file || !user) return;
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please select a valid image file');
+
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError('Image size must be less than 5MB');
+
       return;
     }
 
@@ -146,11 +148,6 @@ export default function MyProfilePage() {
       setError(null);
       setSuccessMessage('');
 
-      // Verify user object is still valid
-      if (typeof user.getIdToken !== 'function') {
-        throw new Error('Invalid user session. Please log in again.');
-      }
-
       // Create FormData for upload
       const formData = new FormData();
       formData.append('file', file);
@@ -158,6 +155,7 @@ export default function MyProfilePage() {
       // Upload to Cloudinary via API route
       const response = await fetch('/api/upload-profile-photo', {
         method: 'POST',
+        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
         body: formData,
       });
 
@@ -181,6 +179,7 @@ export default function MyProfilePage() {
       setUser({ ...user });
     } catch (error) {
       console.error('Error uploading profile picture:', error);
+
       if (error instanceof Error && error.message.includes('getIdToken')) {
         setError('Session expired. Please log in again.');
         router.push('/login');
@@ -436,7 +435,7 @@ export default function MyProfilePage() {
                         <div key={post.id} className="bg-blue-600/20 rounded p-2">
                           <h5 className="text-white font-medium text-sm truncate">{post.title}</h5>
                           <p className="text-blue-200 text-xs">
-                            {post.createdAt && (typeof post.createdAt === 'object' && 'toDate' in post.createdAt ? post.createdAt.toDate() : new Date(post.createdAt)).toLocaleDateString()}
+                            {post.createdAt && toDate(post.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
@@ -458,7 +457,7 @@ export default function MyProfilePage() {
                         <div key={post.id} className="bg-green-600/20 rounded p-2">
                           <h5 className="text-white font-medium text-sm truncate">{post.title}</h5>
                           <p className="text-green-200 text-xs">
-                            {post.createdAt && (typeof post.createdAt === 'object' && 'toDate' in post.createdAt ? post.createdAt.toDate() : new Date(post.createdAt)).toLocaleDateString()}
+                            {post.createdAt && toDate(post.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
@@ -480,7 +479,7 @@ export default function MyProfilePage() {
                         <div key={post.id} className="bg-red-600/20 rounded p-2">
                           <h5 className="text-white font-medium text-sm truncate">{post.title}</h5>
                           <p className="text-red-200 text-xs">
-                            {post.createdAt && (typeof post.createdAt === 'object' && 'toDate' in post.createdAt ? post.createdAt.toDate() : new Date(post.createdAt)).toLocaleDateString()}
+                            {post.createdAt && toDate(post.createdAt).toLocaleDateString()}
                           </p>
                           {post.rejectionReason && (
                             <p className="text-red-300 text-xs mt-1 truncate" title={post.rejectionReason}>
@@ -510,8 +509,9 @@ export default function MyProfilePage() {
                     ...rejectedPosts.slice(0, 2).map(post => ({ ...post, status: 'rejected' }))
                   ]
                     .sort((a, b) => {
-                      const dateA = a.createdAt ? (typeof a.createdAt === 'object' && 'toDate' in a.createdAt ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-                      const dateB = b.createdAt ? (typeof b.createdAt === 'object' && 'toDate' in b.createdAt ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+                      const dateA = a.createdAt ? toDate(a.createdAt) : new Date(0);
+                      const dateB = b.createdAt ? toDate(b.createdAt) : new Date(0);
+
                       return dateB.getTime() - dateA.getTime();
                     })
                     .slice(0, 5)
@@ -525,7 +525,7 @@ export default function MyProfilePage() {
                             <div className="flex items-center gap-4 text-xs text-gray-400">
                               <span>Category: {categoryUtils.getCategoryName(post.category)}</span>
                               <span>
-                                {post.createdAt && (typeof post.createdAt === 'object' && 'toDate' in post.createdAt ? post.createdAt.toDate() : new Date(post.createdAt)).toLocaleDateString()}
+                                {post.createdAt && toDate(post.createdAt).toLocaleDateString()}
                               </span>
                               <span className={`px-2 py-1 rounded text-xs ${
                                 post.status === 'approved' ? 'bg-green-600/20 text-green-300' :

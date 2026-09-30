@@ -148,6 +148,7 @@ export default function PricingPage() {
               // Define background colors and patterns for different business types
               const getBusinessStyle = (name: string) => {
                 const lowerName = name.toLowerCase();
+
                 if (lowerName.includes('grill') || lowerName.includes('kebab') || lowerName.includes('halal')) {
                   return {
                     bg: 'bg-gradient-to-br from-orange-100 to-red-200',
@@ -185,7 +186,7 @@ export default function PricingPage() {
               
               // Map business names to their logo files
               const getBusinessLogo = (name: string) => {
-              const logoMap: { [key: string]: string } = {
+              const logoMap = new Map(Object.entries({
                 "Sabir's Grill": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524588/sabir_s_grill_kkq0lm.png',
                 "5 Akhis": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524587/5_akhis_tcuf21.jpg',
                 "Karak Chai": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524585/karak_chaii_ezh817.jpg',
@@ -205,13 +206,14 @@ export default function PricingPage() {
                 "Frog": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524582/frog_hrclz7.png',
                 "Regen Therapy": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524579/regen_therapy_o7z22q.jpg',
                 "Unit": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524579/unit_tca78t.jpg'
-              };
-                return logoMap[name] || null;
+              }));
+
+                return logoMap.get(name) || null;
               };
 
               // Map business names to their photo files
               const getBusinessPhoto = (name: string) => {
-              const photoMap: { [key: string]: string } = {
+              const photoMap = new Map(Object.entries({
                 "Sabir's Grill": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524606/sabirs_grill_vlt4vx.jpg',
                 "5 Akhis": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524618/5_akhis_bx8pol.jpg',
                 "Karak Chai": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524611/karak_chaii_l4j8gf.jpg',
@@ -231,13 +233,14 @@ export default function PricingPage() {
                 "Frog": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524603/frog_cnblou.jpg',
                 "Regen Therapy": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524605/regen_therapy_xfk2bh.jpg',
                 "Unit": 'https://res.cloudinary.com/derjeh0m2/image/upload/v1758524618/unit_oymloz.webp'
-              };
-                return photoMap[name] || null;
+              }));
+
+                return photoMap.get(name) || null;
               };
 
               // Map business names to their website URLs
               const getBusinessUrl = (name: string) => {
-                const urlMap: { [key: string]: string } = {
+                const urlMap = new Map(Object.entries({
                   "Sabir's Grill": 'https://www.sabirs.co.uk/',
                   "5 Akhis": 'https://www.fiveakhis.com/stores/7/five-akhis-sheffield?utm_source=google&utm_medium=local&utm_campaign=gbplisting',
                   "Karak Chai": 'https://karakchaii.co.uk/?utm_source=google&utm_medium=local&utm_campaign=gbplisting',
@@ -257,8 +260,9 @@ export default function PricingPage() {
                   "Frog": 'https://www.instagram.com/frog_sheffield/?hl=en',
                   "Regen Therapy": 'https://www.instagram.com/re.gentherapy?igsh=MXkxNmh1M2YxNWVzeQ==',
                   "Unit": 'https://www.unitsheffield.com/'
-                };
-                return urlMap[name] || null;
+                }));
+
+                return urlMap.get(name) || null;
               };
               
               const businessUrl = getBusinessUrl(businessName);

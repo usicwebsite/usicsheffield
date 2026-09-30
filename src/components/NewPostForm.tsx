@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPost } from "@/lib/firebase-client";
+import { createPost, RateLimitError } from "@/lib/firebase-client";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import ForumAuth from "./ForumAuth";
-import { useFormValidation, ClientValidationSchemas } from "@/lib/client-validation";
 import { categoryUtils } from "@/lib/static-data";
 
 interface NewPostFormProps {
@@ -21,21 +20,23 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [submitFieldErrors, setSubmitFieldErrors] = useState<Record<string, string>>({});
 
-  // Enhanced form validation
-  const {
-    data: formData,
-    updateField
-  } = useFormValidation(ClientValidationSchemas.postForm, {
+  const [formData, setFormData] = useState({
     title: "",
     content: "",
     category: categoryUtils.getCategoryIds()[0] // Use first category as default
   });
 
+  const updateField = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   // Listen to Firebase auth state changes
   useEffect(() => {
     const auth = getFirebaseAuth();
+
     if (!auth) {
       setIsLoading(false);
+
       return;
     }
 
@@ -52,18 +53,23 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
   // Simple field validation functions
   const validateTitle = (value: string) => {
     if (!value || value.trim().length < 5) return "Title must be at least 5 characters";
+
     if (value.length > 200) return "Title must be less than 200 characters";
+
     return null;
   };
 
   const validateContent = (value: string) => {
     if (!value || value.trim().length < 10) return "Content must be at least 10 characters";
+
     if (value.length > 10000) return "Content must be less than 10,000 characters";
+
     return null;
   };
 
   const validateCategory = (value: string) => {
     if (!value || value.trim().length < 2) return "Please select a category";
+
     return null;
   };
 
@@ -75,14 +81,17 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     setHasAttemptedSubmit(true);
 
     // Validate all fields on submit
-    const titleError = validateTitle(formData.title as string);
-    const contentError = validateContent(formData.content as string);
-    const categoryError = validateCategory(formData.category as string);
+    const titleError = validateTitle(formData.title);
+    const contentError = validateContent(formData.content);
+    const categoryError = validateCategory(formData.category);
 
     // Set field errors
     const newFieldErrors: Record<string, string> = {};
+
     if (titleError) newFieldErrors.title = titleError;
+
     if (contentError) newFieldErrors.content = contentError;
+
     if (categoryError) newFieldErrors.category = categoryError;
 
     setSubmitFieldErrors(newFieldErrors);
@@ -90,11 +99,13 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     // Check if all validations passed
     if (Object.keys(newFieldErrors).length > 0) {
       console.error("Form validation failed:", newFieldErrors);
+
       return;
     }
 
     if (!user) {
       alert("Please sign in to create a post");
+
       return;
     }
 
@@ -102,11 +113,11 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
     
     try {
       await createPost({
-        title: (formData.title as string).trim(),
-        content: (formData.content as string).trim(),
+        title: formData.title.trim(),
+        content: formData.content.trim(),
         author: user.displayName || user.email || "Anonymous User",
         authorId: user.uid,
-        category: formData.category as string,
+        category: formData.category,
       });
 
       // Clear any previous error messages
@@ -133,9 +144,8 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
       console.error("Error creating post:", error);
 
       // Handle rate limiting errors specifically
-      if ((error as { rateLimitInfo?: { resetTime: string } }).rateLimitInfo) {
-        const rateLimitInfo = (error as { rateLimitInfo: { resetTime: string } }).rateLimitInfo;
-        const resetTime = new Date(rateLimitInfo.resetTime);
+      if (error instanceof RateLimitError) {
+        const resetTime = new Date(error.rateLimitInfo.resetTime);
         const timeUntilReset = Math.ceil((resetTime.getTime() - Date.now()) / (1000 * 60)); // minutes
 
         setErrorMessage(
@@ -149,7 +159,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
       }
 
       // Auto-hide error message after 8 seconds for rate limits, 5 seconds for others
-      const hideDelay = (error as { rateLimitInfo?: unknown }).rateLimitInfo ? 8000 : 5000;
+      const hideDelay = error instanceof RateLimitError ? 8000 : 5000;
       setTimeout(() => {
         setErrorMessage(null);
       }, hideDelay);
@@ -258,7 +268,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
           <input
             type="text"
             id="title"
-            value={formData.title as string}
+            value={formData.title}
             onChange={(e) => {
               updateField("title", e.target.value);
               // Remove real-time validation - only validate on submit
@@ -280,7 +290,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
           </label>
           <select
             id="category"
-            value={formData.category as string}
+            value={formData.category}
             onChange={(e) => {
               updateField("category", e.target.value);
               // Remove real-time validation - only validate on submit
@@ -306,7 +316,7 @@ export default function NewPostForm({ onPostCreated }: NewPostFormProps) {
           </label>
           <textarea
             id="content"
-            value={formData.content as string}
+            value={formData.content}
             onChange={(e) => {
               updateField("content", e.target.value);
               // Remove real-time validation - only validate on submit
