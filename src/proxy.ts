@@ -62,6 +62,13 @@ function checkApiRateLimit(clientIP: string, limitType: keyof typeof API_RATE_LI
   return true;
 }
 
+// Origins allowed to embed this site in an iframe (e.g. the project preview on a portfolio)
+const frameAncestors = [
+  "'self'",
+  'https://mikhailwijanarko.com',
+  'https://www.mikhailwijanarko.com',
+];
+
 // Security headers configuration
 const securityHeaders = {
   // Content Security Policy - Restrict resource loading
@@ -76,13 +83,14 @@ const securityHeaders = {
     "frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://res.cloudinary.com",
     "object-src 'none'",
     "base-uri 'self'",
+    `frame-ancestors ${frameAncestors.join(' ')}`,
     "form-action 'self' https://accounts.google.com",
     "upgrade-insecure-requests"
   ].join('; '),
   
-  // Prevent clickjacking
-  'X-Frame-Options': 'DENY',
-  
+  // Clickjacking protection is handled by the CSP frame-ancestors directive above.
+  // X-Frame-Options is omitted because it cannot allow specific origins.
+
   // Prevent MIME type sniffing
   'X-Content-Type-Options': 'nosniff',
   
